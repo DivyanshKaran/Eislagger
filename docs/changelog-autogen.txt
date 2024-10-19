@@ -6,3 +6,4 @@
 - 2024-10-12T03:51:34Z: Refactor API client for retries
 - 2024-10-14T12:41:27Z: Implement search with debounce
 - 2024-10-16T19:49:42Z: Add loading skeletons to list views
+- 2024-10-19T02:09:01Z: Improve error handling and toasts
