@@ -11,3 +11,4 @@
 - 2024-10-23T17:58:02Z: Add unit tests for hooks
 - 2024-10-25T21:34:04Z: Fix ESLint and TypeScript issues
 - 2024-10-28T09:36:58Z: Optimize images and lazy loading
+- 2024-10-30T14:34:55Z: Add user profile settings page
