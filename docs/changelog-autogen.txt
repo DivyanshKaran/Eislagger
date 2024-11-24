@@ -22,3 +22,4 @@
 - 2024-11-17T17:44:21Z: Fix SSR hydration warnings
 - 2024-11-20T03:34:06Z: Create notifications center UI
 - 2024-11-22T04:39:22Z: Add role-based access control checks
+- 2024-11-24T13:29:02Z: Improve form validation messages
