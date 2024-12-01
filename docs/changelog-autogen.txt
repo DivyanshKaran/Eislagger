@@ -25,3 +25,4 @@
 - 2024-11-24T13:29:02Z: Improve form validation messages
 - 2024-11-27T01:19:12Z: Create email templates for outreach
 - 2024-11-29T03:49:10Z: Add KPIs cards to dashboard
+- 2024-12-01T09:56:55Z: Fix mobile responsiveness issues
