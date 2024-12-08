@@ -28,3 +28,4 @@
 - 2024-12-01T09:56:55Z: Fix mobile responsiveness issues
 - 2024-12-03T17:21:56Z: Add breadcrumbs to detail pages
 - 2024-12-06T01:01:02Z: Refactor components into presentational/container
+- 2024-12-08T04:38:49Z: Create checkout flow scaffold
