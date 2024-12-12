@@ -30,3 +30,4 @@
 - 2024-12-06T01:01:02Z: Refactor components into presentational/container
 - 2024-12-08T04:38:49Z: Create checkout flow scaffold
 - 2024-12-10T13:02:57Z: Add price formatting utilities
+- 2024-12-12T19:05:44Z: Fix date parsing edge cases
