@@ -31,3 +31,4 @@
 - 2024-12-08T04:38:49Z: Create checkout flow scaffold
 - 2024-12-10T13:02:57Z: Add price formatting utilities
 - 2024-12-12T19:05:44Z: Fix date parsing edge cases
+- 2024-12-15T01:03:10Z: Add useLocalStorage hook
