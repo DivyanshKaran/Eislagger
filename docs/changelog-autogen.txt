@@ -34,3 +34,4 @@
 - 2024-12-15T01:03:10Z: Add useLocalStorage hook
 - 2024-12-17T07:31:10Z: Improve performance of large tables
 - 2024-12-19T17:22:01Z: Create feature flag utilities
+- 2024-12-22T03:31:56Z: Add 404 and error boundary pages
