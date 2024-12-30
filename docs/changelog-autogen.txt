@@ -38,3 +38,4 @@
 - 2024-12-24T02:36:35Z: Fix z-index stacking context for modals
 - 2024-12-26T08:47:46Z: Create message center service
 - 2024-12-28T20:49:39Z: Add WebSocket heartbeat handling
+- 2024-12-30T22:46:11Z: Refactor query keys constants
