@@ -44,3 +44,4 @@
 - 2025-01-06T17:24:02Z: Create analytics service methods
 - 2025-01-09T03:43:28Z: Add unit tests for services
 - 2025-01-11T12:07:29Z: Improve accessibility attributes
+- 2025-01-13T17:38:45Z: Create store locator page
