@@ -49,3 +49,4 @@
 - 2025-01-18T07:53:28Z: Fix clipping in charts on resize
 - 2025-01-20T16:20:13Z: Create email campaign scheduler
 - 2025-01-22T22:38:21Z: Add retry/backoff for API errors
+- 2025-01-24T23:54:47Z: Refactor http client interceptors
