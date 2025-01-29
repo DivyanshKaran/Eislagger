@@ -51,3 +51,4 @@
 - 2025-01-22T22:38:21Z: Add retry/backoff for API errors
 - 2025-01-24T23:54:47Z: Refactor http client interceptors
 - 2025-01-27T06:40:18Z: Add session persistence
+- 2025-01-29T19:19:22Z: Fix sidebar collapse animation
