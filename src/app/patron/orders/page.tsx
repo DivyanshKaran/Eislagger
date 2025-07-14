@@ -3,20 +3,20 @@ import React, { useState } from "react";
 import {
   FaChevronDown,
   FaChevronUp,
-  FaFileExport,
   FaSearch,
+  FaFileExport,
+  FaShoppingCart,
   FaTruck,
   FaCheckCircle,
   FaTimesCircle,
   FaClock,
-  FaBoxOpen,
+  FaMapMarkerAlt,
   FaFilePdf,
   FaRedo,
-  FaMapMarkerAlt,
-  FaUser,
-  FaPhone,
-  FaPrint,
   FaExclamationTriangle,
+  FaBoxOpen,
+  FaReceipt,
+  FaUserCircle,
 } from "react-icons/fa";
 import { cn } from "@/lib/utils";
 
@@ -27,6 +27,12 @@ const statusColors = {
   out: "border-amber-400 bg-yellow-50 dark:bg-yellow-900",
   cancelled: "border-red-400 bg-red-50 dark:bg-red-900",
 };
+const statusLabels = {
+  delivered: "Delivered",
+  active: "In Progress",
+  out: "Out for Delivery",
+  cancelled: "Cancelled",
+};
 const ordersMock = [
   {
     id: 2451,
@@ -35,7 +41,7 @@ const ordersMock = [
     items: 3,
     total: 489,
     date: "2025-07-02",
-    address: "221B Baker St, Delhi 110001",
+    address: "221B Baker St, Delhi",
     payment: "UPI - Paid",
     flavors: [
       { name: "Mango Nirvana", size: "500ml", price: 149 },
@@ -44,10 +50,10 @@ const ordersMock = [
     ],
     timeline: [
       { label: "Order Placed", time: "09:00" },
-      { label: "Preparing", time: "09:05" },
+      { label: "Preparing", time: "09:10" },
       { label: "Out for Delivery", time: "09:30" },
     ],
-    deliveryPerson: { name: "Ravi Kumar", phone: "+91 98765 43210" },
+    deliveryPerson: { name: "Ravi Kumar", contact: "+91-9876543210" },
   },
   {
     id: 2432,
@@ -59,8 +65,8 @@ const ordersMock = [
     address: "Home, 123 Main St, Mumbai",
     payment: "Card - Paid",
     flavors: [
-      { name: "Berry Carnival", size: "500ml", price: 180 },
-      { name: "Hazelnut Dream", size: "250ml", price: 142 },
+      { name: "Berry Carnival", size: "250ml", price: 199 },
+      { name: "Hazelnut Dream", size: "100ml", price: 123 },
     ],
     timeline: [
       { label: "Order Placed", time: "10:00" },
@@ -68,15 +74,15 @@ const ordersMock = [
       { label: "Out for Delivery", time: "10:30" },
       { label: "Delivered", time: "11:00" },
     ],
-    deliveryPerson: { name: "Priya Singh", phone: "+91 91234 56789" },
+    deliveryPerson: { name: "Priya Singh", contact: "+91-9123456780" },
   },
 ];
 
 // --- Filter Toolbar ---
 function FilterToolbar({ status, setStatus, search, setSearch }: any) {
   return (
-    <div className="sticky top-0 z-10 bg-white dark:bg-[#18181b] rounded-t-2xl shadow flex flex-wrap items-center gap-4 px-6 py-4 mb-6 border-b border-pink-100 dark:border-zinc-800">
-      <span className="text-2xl font-bold text-pink-400">🧾 My Orders</span>
+    <div className="sticky top-0 z-10 bg-white dark:bg-[#18181b] rounded-t-2xl shadow flex flex-wrap items-center gap-4 px-8 py-4 mb-8">
+      <h1 className="text-2xl font-bold text-pink-400 flex-1">🧾 My Orders</h1>
       <select
         value={status}
         onChange={(e) => setStatus(e.target.value)}
@@ -96,7 +102,7 @@ function FilterToolbar({ status, setStatus, search, setSearch }: any) {
           className="rounded-lg border border-pink-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 px-3 py-2"
         />
       </div>
-      <button className="ml-auto flex items-center gap-2 bg-pink-100 text-pink-400 px-4 py-2 rounded-lg font-bold border border-pink-200 dark:border-zinc-700">
+      <button className="flex items-center gap-2 bg-pink-100 text-pink-400 px-4 py-2 rounded-lg font-bold border border-pink-200 dark:border-zinc-700">
         <FaFileExport /> Export
       </button>
     </div>
@@ -105,94 +111,77 @@ function FilterToolbar({ status, setStatus, search, setSearch }: any) {
 
 // --- Order Card ---
 function OrderCard({ order, onView, onTrack }: any) {
-  const statusMap: any = {
-    delivered: {
-      label: "Delivered",
-      icon: <FaCheckCircle className="text-green-400" />,
-    },
-    active: { label: "Active", icon: <FaTruck className="text-blue-400" /> },
-    out: {
-      label: "Out for Delivery",
-      icon: <FaClock className="text-amber-400" />,
-    },
-    cancelled: {
-      label: "Cancelled",
-      icon: <FaTimesCircle className="text-red-400" />,
-    },
-  };
+  const statusColor =
+    order.status === "delivered"
+      ? statusColors.delivered
+      : order.status === "out"
+      ? statusColors.out
+      : order.status === "active"
+      ? statusColors.active
+      : statusColors.cancelled;
   return (
     <div
       className={cn(
-        "flex flex-col md:flex-row items-center md:items-stretch gap-4 bg-white dark:bg-[#1a1a1a] rounded-2xl shadow-lg border-l-8 p-6 border border-pink-100 dark:border-zinc-800 mb-4",
-        order.status === "delivered" && "border-l-green-400",
-        order.status === "active" && "border-l-blue-400",
-        order.status === "out" && "border-l-amber-400",
-        order.status === "cancelled" && "border-l-red-400"
+        "flex flex-col md:flex-row items-center md:items-stretch gap-4 bg-white dark:bg-[#1a1a1a] rounded-2xl shadow-lg border-l-8 border border-pink-100 dark:border-zinc-800 p-6 mb-4",
+        statusColor
       )}
     >
       <div className="flex-1 flex flex-col gap-2">
-        <div className="flex items-center gap-2">
-          <FaBoxOpen className="text-pink-400" />
-          <span className="font-bold text-lg">Order #{order.id}</span>
-          <span
-            className="ml-2 px-2 py-0.5 rounded-full text-xs font-semibold border border-pink-200 dark:border-zinc-700"
-            style={{ background: statusColors[order.status] }}
-          >
-            {statusMap[order.status]?.label}
-          </span>
+        <div className="flex items-center gap-2 text-lg font-bold text-pink-400">
+          <FaBoxOpen /> Order #{order.id}
         </div>
-        <div className="flex flex-wrap gap-4 text-sm text-gray-500 dark:text-zinc-400">
+        <div className="flex items-center gap-4 text-xs text-gray-500 dark:text-zinc-400">
+          <span>
+            Status:{" "}
+            <span className="font-semibold text-pink-400">
+              {statusLabels[order.status]}
+            </span>
+          </span>
           {order.status === "out" && (
             <span>
-              ETA: <span className="font-bold text-amber-500">{order.eta}</span>{" "}
-              🚚
+              ETA:{" "}
+              <span className="font-semibold text-blue-400">{order.eta}</span>{" "}
+              <FaTruck className="inline ml-1" />
             </span>
           )}
+          {order.status === "delivered" && <span>{order.eta}</span>}
+        </div>
+        <div className="flex items-center gap-4 text-sm">
           <span>🛒 Items: {order.items}</span>
           <span>
-            Total:{" "}
-            <span className="font-bold text-pink-400">
-              ₹{order.total.toFixed(2)}
-            </span>
+            Total: <span className="font-bold">₹{order.total.toFixed(2)}</span>
           </span>
           <span>Date: {new Date(order.date).toLocaleDateString()}</span>
         </div>
       </div>
-      <div className="flex flex-col gap-2 md:items-end">
-        <div className="flex gap-2">
+      <div className="flex flex-col gap-2 md:justify-center md:items-end">
+        <button
+          onClick={onView}
+          className="bg-pink-400 hover:bg-pink-500 text-white rounded-lg px-4 py-2 font-bold flex items-center gap-2 shadow"
+        >
+          <FaReceipt /> View Details
+        </button>
+        {order.status !== "delivered" && (
           <button
-            className="bg-pink-100 text-pink-400 px-4 py-2 rounded-lg font-bold border border-pink-200 dark:border-zinc-700"
-            onClick={() => onView(order)}
+            onClick={onTrack}
+            className="bg-blue-100 hover:bg-blue-200 text-blue-900 rounded-lg px-4 py-2 font-bold flex items-center gap-2 shadow"
           >
-            View Details
+            <FaTruck /> Track Order
           </button>
-          {order.status === "out" || order.status === "active" ? (
-            <button
-              className="bg-blue-100 text-blue-400 px-4 py-2 rounded-lg font-bold border border-blue-200 dark:border-blue-700"
-              onClick={() => onTrack(order)}
-            >
-              Track Order
-            </button>
-          ) : null}
-          {order.status === "delivered" && (
-            <button className="bg-green-100 text-green-600 px-4 py-2 rounded-lg font-bold border border-green-200 dark:border-green-700">
-              <FaRedo className="inline mr-1" /> Reorder
-            </button>
-          )}
-          {order.status === "delivered" && (
-            <button className="bg-pink-100 text-pink-400 px-4 py-2 rounded-lg font-bold border border-pink-200 dark:border-pink-700">
-              <FaFilePdf className="inline mr-1" /> View Invoice
-            </button>
-          )}
-        </div>
+        )}
+        {order.status === "delivered" && (
+          <button className="bg-green-100 hover:bg-green-200 text-green-900 rounded-lg px-4 py-2 font-bold flex items-center gap-2 shadow">
+            <FaRedo /> Reorder
+          </button>
+        )}
       </div>
     </div>
   );
 }
 
 // --- Order Details Modal ---
-function OrderDetailsModal({ order, onClose }: any) {
-  if (!order) return null;
+function OrderDetailsModal({ order, open, onClose }: any) {
+  if (!open) return null;
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30">
       <div className="bg-white dark:bg-zinc-900 rounded-2xl shadow-2xl w-full max-w-lg p-8 relative border border-pink-100 dark:border-zinc-800">
@@ -207,56 +196,55 @@ function OrderDetailsModal({ order, onClose }: any) {
         </h2>
         <div className="mb-2 text-sm text-gray-500 dark:text-zinc-400">
           Delivery Address:{" "}
-          <span className="font-bold text-pink-400">{order.address}</span>
+          <span className="font-semibold text-pink-400">{order.address}</span>
         </div>
         <div className="mb-2 text-sm text-gray-500 dark:text-zinc-400">
           Delivery Mode:{" "}
-          <span className="font-bold text-pink-400">Scheduled</span> | ETA:{" "}
-          <span className="font-bold text-pink-400">{order.eta}</span>
+          <span className="font-semibold text-blue-400">Scheduled</span> | ETA:{" "}
+          <span className="font-semibold text-blue-400">{order.eta}</span>
         </div>
         <div className="mb-2 text-sm text-gray-500 dark:text-zinc-400">
           Payment:{" "}
-          <span className="font-bold text-pink-400">{order.payment}</span>
+          <span className="font-semibold text-green-400">{order.payment}</span>
         </div>
         <div className="mb-4">
           <div className="font-bold text-pink-400 mb-2">Flavors:</div>
           <ul className="list-disc pl-6">
             {order.flavors.map((f: any, i: number) => (
               <li key={i} className="mb-1 text-gray-700 dark:text-zinc-200">
-                🍦 {f.name}{" "}
-                <span className="text-xs text-gray-400">({f.size})</span> –{" "}
-                <span className="font-bold">₹{f.price.toFixed(2)}</span>
+                <span className="font-semibold">{f.name}</span> ({f.size}) – ₹
+                {f.price.toFixed(2)}
               </li>
             ))}
           </ul>
         </div>
         <div className="flex flex-col gap-1 text-sm">
-          <div>
+          <span>
             Subtotal:{" "}
             <span className="font-bold">₹{order.total.toFixed(2)}</span>
-          </div>
-          <div>
+          </span>
+          <span>
             Taxes: <span className="font-bold">₹0.00</span>
-          </div>
-          <div>
+          </span>
+          <span>
             Delivery Fee: <span className="font-bold">₹0.00</span>
-          </div>
-          <div>
+          </span>
+          <span>
             Grand Total:{" "}
             <span className="font-bold text-pink-400">
               ₹{order.total.toFixed(2)}
             </span>
-          </div>
+          </span>
         </div>
         <div className="flex gap-2 mt-6">
-          <button className="bg-pink-100 text-pink-400 px-4 py-2 rounded-lg font-bold border border-pink-200 dark:border-pink-700">
-            <FaPrint className="inline mr-1" /> Print Invoice
+          <button className="bg-pink-100 text-pink-400 px-4 py-2 rounded-lg font-bold flex items-center gap-2">
+            <FaFilePdf /> Print Invoice
           </button>
-          <button className="bg-green-100 text-green-600 px-4 py-2 rounded-lg font-bold border border-green-200 dark:border-green-700">
-            <FaRedo className="inline mr-1" /> Reorder
+          <button className="bg-green-100 text-green-600 px-4 py-2 rounded-lg font-bold flex items-center gap-2">
+            <FaRedo /> Reorder
           </button>
-          <button className="bg-yellow-100 text-yellow-600 px-4 py-2 rounded-lg font-bold border border-yellow-200 dark:border-yellow-700">
-            <FaExclamationTriangle className="inline mr-1" /> Report Issue
+          <button className="bg-yellow-100 text-yellow-600 px-4 py-2 rounded-lg font-bold flex items-center gap-2">
+            <FaExclamationTriangle /> Report Issue
           </button>
         </div>
       </div>
@@ -265,8 +253,8 @@ function OrderDetailsModal({ order, onClose }: any) {
 }
 
 // --- Track Order Modal ---
-function TrackOrderModal({ order, onClose }: any) {
-  if (!order) return null;
+function TrackOrderModal({ order, open, onClose }: any) {
+  if (!open) return null;
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30">
       <div className="bg-white dark:bg-zinc-900 rounded-2xl shadow-2xl w-full max-w-lg p-8 relative border border-pink-100 dark:border-zinc-800">
@@ -279,49 +267,49 @@ function TrackOrderModal({ order, onClose }: any) {
         <h2 className="text-xl font-bold text-pink-400 mb-4">
           Track Order #{order.id}
         </h2>
-        <div className="flex flex-col gap-4 mb-4">
-          <div className="flex items-center gap-2">
-            {order.timeline.map((step: any, i: number) => (
-              <React.Fragment key={i}>
+        <div className="mb-4">
+          <div className="flex items-center gap-2 mb-2">
+            {order.timeline.map((step: any, idx: number) => (
+              <React.Fragment key={idx}>
                 <div
                   className={cn(
                     "flex flex-col items-center",
-                    i < order.timeline.length - 1 && "flex-1"
+                    idx === order.timeline.length - 1 ? "" : "mr-4"
                   )}
                 >
                   <div
                     className={cn(
-                      "w-8 h-8 rounded-full flex items-center justify-center font-bold text-white",
-                      i === order.timeline.length - 1
-                        ? "bg-green-400"
-                        : "bg-pink-400"
+                      "w-6 h-6 rounded-full flex items-center justify-center font-bold",
+                      idx === order.timeline.length - 1
+                        ? "bg-green-400 text-white"
+                        : "bg-blue-100 dark:bg-blue-900 text-blue-900 dark:text-blue-200 border border-blue-200 dark:border-blue-800"
                     )}
                   >
-                    {i + 1}
+                    {idx + 1}
                   </div>
-                  <span className="text-xs text-gray-500 dark:text-zinc-400 mt-1">
+                  <span className="text-xs mt-1 text-gray-500 dark:text-zinc-400">
                     {step.label}
                   </span>
-                  <span className="text-xs text-gray-400">{step.time}</span>
+                  <span className="text-xs text-pink-400">{step.time}</span>
                 </div>
-                {i < order.timeline.length - 1 && (
-                  <div className="flex-1 h-1 bg-pink-100 dark:bg-zinc-800 mx-2 rounded" />
+                {idx !== order.timeline.length - 1 && (
+                  <div className="w-8 h-1 bg-gray-200 dark:bg-zinc-700 rounded-full" />
                 )}
               </React.Fragment>
             ))}
           </div>
         </div>
-        <div className="flex items-center gap-2 mb-2">
-          <FaUser className="text-pink-400" />
-          <span className="font-bold">{order.deliveryPerson.name}</span>
-          <FaPhone className="text-pink-400 ml-2" />
-          <span>{order.deliveryPerson.phone}</span>
+        <div className="mb-2 text-sm text-gray-500 dark:text-zinc-400">
+          Delivery Person:{" "}
+          <span className="font-semibold text-pink-400">
+            {order.deliveryPerson.name}
+          </span>{" "}
+          |{" "}
+          <span className="text-blue-400">{order.deliveryPerson.contact}</span>
         </div>
-        <div className="flex items-center gap-2">
-          <FaMapMarkerAlt className="text-pink-400" />
-          <span className="text-sm text-gray-500 dark:text-zinc-400">
-            Map preview (static)
-          </span>
+        <div className="h-32 w-full bg-pink-100 dark:bg-zinc-800 rounded-xl flex items-center justify-center mt-4">
+          <FaMapMarkerAlt className="text-pink-400 w-10 h-10" />
+          <span className="ml-2 text-pink-400 font-bold">Map Preview</span>
         </div>
       </div>
     </div>
@@ -331,16 +319,16 @@ function TrackOrderModal({ order, onClose }: any) {
 // --- Empty State ---
 function EmptyOrdersState() {
   return (
-    <div className="flex flex-col items-center justify-center h-96 text-center gap-4">
-      <span className="text-5xl">🛒</span>
-      <span className="text-lg font-bold text-pink-400">
+    <div className="flex flex-col items-center justify-center h-96 text-center">
+      <FaShoppingCart className="text-6xl text-pink-200 mb-4" />
+      <div className="text-lg font-bold text-pink-400 mb-2">
         Looks like you haven’t placed an order yet!
-      </span>
-      <span className="text-gray-500 dark:text-zinc-400">
+      </div>
+      <div className="text-gray-500 dark:text-zinc-400 mb-4">
         Explore flavors and treat yourself 🍨
-      </span>
-      <button className="bg-pink-400 hover:bg-pink-500 text-white rounded-lg px-6 py-3 font-bold mt-2">
-        Go to Browse Flavors
+      </div>
+      <button className="bg-pink-400 hover:bg-pink-500 text-white rounded-lg px-6 py-3 font-bold flex items-center gap-2 shadow">
+        Browse Flavors
       </button>
     </div>
   );
@@ -356,17 +344,15 @@ export default function PatronOrdersPage() {
 
   // Filter logic (mock)
   let activeOrders = ordersMock.filter(
-    (o) =>
-      (status === "all" ||
-        o.status === status ||
-        (status === "active" &&
-          (o.status === "active" || o.status === "out"))) &&
-      o.status !== "delivered" &&
-      o.status !== "cancelled"
+    (o) => o.status === "active" || o.status === "out"
   );
   let pastOrders = ordersMock.filter(
     (o) => o.status === "delivered" || o.status === "cancelled"
   );
+  if (status !== "all") {
+    activeOrders = activeOrders.filter((o) => o.status === status);
+    pastOrders = pastOrders.filter((o) => o.status === status);
+  }
   if (search) {
     activeOrders = activeOrders.filter(
       (o) =>
@@ -385,61 +371,72 @@ export default function PatronOrdersPage() {
   }
 
   return (
-    <div className="min-h-screen bg-[#FDF6FA] dark:bg-[#18181b] flex flex-col px-0 md:px-8 py-8">
+    <div className="min-h-screen bg-[#FDF6FA] dark:bg-[#18181b] flex flex-col">
       <FilterToolbar
         status={status}
         setStatus={setStatus}
         search={search}
         setSearch={setSearch}
       />
-      <div className="max-w-4xl mx-auto w-full">
-        <div className="mb-8">
-          <span className="text-lg font-bold text-green-500">
-            🟢 Active Orders
-          </span>
-          {activeOrders.length === 0 ? (
-            <EmptyOrdersState />
-          ) : (
-            activeOrders.map((order) => (
-              <OrderCard
-                key={order.id}
-                order={order}
-                onView={setShowDetails}
-                onTrack={setShowTrack}
-              />
-            ))
-          )}
-        </div>
-        <div className="mb-8">
-          <button
-            className="flex items-center gap-2 text-pink-400 font-bold mb-4"
-            onClick={() => setShowPast((v) => !v)}
-          >
-            <span className="text-lg">
-              {showPast ? <FaChevronDown /> : <FaChevronUp />}
-            </span>
-            <span>Past Orders</span>
-          </button>
-          {showPast &&
-            (pastOrders.length === 0 ? (
-              <EmptyOrdersState />
-            ) : (
-              pastOrders.map((order) => (
-                <OrderCard
-                  key={order.id}
-                  order={order}
-                  onView={setShowDetails}
-                  onTrack={setShowTrack}
-                />
-              ))
-            ))}
-        </div>
+      <div className="flex-1 flex flex-col gap-8 px-8 pb-8">
+        {/* Active Orders */}
+        {activeOrders.length === 0 && pastOrders.length === 0 ? (
+          <EmptyOrdersState />
+        ) : (
+          <>
+            {activeOrders.length > 0 && (
+              <div>
+                <div className="text-lg font-bold text-blue-400 mb-4">
+                  🟢 Active Orders
+                </div>
+                {activeOrders.map((order) => (
+                  <OrderCard
+                    key={order.id}
+                    order={order}
+                    onView={() => setShowDetails(order)}
+                    onTrack={() => setShowTrack(order)}
+                  />
+                ))}
+              </div>
+            )}
+            {/* Past Orders Accordion */}
+            <div>
+              <button
+                className="flex items-center gap-2 text-pink-400 font-bold mb-4 mt-8"
+                onClick={() => setShowPast((v) => !v)}
+              >
+                {showPast ? <FaChevronDown /> : <FaChevronUp />} Past Orders
+              </button>
+              {showPast && (
+                <div>
+                  {pastOrders.length === 0 ? (
+                    <div className="text-gray-400">No past orders.</div>
+                  ) : (
+                    pastOrders.map((order) => (
+                      <OrderCard
+                        key={order.id}
+                        order={order}
+                        onView={() => setShowDetails(order)}
+                        onTrack={() => setShowTrack(order)}
+                      />
+                    ))
+                  )}
+                </div>
+              )}
+            </div>
+          </>
+        )}
       </div>
       <OrderDetailsModal
         order={showDetails}
+        open={!!showDetails}
         onClose={() => setShowDetails(null)}
       />
-      <TrackOrderModal order={showTrack} onClose={() => setShowTrack(null)} />
+      <TrackOrderModal
+        order={showTrack}
+        open={!!showTrack}
+        onClose={() => setShowTrack(null)}
+      />
     </div>
   );
 }
