@@ -1,0 +1,16 @@
+{
+  "name": "EisLager Pro",
+  "short_name": "EisLager",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#2563eb",
+  "description": "Modern, multi-role platform that streamlines ice cream business operations from manufacturing to sales",
+  "icons": [
+    {
+      "src": "/favicon.ico",
+      "sizes": "32x32 48x48 64x64 128x128 256x256",
+      "type": "image/x-icon"
+    }
+  ]
+}

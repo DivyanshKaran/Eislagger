@@ -1,0 +1,109 @@
+[
+  {
+    "id": "cinnamon_toast",
+    "flavor": "cinnamon_toast",
+    "path": "seasonal",
+    "images": [
+      "https://res.cloudinary.com/dww1gna4k/image/upload/v1752586336/eislagger/seasonal/cinnamon_toast_1.jpg"
+    ],
+    "long_description": "Start your day the sweet way with Cinnamon Toast ice cream! Imagine the comforting taste of warm, buttered toast sprinkled with cinnamon sugar, transformed into a creamy, dreamy ice cream. Each spoonful is filled with crunchy cinnamon toast pieces and a hint of vanilla. This flavor offers a nostalgic trip to childhood, perfect for a cozy night in or a delightful breakfast treat.",
+    "short_description": "Cinnamon and sugar flavored ice cream with crunchy toast pieces.",
+    "price": 190,
+    "tags": ["cinnamon", "toast", "breakfast", "sweet"],
+    "flavors": ["cinnamon", "toast", "vanilla"]
+  },
+  {
+    "id": "cranberry_chill",
+    "flavor": "cranberry_chill",
+    "path": "seasonal",
+    "images": [
+      "https://res.cloudinary.com/dww1gna4k/image/upload/v1752586340/eislagger/seasonal/cranberry_chill_1.jpg",
+      "https://res.cloudinary.com/dww1gna4k/image/upload/v1752586343/eislagger/seasonal/cranberry_chill_2.jpg"
+    ],
+    "long_description": "Refresh your palate with Cranberry Chill, a tangy and invigorating ice cream. The vibrant cranberry flavor is perfectly balanced with a touch of sweetness and a hint of citrus. This unique blend creates a cooling sensation, making it a perfect treat for any occasion. The subtle tartness of the cranberries makes it a sophisticated and refreshing choice.",
+    "short_description": "Tangy cranberry ice cream with a hint of citrus.",
+    "price": 210,
+    "tags": ["cranberry", "tart", "chill", "citrus"],
+    "flavors": ["cranberry", "citrus"]
+  },
+  {
+    "id": "eggnog_frost",
+    "flavor": "eggnog_frost",
+    "path": "seasonal",
+    "images": [
+      "https://res.cloudinary.com/dww1gna4k/image/upload/v1752586346/eislagger/seasonal/eggnog_frost_1.jpg",
+      "https://res.cloudinary.com/dww1gna4k/image/upload/v1752586352/eislagger/seasonal/eggnog_frost_2.jpg"
+    ],
+    "long_description": "Celebrate the holidays with Eggnog Frost, a rich and creamy ice cream that captures the essence of classic eggnog. This festive flavor features a blend of vanilla, nutmeg, and a hint of rum extract. It's like sipping on your favorite holiday beverage, but in ice cream form! Enjoy the creamy texture and warm, comforting spices of this seasonal delight.",
+    "short_description": "Rich and creamy eggnog flavored ice cream.",
+    "price": 230,
+    "tags": ["eggnog", "holiday", "nutmeg", "vanilla"],
+    "flavors": ["vanilla", "nutmeg", "rum extract"]
+  },
+  {
+    "id": "gingerbread_magic",
+    "flavor": "gingerbread_magic",
+    "path": "seasonal",
+    "images": [
+      "https://res.cloudinary.com/dww1gna4k/image/upload/v1752586355/eislagger/seasonal/gingerbread_magic_1.jpg"
+    ],
+    "long_description": "Experience the enchantment of Gingerbread Magic! This delightful ice cream captures the warm, spicy essence of freshly baked gingerbread cookies. With hints of cinnamon, cloves, and molasses, each spoonful is a comforting journey. To make it even better, chunks of real gingerbread are swirled throughout, offering a satisfying crunch. Prepare to be transported to a winter wonderland with every bite.",
+    "short_description": "Warm gingerbread ice cream with spicy notes and crunchy gingerbread pieces.",
+    "price": 200,
+    "tags": ["gingerbread", "spice", "christmas", "winter"],
+    "flavors": ["gingerbread", "cinnamon", "molasses"]
+  },
+  {
+    "id": "mulled_wine_sorbet",
+    "flavor": "mulled_wine_sorbet",
+    "path": "seasonal",
+    "images": [
+      "https://res.cloudinary.com/dww1gna4k/image/upload/v1752586361/eislagger/seasonal/mulled_wine_sorbet_1.jpg",
+      "https://res.cloudinary.com/dww1gna4k/image/upload/v1752586364/eislagger/seasonal/mulled_wine_sorbet_2.jpg"
+    ],
+    "long_description": "Indulge in the sophisticated allure of Mulled Wine Sorbet. This refined sorbet blends the rich flavors of red wine with aromatic spices like cloves, star anise, and orange peel. The result is a complex, warming treat that is both refreshing and comforting. A perfect palate cleanser or elegant dessert, this sorbet offers a unique and unforgettable experience. Its vibrant color and intoxicating aroma make it a feast for the senses.",
+    "short_description": "Sophisticated red wine sorbet with aromatic mulling spices.",
+    "price": 220,
+    "tags": ["mulled wine", "sorbet", "winter", "spiced"],
+    "flavors": ["red wine", "cloves", "orange"]
+  },
+  {
+    "id": "peppermint_swirl",
+    "flavor": "peppermint_swirl",
+    "path": "seasonal",
+    "images": [
+      "https://res.cloudinary.com/dww1gna4k/image/upload/v1752586367/eislagger/seasonal/peppermint_swirl_1.jpg"
+    ],
+    "long_description": "Cool and refreshing, Peppermint Swirl is a holiday classic reimagined. This creamy ice cream is infused with the invigorating flavor of peppermint, creating a delightful sensation. Swirls of dark chocolate ripple through the base, adding a rich and decadent contrast. A perfect balance of sweet and minty, this ice cream is sure to awaken your senses and leave you feeling refreshed. Enjoy the festive cheer in every scoop!",
+    "short_description": "Refreshing peppermint ice cream with swirls of rich dark chocolate.",
+    "price": 180,
+    "tags": ["peppermint", "chocolate", "mint", "holiday"],
+    "flavors": ["peppermint", "chocolate"]
+  },
+  {
+    "id": "pumpkin_spice",
+    "flavor": "pumpkin_spice",
+    "path": "seasonal",
+    "images": [
+      "https://res.cloudinary.com/dww1gna4k/image/upload/v1752586371/eislagger/seasonal/pumpkin_spice_1.jpg"
+    ],
+    "long_description": "Embrace the cozy vibes of autumn with our Pumpkin Spice ice cream. This velvety smooth creation captures the essence of pumpkin pie in every spoonful. Infused with cinnamon, nutmeg, and ginger, it delivers a warm and comforting spice blend. The addition of real pumpkin puree creates a rich and authentic flavor. Perfect for those crisp fall evenings, this ice cream is a seasonal delight.",
+    "short_description": "Velvety smooth pumpkin ice cream with warm autumn spices.",
+    "price": 190,
+    "tags": ["pumpkin", "spice", "autumn", "fall"],
+    "flavors": ["pumpkin", "cinnamon", "nutmeg"]
+  },
+  {
+    "id": "spiced_apple_cider",
+    "flavor": "spiced_apple_cider",
+    "path": "seasonal",
+    "images": [
+      "https://res.cloudinary.com/dww1gna4k/image/upload/v1752586376/eislagger/seasonal/spiced_apple_cider_1.jpg"
+    ],
+    "long_description": "Warm your soul with our Spiced Apple Cider ice cream. This delightful treat combines the crisp, tart flavor of apple cider with a blend of comforting spices. Cinnamon, cloves, and a hint of nutmeg create a harmonious balance of sweet and spice. The texture is incredibly smooth and creamy, making each bite a pure indulgence. Experience the taste of autumn in every scoop.",
+    "short_description": "Creamy apple cider ice cream infused with warming spices.",
+    "price": 210,
+    "tags": ["apple cider", "spiced", "autumn", "fall"],
+    "flavors": ["apple", "cinnamon", "cloves"]
+  }
+]

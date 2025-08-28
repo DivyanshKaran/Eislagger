@@ -1,7 +1,5 @@
 "use client";
 
-import React, { useState } from "react";
-import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -11,46 +9,33 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import {
-  Eye,
-  EyeOff,
-  Chrome,
   ArrowLeft,
-  Users,
+  Chrome,
   Factory,
-  Store,
   ShoppingCart,
+  Store,
+  Users,
   X,
 } from "lucide-react";
+import Link from "next/link";
+import { useState } from "react";
 
 type UserRole = "executive" | "manufacturer" | "clerk" | "patron";
 
 export default function LoginPage() {
-  const [showPassword, setShowPassword] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
   const [isGoogleLoading, setIsGoogleLoading] = useState(false);
   const [showRoleModal, setShowRoleModal] = useState(false);
+  const [authMode, setAuthMode] = useState<"signin" | "signup">("signin");
 
-  const handleLogin = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setIsLoading(true);
-    // Simulate login process
-    setTimeout(() => {
-      setIsLoading(false);
-      setShowRoleModal(true); // Show role selection modal in dev mode
-    }, 1500);
-  };
-
-  const handleGoogleSignIn = async () => {
+  const handleGoogleAuth = async () => {
     setIsGoogleLoading(true);
-    // Simulate Google Sign-In process
     setTimeout(() => {
       setIsGoogleLoading(false);
-      setShowRoleModal(true); // Show role selection modal in dev mode
+      setShowRoleModal(true);
     }, 2000);
   };
 
   const handleRoleSelect = (role: UserRole) => {
-    // Redirect to appropriate dashboard
     window.location.href = `/${role}/dashboard`;
   };
 
@@ -62,8 +47,8 @@ export default function LoginPage() {
           title: "Executive Dashboard",
           description:
             "Oversee operations, allocate budgets, and monitor performance",
-          color: "from-peach-light to-coral-light",
-          gradient: "gradient-primary",
+          color: "from-blue-500 to-cyan-500",
+          gradient: "bg-gradient-to-br from-blue-500 to-cyan-500",
         };
       case "manufacturer":
         return {
@@ -71,8 +56,8 @@ export default function LoginPage() {
           title: "Manufacturer Dashboard",
           description:
             "Produce stock efficiently, manage deliveries, and track production",
-          color: "from-coral-light to-orchid-light",
-          gradient: "gradient-secondary",
+          color: "from-orange-500 to-red-500",
+          gradient: "bg-gradient-to-br from-orange-500 to-red-500",
         };
       case "clerk":
         return {
@@ -80,8 +65,8 @@ export default function LoginPage() {
           title: "Store Clerk Dashboard",
           description:
             "Manage sales, track inventory, and provide customer service",
-          color: "from-cream-light to-peach-light",
-          gradient: "gradient-accent",
+          color: "from-yellow-500 to-orange-500",
+          gradient: "bg-gradient-to-br from-yellow-500 to-orange-500",
         };
       case "patron":
         return {
@@ -89,16 +74,15 @@ export default function LoginPage() {
           title: "Customer Dashboard",
           description:
             "Browse flavors, place orders, and discover ice cream experiences",
-          color: "from-orchid-light to-highlight",
-          gradient: "bg-gradient-to-br from-orchid-light to-highlight",
+          color: "from-blue-400 to-purple-500",
+          gradient: "bg-gradient-to-br from-blue-400 to-purple-500",
         };
     }
   };
 
   return (
     <div className="min-h-screen bg-background flex items-center justify-center p-4">
-      <div className="w-full max-w-md">
-        {/* Back to Home */}
+      <div className="w-full max-w-md relative z-10">
         <Link
           href="/"
           className="inline-flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors mb-8"
@@ -106,117 +90,68 @@ export default function LoginPage() {
           <ArrowLeft className="w-4 h-4" />
           Back to Home
         </Link>
-
-        {/* Logo */}
         <div className="text-center mb-8">
-          <div className="w-20 h-20 mx-auto mb-4 bg-gradient-to-br from-peach-light to-coral-light rounded-full flex items-center justify-center shadow-soft">
-            <span className="text-3xl">🍦</span>
+          <div className="w-16 h-16 mx-auto mb-4 bg-gradient-to-br from-pink-500 to-purple-600 rounded-xl flex items-center justify-center shadow-lg">
+            <span className="text-2xl">🍦</span>
           </div>
-          <h1 className="text-4xl font-bold mb-2 bg-gradient-to-r from-peach-light to-coral-light bg-clip-text text-transparent">
+          <h1 className="text-3xl font-bold mb-2 text-gradient">
             EisLager Pro
           </h1>
-          <p className="text-muted-foreground">Sign in to your account</p>
+          <p className="text-muted-foreground">
+            {authMode === "signin"
+              ? "Welcome back to your dashboard"
+              : "Join the ice cream revolution"}
+          </p>
         </div>
 
-        <Card className="shadow-soft">
-          <CardHeader className="text-center">
-            <CardTitle className="text-gradient">Welcome Back</CardTitle>
-            <CardDescription>
-              Enter your credentials to access your dashboard
+        <Card className="shadow-xl border border-border/50">
+          <CardHeader className="text-center pb-6">
+            <CardTitle className="text-2xl font-bold text-gradient">
+              {authMode === "signin" ? "Sign In" : "Create Account"}
+            </CardTitle>
+            <CardDescription className="text-muted-foreground">
+              {authMode === "signin"
+                ? "Access your ice cream business dashboard"
+                : "Start managing your ice cream empire today"}
             </CardDescription>
           </CardHeader>
-          <CardContent>
-            {/* Google Sign-In Button */}
+          <CardContent className="space-y-6">
             <Button
               variant="outline"
-              className="w-full mb-4 hover:shadow-soft transition-all duration-300"
-              onClick={handleGoogleSignIn}
+              className="w-full py-3 text-base font-medium hover:shadow-lg transition-all duration-300 border-2 border-border hover:border-primary bg-background"
+              onClick={handleGoogleAuth}
               disabled={isGoogleLoading}
             >
-              <Chrome className="w-4 h-4 mr-2" />
-              {isGoogleLoading ? "Signing in..." : "Sign in with Google"}
+              <Chrome className="w-5 h-5 mr-3" />
+              {isGoogleLoading
+                ? "Connecting..."
+                : `Continue with Google ${
+                    authMode === "signin" ? "Sign In" : "Sign Up"
+                  }`}
             </Button>
 
-            <div className="relative mb-4">
-              <div className="absolute inset-0 flex items-center">
-                <span className="w-full border-t" />
-              </div>
-              <div className="relative flex justify-center text-xs uppercase">
-                <span className="bg-background px-2 text-muted-foreground">
-                  Or continue with email
-                </span>
-              </div>
+            {/* Auth Mode Toggle */}
+            <div className="text-center">
+              <p className="text-muted-foreground text-sm">
+                {authMode === "signin"
+                  ? "Don't have an account?"
+                  : "Already have an account?"}
+                <button
+                  onClick={() =>
+                    setAuthMode(authMode === "signin" ? "signup" : "signin")
+                  }
+                  className="ml-1 text-primary hover:underline font-medium transition-colors"
+                >
+                  {authMode === "signin" ? "Sign up" : "Sign in"}
+                </button>
+              </p>
             </div>
 
-            <form onSubmit={handleLogin} className="space-y-4">
-              {/* Email */}
-              <div className="space-y-2">
-                <label htmlFor="email" className="text-sm font-medium">
-                  Email
-                </label>
-                <input
-                  id="email"
-                  type="email"
-                  placeholder="Enter your email"
-                  className="input-modern w-full focus:ring-2 focus:ring-peach-light/20"
-                  required
-                />
-              </div>
-
-              {/* Password */}
-              <div className="space-y-2">
-                <label htmlFor="password" className="text-sm font-medium">
-                  Password
-                </label>
-                <div className="relative">
-                  <input
-                    id="password"
-                    type={showPassword ? "text" : "password"}
-                    placeholder="Enter your password"
-                    className="input-modern w-full pr-10 focus:ring-2 focus:ring-peach-light/20"
-                    required
-                  />
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="icon"
-                    className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
-                    onClick={() => setShowPassword(!showPassword)}
-                  >
-                    {showPassword ? (
-                      <EyeOff className="h-4 w-4" />
-                    ) : (
-                      <Eye className="h-4 w-4" />
-                    )}
-                  </Button>
-                </div>
-              </div>
-
-              {/* Login Button */}
-              <Button
-                type="submit"
-                className="w-full hover:shadow-glow transition-all duration-300"
-                disabled={isLoading}
-              >
-                {isLoading ? "Signing in..." : "Sign In"}
-              </Button>
-            </form>
-
-            {/* Links */}
-            <div className="mt-6 text-center space-y-2">
-              <Link
-                href="/auth/register"
-                className="text-sm text-primary hover:underline transition-colors"
-              >
-                Don&apos;t have an account? Sign up
-              </Link>
-              <br />
-              <Link
-                href="/auth/forgot-password"
-                className="text-sm text-primary hover:underline transition-colors"
-              >
-                Forgot your password?
-              </Link>
+            {/* Security Notice */}
+            <div className="bg-muted/50 p-3 rounded-lg border border-border/50">
+              <p className="text-xs text-muted-foreground text-center">
+                🔒 Your data is protected with enterprise-grade security
+              </p>
             </div>
           </CardContent>
         </Card>
@@ -229,15 +164,15 @@ export default function LoginPage() {
 
       {/* Development Mode Role Selection Modal */}
       {showRoleModal && (
-        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4 z-50">
-          <div className="bg-background rounded-xl shadow-soft max-w-2xl w-full max-h-[90vh] overflow-y-auto">
-            <div className="p-6">
-              <div className="flex items-center justify-between mb-6">
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 z-50">
+          <div className="bg-background rounded-2xl shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-y-auto border border-border/50">
+            <div className="p-8">
+              <div className="flex items-center justify-between mb-8">
                 <div>
-                  <h2 className="text-2xl font-bold text-gradient">
+                  <h2 className="text-3xl font-bold text-gradient">
                     Select Your Role
                   </h2>
-                  <p className="text-muted-foreground">
+                  <p className="text-muted-foreground text-lg">
                     Development Mode - Choose your dashboard
                   </p>
                 </div>
@@ -247,11 +182,11 @@ export default function LoginPage() {
                   onClick={() => setShowRoleModal(false)}
                   className="hover:bg-muted"
                 >
-                  <X className="w-5 h-5" />
+                  <X className="w-6 h-6" />
                 </Button>
               </div>
 
-              <div className="grid md:grid-cols-2 gap-4">
+              <div className="grid md:grid-cols-2 gap-6">
                 {(
                   ["executive", "manufacturer", "clerk", "patron"] as UserRole[]
                 ).map((role) => {
@@ -259,21 +194,21 @@ export default function LoginPage() {
                   return (
                     <Card
                       key={role}
-                      className="cursor-pointer hover:shadow-glow transition-all duration-300 group border-2 border-transparent hover:border-peach-light/20"
+                      className="cursor-pointer hover:shadow-2xl transition-all duration-300 group border-2 border-transparent hover:border-primary/20 bg-card"
                       onClick={() => handleRoleSelect(role)}
                     >
                       <CardContent className="p-6">
                         <div className="flex items-center gap-4">
                           <div
-                            className={`w-16 h-16 ${roleInfo.gradient} rounded-full flex items-center justify-center group-hover:scale-110 transition-transform shadow-soft`}
+                            className={`w-16 h-16 ${roleInfo.gradient} rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform shadow-lg`}
                           >
                             {roleInfo.icon}
                           </div>
                           <div className="flex-1">
-                            <h3 className="text-lg font-semibold text-foreground mb-1">
+                            <h3 className="text-xl font-bold text-foreground mb-2">
                               {roleInfo.title}
                             </h3>
-                            <p className="text-sm text-muted-foreground">
+                            <p className="text-muted-foreground text-sm leading-relaxed">
                               {roleInfo.description}
                             </p>
                           </div>
@@ -284,8 +219,8 @@ export default function LoginPage() {
                 })}
               </div>
 
-              <div className="mt-6 text-center">
-                <p className="text-xs text-muted-foreground">
+              <div className="mt-8 text-center">
+                <p className="text-sm text-muted-foreground">
                   This role selection is only available in development mode.
                 </p>
               </div>

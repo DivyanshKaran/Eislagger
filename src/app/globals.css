@@ -1,48 +1,117 @@
 @import url("https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap");
 @import url("https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&display=swap");
+@import "leaflet/dist/leaflet.css";
+@import "leaflet.markercluster/dist/MarkerCluster.css";
+@import "leaflet.markercluster/dist/MarkerCluster.Default.css";
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
-/* EisLager Pro Pastel Theme - CSS Variables */
+@layer base {
+  :root {
+    --background: 0 0% 100%;
+    --foreground: 222.2 84% 4.9%;
+    --card: 0 0% 100%;
+    --card-foreground: 222.2 84% 4.9%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 222.2 84% 4.9%;
+    --primary: 222.2 47.4% 11.2%;
+    --primary-foreground: 210 40% 98%;
+    --secondary: 210 40% 96%;
+    --secondary-foreground: 222.2 84% 4.9%;
+    --muted: 210 40% 96%;
+    --muted-foreground: 215.4 16.3% 46.9%;
+    --accent: 210 40% 96%;
+    --accent-foreground: 222.2 84% 4.9%;
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 210 40% 98%;
+    --border: 214.3 31.8% 91.4%;
+    --input: 214.3 31.8% 91.4%;
+    --ring: 222.2 84% 4.9%;
+    --chart-1: 12 76% 61%;
+    --chart-2: 173 58% 39%;
+    --chart-3: 197 37% 24%;
+    --chart-4: 43 74% 66%;
+    --chart-5: 27 87% 67%;
+    --radius: 0.5rem;
+  }
+
+  .dark {
+    --background: 222.2 84% 4.9%;
+    --foreground: 210 40% 98%;
+    --card: 222.2 84% 4.9%;
+    --card-foreground: 210 40% 98%;
+    --popover: 222.2 84% 4.9%;
+    --popover-foreground: 210 40% 98%;
+    --primary: 210 40% 98%;
+    --primary-foreground: 222.2 47.4% 11.2%;
+    --secondary: 217.2 32.6% 17.5%;
+    --secondary-foreground: 210 40% 98%;
+    --muted: 217.2 32.6% 17.5%;
+    --muted-foreground: 215 20.2% 65.1%;
+    --accent: 217.2 32.6% 17.5%;
+    --accent-foreground: 210 40% 98%;
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 210 40% 98%;
+    --border: 217.2 32.6% 17.5%;
+    --input: 217.2 32.6% 17.5%;
+    --ring: 212.7 26.8% 83.9%;
+    --chart-1: 220 70% 50%;
+    --chart-2: 160 60% 45%;
+    --chart-3: 30 80% 55%;
+    --chart-4: 280 65% 60%;
+    --chart-5: 340 75% 55%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground;
+  }
+}
+
+/* EisLager Pro Yellow-Blue-Orange Theme - CSS Variables */
 :root {
   /* Light Mode Colors */
-  --bg: #fff1e6;
-  --card: #fde2e4;
-  --text: #2e2e2e;
-  --primary: #ffb295;
-  --secondary: #f48fb1;
-  --accent: #ffd6a5;
-  --muted: #b0bec5;
-  --highlight: #9381ff;
+  --bg: #fefce8;
+  --card: #fff7ed;
+  --text: #1e293b;
+  --primary: #f97316;
+  --secondary: #3b82f6;
+  --accent: #eab308;
+  --muted: #94a3b8;
+  --highlight: #8b5cf6;
 
   /* Semantic Colors */
-  --background: 30 100% 97%;
-  --foreground: 35 10% 14%; /* #232323 for high contrast on pastel */
-  --card: 350 100% 97%;
-  --card-foreground: 0 0% 18%;
-  --popover: 350 100% 97%;
-  --popover-foreground: 0 0% 18%;
-  --primary: 20 100% 78%;
-  --primary-foreground: 0 0% 18%;
-  --secondary: 340 100% 76%;
-  --secondary-foreground: 0 0% 18%;
-  --muted: 200 15% 73%;
-  --muted-foreground: 220 8% 28%; /* #444950 for muted text on pastel */
-  --accent: 35 100% 82%;
-  --accent-foreground: 0 0% 18%;
+  --background: 60 100% 97%;
+  --foreground: 222 84% 5%;
+  --card: 30 100% 98%;
+  --card-foreground: 222 84% 5%;
+  --popover: 30 100% 98%;
+  --popover-foreground: 222 84% 5%;
+  --primary: 25 95% 53%;
+  --primary-foreground: 0 0% 98%;
+  --secondary: 217 91% 60%;
+  --secondary-foreground: 0 0% 98%;
+  --muted: 215 16% 56%;
+  --muted-foreground: 215 25% 27%;
+  --accent: 48 96% 53%;
+  --accent-foreground: 222 84% 5%;
   --destructive: 0 84% 60%;
   --destructive-foreground: 0 0% 98%;
-  --border: 200 15% 73%;
-  --input: 200 15% 73%;
-  --ring: 20 100% 78%;
+  --border: 215 16% 56%;
+  --input: 215 16% 56%;
+  --ring: 25 95% 53%;
 
   /* Chart Colors */
-  --chart-1: 20 100% 78%;
-  --chart-2: 340 100% 76%;
-  --chart-3: 35 100% 82%;
-  --chart-4: 260 100% 75%;
-  --chart-5: 200 15% 73%;
+  --chart-1: 25 95% 53%;
+  --chart-2: 217 91% 60%;
+  --chart-3: 48 96% 53%;
+  --chart-4: 262 83% 58%;
+  --chart-5: 215 16% 56%;
 
   /* Radius */
   --radius: 0.75rem;
@@ -50,42 +119,42 @@
 
 /* Dark Mode Colors */
 .dark {
-  --bg: #2a1c1b;
-  --card: #3a2b2e;
-  --text: #f1f1f1;
-  --primary: #ff8a65;
-  --secondary: #ec407a;
-  --accent: #f57c00;
-  --muted: #90a4ae;
-  --highlight: #7c4dff;
+  --bg: #1e293b;
+  --card: #334155;
+  --text: #f8fafc;
+  --primary: #fb923c;
+  --secondary: #60a5fa;
+  --accent: #fbbf24;
+  --muted: #64748b;
+  --highlight: #a78bfa;
 
   /* Semantic Colors - Dark */
-  --background: 15 20% 12%;
-  --foreground: 0 0% 95%; /* keep high contrast for dark mode */
-  --card: 15 20% 18%;
-  --card-foreground: 0 0% 95%;
-  --popover: 15 20% 18%;
-  --popover-foreground: 0 0% 95%;
-  --primary: 15 100% 70%;
-  --primary-foreground: 0 0% 95%;
-  --secondary: 340 100% 60%;
-  --secondary-foreground: 0 0% 95%;
-  --muted: 200 15% 60%;
-  --muted-foreground: 0 0% 70%;
-  --accent: 25 100% 50%;
-  --accent-foreground: 0 0% 95%;
+  --background: 222 84% 5%;
+  --foreground: 0 0% 98%;
+  --card: 222 84% 8%;
+  --card-foreground: 0 0% 98%;
+  --popover: 222 84% 8%;
+  --popover-foreground: 0 0% 98%;
+  --primary: 25 95% 53%;
+  --primary-foreground: 0 0% 98%;
+  --secondary: 217 91% 60%;
+  --secondary-foreground: 0 0% 98%;
+  --muted: 215 16% 56%;
+  --muted-foreground: 215 25% 27%;
+  --accent: 48 96% 53%;
+  --accent-foreground: 222 84% 5%;
   --destructive: 0 84% 60%;
   --destructive-foreground: 0 0% 98%;
-  --border: 200 15% 60%;
-  --input: 200 15% 60%;
-  --ring: 15 100% 70%;
+  --border: 215 16% 56%;
+  --input: 215 16% 56%;
+  --ring: 25 95% 53%;
 
   /* Chart Colors - Dark */
-  --chart-1: 15 100% 70%;
-  --chart-2: 340 100% 60%;
-  --chart-3: 25 100% 50%;
-  --chart-4: 260 100% 65%;
-  --chart-5: 200 15% 60%;
+  --chart-1: 25 95% 53%;
+  --chart-2: 217 91% 60%;
+  --chart-3: 48 96% 53%;
+  --chart-4: 262 83% 58%;
+  --chart-5: 215 16% 56%;
 }
 
 /* Base Styles */
@@ -132,15 +201,15 @@ body {
 
 /* Gradient Backgrounds */
 .gradient-primary {
-  background: linear-gradient(135deg, #ffb295 0%, #f48fb1 100%);
+  background: linear-gradient(135deg, #f97316 0%, #3b82f6 100%);
 }
 
 .gradient-secondary {
-  background: linear-gradient(135deg, #f48fb1 0%, #9381ff 100%);
+  background: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%);
 }
 
 .gradient-accent {
-  background: linear-gradient(135deg, #ffd6a5 0%, #ffb295 100%);
+  background: linear-gradient(135deg, #eab308 0%, #f97316 100%);
 }
 
 /* Animation Classes */
@@ -154,6 +223,18 @@ body {
 
 .animate-bounce-subtle {
   animation: bounce-subtle 2s infinite;
+}
+
+.animate-slide-in-left {
+  animation: slide-in-left 0.6s ease-out;
+}
+
+.animate-slide-in-right {
+  animation: slide-in-right 0.6s ease-out;
+}
+
+.animate-scale-in {
+  animation: scale-in 0.5s ease-out;
 }
 
 /* Custom Keyframes */
@@ -177,6 +258,39 @@ body {
   }
 }
 
+@keyframes slide-in-left {
+  from {
+    transform: translateX(-30px);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+@keyframes slide-in-right {
+  from {
+    transform: translateX(30px);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+@keyframes scale-in {
+  from {
+    transform: scale(0.9);
+    opacity: 0;
+  }
+  to {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
 @keyframes bounce-subtle {
   0%,
   100% {
@@ -189,11 +303,11 @@ body {
 
 /* Utility Classes */
 .text-gradient {
-  @apply bg-gradient-to-r from-peach-light to-coral-light bg-clip-text text-transparent;
+  @apply bg-gradient-to-r from-orange-500 to-blue-600 bg-clip-text text-transparent;
 }
 
 .border-gradient {
-  border-image: linear-gradient(135deg, #ffb295, #f48fb1) 1;
+  border-image: linear-gradient(135deg, #f97316, #3b82f6) 1;
 }
 
 /* Component Styles */
@@ -215,4 +329,98 @@ body {
 
 .input-modern {
   @apply bg-background border border-input rounded-lg px-3 py-2 focus-ring transition-colors;
+}
+
+[data-radix-popper-content-wrapper] {
+  z-index: 50 !important;
+}
+
+.radix-dropdown-content,
+[data-radix-popper-content-wrapper] > div {
+  background: var(--card, #fff);
+  border: 1px solid var(--border, #e5e7eb);
+  border-radius: 0.5rem;
+  box-shadow: 0 4px 32px 0 rgba(0, 0, 0, 0.08);
+  padding: 0.5rem 0;
+  min-width: 14rem;
+}
+
+/* EisLager Pro Dropdown Menu Style */
+.eis-dropdown {
+  @apply rounded-xl border border-orange-100 dark:border-zinc-800 shadow-glow bg-white/90 dark:bg-[#1a151b]/90 backdrop-blur-md p-2 min-w-[180px] animate-fade-in;
+  box-shadow: 0 8px 32px 0 rgba(249, 115, 22, 0.15),
+    0 1.5px 6px 0 rgba(59, 130, 246, 0.08);
+  transition: box-shadow 0.2s, background 0.2s;
+}
+@media (max-width: 640px) {
+  .eis-dropdown {
+    min-width: 140px;
+    padding: 0.5rem;
+  }
+}
+
+.orange-dropdown {
+  background: #ffedd5;
+  border: 1.5px solid #fdba74;
+  box-shadow: 0 8px 32px 0 rgba(253, 186, 116, 0.15),
+    0 1.5px 8px 0 rgba(251, 146, 60, 0.1);
+  border-radius: 18px;
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  color: #7c2d12;
+}
+
+.orange-dropdown .dropdown-menu-item {
+  transition: background 0.18s;
+}
+
+.orange-dropdown .dropdown-menu-item:hover,
+.orange-dropdown .dropdown-menu-item:focus {
+  background: #fdba74;
+  color: #c2410c;
+}
+
+@media (prefers-color-scheme: dark) {
+  .orange-dropdown {
+    background: #7c2d12;
+    border: 1.5px solid #fdba74;
+    color: #ffedd5;
+  }
+  .orange-dropdown .dropdown-menu-item:hover,
+  .orange-dropdown .dropdown-menu-item:focus {
+    background: #c2410c;
+    color: #ffedd5;
+  }
+}
+
+.glassy-dropdown {
+  background: #ffb86c;
+  border: 1.5px solid #fdba74;
+  box-shadow: 0 8px 32px 0 rgba(253, 186, 116, 0.1),
+    0 1.5px 8px 0 rgba(251, 146, 60, 0.08);
+  border-radius: 18px;
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  color: #7c2d12;
+}
+
+.glassy-dropdown .dropdown-menu-item {
+  transition: background 0.18s;
+}
+
+.glassy-dropdown .dropdown-menu-item:hover,
+.glassy-dropdown .dropdown-menu-item:focus {
+  background: #fdba74;
+  color: #c2410c;
+}
+
+@media (prefers-color-scheme: dark) {
+  .glassy-dropdown {
+    background: #7c2d12;
+    border: 1.5px solid #fdba74;
+    color: #ffedd5;
+  }
+  .glassy-dropdown .dropdown-menu-item:hover,
+  .glassy-dropdown .dropdown-menu-item:focus {
+    background: #c2410c;
+    color: #ffedd5;
+  }
 }

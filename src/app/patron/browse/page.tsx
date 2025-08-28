@@ -1,409 +1,517 @@
 "use client";
-import React, { useState } from "react";
+
+import { useState } from "react";
+import Link from "next/link";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import {
-  FaShoppingCart,
-  FaHeart,
-  FaCheck,
-  FaUserCircle,
-  FaChevronDown,
-} from "react-icons/fa";
-import { cn } from "@/lib/utils";
+  Search,
+  Filter,
+  Heart,
+  Star,
+  ShoppingCart,
+  MapPin,
+  Clock,
+  Users,
+  Award,
+  Sparkles,
+} from "lucide-react";
 
-// --- Mock Data ---
+// Custom styles for animations
+const customStyles = `
+  @keyframes float {
+    0%, 100% { transform: translateY(0px); }
+    50% { transform: translateY(-10px); }
+  }
+  
+  @keyframes pulse-glow {
+    0%, 100% { opacity: 0.5; transform: scale(1); }
+    50% { opacity: 0.8; transform: scale(1.05); }
+  }
+  
+  @keyframes slideInUp {
+    from {
+      opacity: 0;
+      transform: translateY(30px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+  
+  @keyframes fadeInScale {
+    from {
+      opacity: 0;
+      transform: scale(0.9);
+    }
+    to {
+      opacity: 1;
+      transform: scale(1);
+    }
+  }
+  
+  .animate-float {
+    animation: float 3s ease-in-out infinite;
+  }
+  
+  .animate-pulse-glow {
+    animation: pulse-glow 2s ease-in-out infinite;
+  }
+  
+  .animate-slide-in-up {
+    animation: slideInUp 0.6s ease-out forwards;
+  }
+  
+  .animate-fade-in-scale {
+    animation: fadeInScale 0.5s ease-out forwards;
+  }
+`;
+
+// Mock data for browse page
 const categories = [
-  { key: "chocolate", label: "Chocolate", color: "#A87C6E" },
-  { key: "mango", label: "Mango", color: "#FFCB6B" },
-  { key: "fruit", label: "Fruit", color: "#E29587" },
-  { key: "nutty", label: "Nutty", color: "#DCC6AC" },
-  { key: "premium", label: "Premium", color: "#FFD700" },
-  { key: "dairyfree", label: "Dairy-Free", color: "#B3EACD" },
-  {
-    key: "kids",
-    label: "Kids Specials",
-    color: "linear-gradient(90deg,#FFB7CE,#B3EACD,#FFD700)",
-  },
-  { key: "international", label: "International", color: "#B8C4E3" },
-  { key: "seasonal", label: "Seasonal", color: "#C62828" },
+  { id: "all", name: "All Flavors", emoji: "🍦", count: 48 },
+  { id: "fruity", name: "Fruity", emoji: "🍓", count: 12 },
+  { id: "chocolate", name: "Chocolate", emoji: "🍫", count: 8 },
+  { id: "vanilla", name: "Vanilla", emoji: "🌿", count: 6 },
+  { id: "nutty", name: "Nutty", emoji: "🥜", count: 5 },
+  { id: "coffee", name: "Coffee", emoji: "☕", count: 4 },
+  { id: "seasonal", name: "Seasonal", emoji: "🎄", count: 8 },
+  { id: "premium", name: "Premium", emoji: "👑", count: 5 },
 ];
-const tags = ["Vegan", "Nut-Free", "Festive", "Gluten-Free", "Low Sugar"];
-const sortOptions = [
-  { key: "popularity", label: "Popularity" },
-  { key: "priceLow", label: "Price: Low to High" },
-  { key: "priceHigh", label: "Price: High to Low" },
-  { key: "newest", label: "Newest" },
-  { key: "alpha", label: "Alphabetical" },
-];
-const dietaryFilters = ["Dairy-Free", "Vegan", "Nut-Free", "Seasonal Only"];
 
-const mockFlavors = [
+const flavors = [
   {
     id: 1,
-    name: "Nivora Frostbite",
-    category: "chocolate",
-    description: "Intense dark chocolate with mint fudge ribbons.",
-    tags: ["Chocolate", "Dairy-Free", "Premium"],
-    price: 120,
-    image: "/icecream1.jpg",
-    isFavorite: false,
-    isVegan: true,
-    isNutFree: true,
+    name: "Mango Tango",
+    emoji: "🥭",
+    category: "fruity",
+    description: "Tropical mango with a tangy twist",
+    price: "€8.50",
+    rating: 4.9,
+    reviews: 127,
+    isFavorite: true,
+    isPremium: false,
     isSeasonal: false,
+    allergens: ["Dairy"],
+    calories: 180,
+    preparationTime: "5 min",
+    availableAt: ["Berlin Central", "Mumbai Downtown"],
+    image: "🥭",
   },
   {
     id: 2,
-    name: "Mango Coconut Kiss",
-    category: "mango",
-    description: "Mango puree swirled with coconut cream.",
-    tags: ["Mango", "Dairy-Free", "Vegan"],
-    price: 110,
-    image: "/icecream2.jpg",
-    isFavorite: true,
-    isVegan: true,
-    isNutFree: true,
+    name: "Chocolate Dream",
+    emoji: "🍫",
+    category: "chocolate",
+    description: "Rich Belgian chocolate with cocoa nibs",
+    price: "€9.00",
+    rating: 4.8,
+    reviews: 89,
+    isFavorite: false,
+    isPremium: true,
     isSeasonal: false,
+    allergens: ["Dairy", "Nuts"],
+    calories: 220,
+    preparationTime: "7 min",
+    availableAt: ["All Stores"],
+    image: "🍫",
   },
   {
     id: 3,
-    name: "Berry Carnival",
-    category: "fruit",
-    description: "Strawberry, blueberry, and raspberry medley.",
-    tags: ["Fruit", "Nut-Free", "Kids Specials"],
-    price: 100,
-    image: "/icecream3.jpg",
-    isFavorite: false,
-    isVegan: false,
-    isNutFree: true,
+    name: "Vanilla Bean",
+    emoji: "🌿",
+    category: "vanilla",
+    description: "Classic vanilla with real vanilla beans",
+    price: "€7.50",
+    rating: 4.7,
+    reviews: 156,
+    isFavorite: true,
+    isPremium: false,
     isSeasonal: false,
+    allergens: ["Dairy"],
+    calories: 160,
+    preparationTime: "3 min",
+    availableAt: ["All Stores"],
+    image: "🌿",
   },
   {
     id: 4,
-    name: "Hazelnut Dream",
-    category: "nutty",
-    description: "Creamy hazelnut with caramelized crunch.",
-    tags: ["Nutty", "Premium"],
-    price: 130,
-    image: "/icecream4.jpg",
+    name: "Strawberry Delight",
+    emoji: "🍓",
+    category: "fruity",
+    description: "Fresh strawberries with cream",
+    price: "€8.00",
+    rating: 4.6,
+    reviews: 94,
     isFavorite: false,
-    isVegan: false,
-    isNutFree: false,
-    isSeasonal: false,
+    isPremium: false,
+    isSeasonal: true,
+    allergens: ["Dairy"],
+    calories: 170,
+    preparationTime: "4 min",
+    availableAt: ["Berlin Central", "Pune HQ"],
+    image: "🍓",
   },
   {
     id: 5,
-    name: "Gold Leaf Caramel",
-    category: "premium",
-    description: "Caramel ice cream with edible gold leaf.",
-    tags: ["Premium", "Festive"],
-    price: 200,
-    image: "/icecream5.jpg",
-    isFavorite: true,
-    isVegan: false,
-    isNutFree: true,
-    isSeasonal: true,
+    name: "Hazelnut Heaven",
+    emoji: "🥜",
+    category: "nutty",
+    description: "Roasted hazelnuts with caramel",
+    price: "€9.50",
+    rating: 4.9,
+    reviews: 67,
+    isFavorite: false,
+    isPremium: true,
+    isSeasonal: false,
+    allergens: ["Dairy", "Nuts"],
+    calories: 240,
+    preparationTime: "6 min",
+    availableAt: ["Mumbai Downtown", "Pune HQ"],
+    image: "🥜",
   },
-  // ...add more mock flavors as needed
+  {
+    id: 6,
+    name: "Espresso Shot",
+    emoji: "☕",
+    category: "coffee",
+    description: "Strong coffee with chocolate chips",
+    price: "€8.50",
+    rating: 4.5,
+    reviews: 78,
+    isFavorite: true,
+    isPremium: false,
+    isSeasonal: false,
+    allergens: ["Dairy"],
+    calories: 190,
+    preparationTime: "8 min",
+    availableAt: ["All Stores"],
+    image: "☕",
+  },
+  {
+    id: 7,
+    name: "Pumpkin Spice",
+    emoji: "🎃",
+    category: "seasonal",
+    description: "Autumn pumpkin with warm spices",
+    price: "€9.00",
+    rating: 4.8,
+    reviews: 45,
+    isFavorite: false,
+    isPremium: false,
+    isSeasonal: true,
+    allergens: ["Dairy", "Gluten"],
+    calories: 200,
+    preparationTime: "10 min",
+    availableAt: ["Berlin Central"],
+    image: "🎃",
+  },
+  {
+    id: 8,
+    name: "Royal Gold",
+    emoji: "👑",
+    category: "premium",
+    description: "Saffron-infused with gold leaf",
+    price: "€15.00",
+    rating: 5.0,
+    reviews: 23,
+    isFavorite: false,
+    isPremium: true,
+    isSeasonal: false,
+    allergens: ["Dairy"],
+    calories: 180,
+    preparationTime: "12 min",
+    availableAt: ["Mumbai Downtown"],
+    image: "👑",
+  },
 ];
 
-// --- Components ---
-function TopNavBar({ cartCount }: { cartCount: number }) {
-  return (
-    <header className="flex items-center justify-between px-8 py-4 bg-white dark:bg-[#18181b] shadow rounded-t-2xl">
-      <div className="flex items-center gap-3">
-        <span className="text-2xl font-bold text-pink-400 cursor-pointer">
-          🍦 EisLager
-        </span>
-      </div>
-      <div className="flex items-center gap-6">
-        <button className="relative">
-          <FaShoppingCart className="w-6 h-6 text-pink-400" />
-          {cartCount > 0 && (
-            <span className="absolute -top-2 -right-2 bg-pink-400 text-white text-xs rounded-full px-2 py-0.5 font-bold">
-              {cartCount}
-            </span>
-          )}
-        </button>
-        <div className="relative group">
-          <button className="flex items-center gap-2 text-pink-400 font-semibold">
-            <FaUserCircle className="w-6 h-6" />
-            <span>Profile</span>
-            <FaChevronDown className="w-4 h-4" />
-          </button>
-          <div className="absolute right-0 mt-2 w-40 bg-white dark:bg-[#23232b] rounded-xl shadow-lg p-2 hidden group-hover:block z-20">
-            <button className="w-full text-left px-3 py-2 hover:bg-pink-50 dark:hover:bg-zinc-800 rounded-lg">
-              Orders
-            </button>
-            <button className="w-full text-left px-3 py-2 hover:bg-pink-50 dark:hover:bg-zinc-800 rounded-lg">
-              Preferences
-            </button>
-            <button className="w-full text-left px-3 py-2 text-red-500 hover:bg-pink-50 dark:hover:bg-zinc-800 rounded-lg">
-              Logout
-            </button>
-          </div>
-        </div>
-      </div>
-    </header>
-  );
-}
-
-function SidebarFilters({
-  selectedCategories,
-  setSelectedCategories,
-  selectedTags,
-  setSelectedTags,
-  selectedSort,
-  setSelectedSort,
-  selectedDietary,
-  setSelectedDietary,
-}: any) {
-  return (
-    <aside className="w-full md:w-64 bg-[#FCE7F3] dark:bg-[#2a202b] rounded-2xl shadow-lg p-6 flex flex-col gap-6 border border-pink-100 dark:border-zinc-800">
-      <div>
-        <h3 className="font-bold text-pink-400 mb-2">Categories</h3>
-        <div className="flex flex-col gap-2">
-          {categories.map((cat) => (
-            <label
-              key={cat.key}
-              className="flex items-center gap-2 cursor-pointer"
-            >
-              <input
-                type="checkbox"
-                checked={selectedCategories.includes(cat.key)}
-                onChange={() => {
-                  setSelectedCategories((prev: string[]) =>
-                    prev.includes(cat.key)
-                      ? prev.filter((c) => c !== cat.key)
-                      : [...prev, cat.key]
-                  );
-                }}
-                className="accent-pink-400 w-4 h-4 rounded"
-              />
-              <span className="font-medium" style={{ color: cat.color }}>
-                {cat.label}
-              </span>
-            </label>
-          ))}
-        </div>
-      </div>
-      <div>
-        <h3 className="font-bold text-pink-400 mb-2">Tags</h3>
-        <div className="flex flex-wrap gap-2">
-          {tags.map((tag) => (
-            <button
-              key={tag}
-              className={cn(
-                "px-3 py-1 rounded-full border text-xs font-semibold",
-                selectedTags.includes(tag)
-                  ? "bg-pink-400 text-white border-pink-400"
-                  : "bg-white dark:bg-zinc-900 text-pink-400 border-pink-200 dark:border-zinc-700"
-              )}
-              onClick={() =>
-                setSelectedTags((prev: string[]) =>
-                  prev.includes(tag)
-                    ? prev.filter((t) => t !== tag)
-                    : [...prev, tag]
-                )
-              }
-            >
-              {tag}
-            </button>
-          ))}
-        </div>
-      </div>
-      <div>
-        <h3 className="font-bold text-pink-400 mb-2">Sort By</h3>
-        <select
-          className="w-full rounded-lg border border-pink-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 px-3 py-2"
-          value={selectedSort}
-          onChange={(e) => setSelectedSort(e.target.value)}
-        >
-          {sortOptions.map((opt) => (
-            <option key={opt.key} value={opt.key}>
-              {opt.label}
-            </option>
-          ))}
-        </select>
-      </div>
-      <div>
-        <h3 className="font-bold text-pink-400 mb-2">Dietary</h3>
-        <div className="flex flex-wrap gap-2">
-          {dietaryFilters.map((filter) => (
-            <button
-              key={filter}
-              className={cn(
-                "px-3 py-1 rounded-full border text-xs font-semibold",
-                selectedDietary.includes(filter)
-                  ? "bg-pink-400 text-white border-pink-400"
-                  : "bg-white dark:bg-zinc-900 text-pink-400 border-pink-200 dark:border-zinc-700"
-              )}
-              onClick={() =>
-                setSelectedDietary((prev: string[]) =>
-                  prev.includes(filter)
-                    ? prev.filter((f) => f !== filter)
-                    : [...prev, filter]
-                )
-              }
-            >
-              {filter}
-            </button>
-          ))}
-        </div>
-      </div>
-    </aside>
-  );
-}
-
-function FlavorCard({ flavor, onFavorite, onAddToCart }: any) {
-  const cat = categories.find((c) => c.key === flavor.category);
-  return (
-    <div
-      className="flex flex-col bg-white dark:bg-[#1a1a1a] rounded-2xl shadow-lg border border-pink-100 dark:border-zinc-800 overflow-hidden hover:shadow-xl transition-all relative"
-      style={{ borderTop: cat ? `6px solid ${cat.color}` : undefined }}
-    >
-      <div className="h-36 w-full bg-gray-100 dark:bg-zinc-900 flex items-center justify-center overflow-hidden">
-        <img
-          src={flavor.image}
-          alt={flavor.name}
-          className="object-cover h-full w-full"
-        />
-      </div>
-      <div className="p-4 flex-1 flex flex-col gap-2">
-        <div className="flex items-center justify-between gap-2">
-          <span className="font-bold text-lg text-pink-400 truncate">
-            {flavor.name}
-          </span>
-          <button
-            className={cn(
-              "text-xl transition-colors",
-              flavor.isFavorite
-                ? "text-pink-400"
-                : "text-gray-300 hover:text-pink-400"
-            )}
-            onClick={() => onFavorite(flavor.id)}
-          >
-            <FaHeart />
-          </button>
-        </div>
-        <span className="text-xs text-gray-500 dark:text-zinc-400 truncate">
-          {flavor.description}
-        </span>
-        <div className="flex flex-wrap gap-2 mt-1">
-          {flavor.tags.map((tag: string) => (
-            <span
-              key={tag}
-              className="px-2 py-0.5 rounded-full bg-pink-100 dark:bg-zinc-800 text-pink-500 dark:text-pink-300 text-xs font-semibold border border-pink-200 dark:border-zinc-700"
-            >
-              #{tag}
-            </span>
-          ))}
-        </div>
-        <div className="flex items-center justify-between mt-2">
-          <span className="font-bold text-pink-400 text-lg">
-            ₹{flavor.price}
-          </span>
-          <button
-            className="bg-pink-400 hover:bg-pink-500 text-white rounded-lg px-4 py-2 font-bold flex items-center gap-2 shadow"
-            onClick={() => onAddToCart(flavor.id)}
-          >
-            <FaShoppingCart /> Add to Cart
-          </button>
-        </div>
-      </div>
-    </div>
-  );
-}
+const filters = [
+  { id: "price-low", label: "Price: Low to High" },
+  { id: "price-high", label: "Price: High to Low" },
+  { id: "rating", label: "Highest Rated" },
+  { id: "popular", label: "Most Popular" },
+  { id: "newest", label: "Newest" },
+];
 
 export default function PatronBrowsePage() {
-  const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
-  const [selectedTags, setSelectedTags] = useState<string[]>([]);
-  const [selectedSort, setSelectedSort] = useState<string>(sortOptions[0].key);
-  const [selectedDietary, setSelectedDietary] = useState<string[]>([]);
-  const [cart, setCart] = useState<number[]>([]);
-  const [favorites, setFavorites] = useState<number[]>([]);
-
-  // Filter and sort logic (mock)
-  let flavors = mockFlavors.filter(
-    (f) =>
-      (selectedCategories.length === 0 ||
-        selectedCategories.includes(f.category)) &&
-      (selectedTags.length === 0 ||
-        selectedTags.every((t) => f.tags.includes(t))) &&
-      (selectedDietary.length === 0 ||
-        selectedDietary.every((d) =>
-          d === "Dairy-Free"
-            ? f.isVegan || f.isNutFree
-            : d === "Vegan"
-            ? f.isVegan
-            : d === "Nut-Free"
-            ? f.isNutFree
-            : d === "Seasonal Only"
-            ? f.isSeasonal
-            : true
-        ))
+  const [search, setSearch] = useState("");
+  const [selectedCategory, setSelectedCategory] = useState("all");
+  const [selectedFilter, setSelectedFilter] = useState("");
+  const [favorites, setFavorites] = useState(
+    flavors.filter((f) => f.isFavorite).map((f) => f.id)
   );
-  // Sorting (mock)
-  if (selectedSort === "priceLow")
-    flavors = flavors.sort((a, b) => a.price - b.price);
-  if (selectedSort === "priceHigh")
-    flavors = flavors.sort((a, b) => b.price - a.price);
-  if (selectedSort === "alpha")
-    flavors = flavors.sort((a, b) => a.name.localeCompare(b.name));
 
-  function handleFavorite(id: number) {
+  const filteredFlavors = flavors.filter((flavor) => {
+    const matchesSearch =
+      flavor.name.toLowerCase().includes(search.toLowerCase()) ||
+      flavor.description.toLowerCase().includes(search.toLowerCase());
+    const matchesCategory =
+      selectedCategory === "all" || flavor.category === selectedCategory;
+    return matchesSearch && matchesCategory;
+  });
+
+  const toggleFavorite = (flavorId: number) => {
     setFavorites((prev) =>
-      prev.includes(id) ? prev.filter((f) => f !== id) : [...prev, id]
+      prev.includes(flavorId)
+        ? prev.filter((id) => id !== flavorId)
+        : [...prev, flavorId]
     );
-  }
-  function handleAddToCart(id: number) {
-    setCart((prev) => (prev.includes(id) ? prev : [...prev, id]));
-  }
+  };
+
+  const getCategoryCount = (categoryId: string) => {
+    if (categoryId === "all") return flavors.length;
+    return flavors.filter((f) => f.category === categoryId).length;
+  };
 
   return (
-    <div className="min-h-screen bg-[#FDF6FA] dark:bg-[#18181b] flex flex-col">
-      <TopNavBar cartCount={cart.length} />
-      <div className="flex-1 flex flex-row gap-8 px-8 py-8">
-        <SidebarFilters
-          selectedCategories={selectedCategories}
-          setSelectedCategories={setSelectedCategories}
-          selectedTags={selectedTags}
-          setSelectedTags={setSelectedTags}
-          selectedSort={selectedSort}
-          setSelectedSort={setSelectedSort}
-          selectedDietary={selectedDietary}
-          setSelectedDietary={setSelectedDietary}
-        />
-        <main className="flex-1">
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
-            {flavors.map((flavor) => (
-              <FlavorCard
-                key={flavor.id}
-                flavor={{
-                  ...flavor,
-                  isFavorite: favorites.includes(flavor.id),
-                }}
-                onFavorite={handleFavorite}
-                onAddToCart={handleAddToCart}
+    <div className="min-h-screen bg-gradient-to-br from-orange-50 via-pink-50 to-rose-50 dark:from-orange-950/20 dark:via-pink-950/20 dark:to-rose-950/20">
+      <style dangerouslySetInnerHTML={{ __html: customStyles }} />
+
+      {/* Animated Background Elements */}
+      <div className="fixed inset-0 overflow-hidden pointer-events-none">
+        <div className="absolute top-20 left-10 w-32 h-32 bg-gradient-to-r from-orange-200/30 to-pink-200/30 rounded-full blur-3xl animate-float"></div>
+        <div className="absolute top-40 right-20 w-24 h-24 bg-gradient-to-r from-pink-200/30 to-rose-200/30 rounded-full blur-2xl animate-pulse-glow"></div>
+        <div
+          className="absolute bottom-20 left-1/4 w-40 h-40 bg-gradient-to-r from-orange-200/20 to-yellow-200/20 rounded-full blur-3xl animate-float"
+          style={{ animationDelay: "1s" }}
+        ></div>
+      </div>
+
+      <div className="relative z-10 container mx-auto px-4 py-8">
+        {/* Header */}
+        <div className="mb-8 animate-slide-in-up">
+          <h1 className="text-4xl font-bold text-gray-900 dark:text-white mb-2">
+            Browse Flavors
+          </h1>
+          <p className="text-lg text-gray-600 dark:text-gray-300">
+            Discover our amazing collection of artisanal ice cream flavors
+          </p>
+        </div>
+
+        {/* Search and Filters */}
+        <div
+          className="mb-8 space-y-4 animate-slide-in-up"
+          style={{ animationDelay: "0.1s" }}
+        >
+          <div className="flex flex-col sm:flex-row gap-4">
+            <div className="relative flex-1">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
+              <Input
+                placeholder="Search flavors..."
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                className="pl-10 bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm border-orange-200 dark:border-orange-700 focus:border-orange-400 dark:focus:border-orange-500"
               />
+            </div>
+            <Button
+              variant="outline"
+              className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm border-orange-200 dark:border-orange-700 hover:bg-orange-50 dark:hover:bg-orange-950/20"
+            >
+              <Filter className="w-4 h-4 mr-2" />
+              Filters
+            </Button>
+          </div>
+
+          {/* Category Tabs */}
+          <div className="flex flex-wrap gap-2">
+            {categories.map((category) => (
+              <Button
+                key={category.id}
+                variant={
+                  selectedCategory === category.id ? "default" : "outline"
+                }
+                onClick={() => setSelectedCategory(category.id)}
+                className={`${
+                  selectedCategory === category.id
+                    ? "bg-gradient-to-r from-orange-400 to-pink-500 text-white border-0"
+                    : "bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm border-orange-200 dark:border-orange-700 hover:bg-orange-50 dark:hover:bg-orange-950/20"
+                } transition-all duration-200`}
+              >
+                <span className="mr-2">{category.emoji}</span>
+                {category.name}
+                <Badge
+                  variant="secondary"
+                  className={`ml-2 ${
+                    selectedCategory === category.id
+                      ? "bg-white/20 text-white"
+                      : "bg-orange-100 dark:bg-orange-900/30 text-orange-700 dark:text-orange-300"
+                  }`}
+                >
+                  {getCategoryCount(category.id)}
+                </Badge>
+              </Button>
             ))}
           </div>
-          {/* Pagination (mock) */}
-          <div className="flex justify-center items-center gap-2 mt-8">
-            <button className="px-3 py-1 rounded-lg bg-pink-100 text-pink-400 font-bold">
-              &lt;
-            </button>
-            <button className="px-3 py-1 rounded-lg bg-pink-400 text-white font-bold">
-              1
-            </button>
-            <button className="px-3 py-1 rounded-lg bg-pink-100 text-pink-400 font-bold">
-              2
-            </button>
-            <button className="px-3 py-1 rounded-lg bg-pink-100 text-pink-400 font-bold">
-              3
-            </button>
-            <button className="px-3 py-1 rounded-lg bg-pink-100 text-pink-400 font-bold">
-              &gt;
-            </button>
+
+          {/* Sort Options */}
+          <div className="flex flex-wrap gap-2">
+            {filters.map((filter) => (
+              <Button
+                key={filter.id}
+                variant={selectedFilter === filter.id ? "default" : "outline"}
+                onClick={() => setSelectedFilter(filter.id)}
+                size="sm"
+                className={`${
+                  selectedFilter === filter.id
+                    ? "bg-gradient-to-r from-orange-400 to-pink-500 text-white border-0"
+                    : "bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm border-orange-200 dark:border-orange-700 hover:bg-orange-50 dark:hover:bg-orange-950/20"
+                } transition-all duration-200`}
+              >
+                {filter.label}
+              </Button>
+            ))}
           </div>
-        </main>
+        </div>
+
+        {/* Results Count */}
+        <div
+          className="mb-6 animate-slide-in-up"
+          style={{ animationDelay: "0.2s" }}
+        >
+          <p className="text-gray-600 dark:text-gray-300">
+            Showing {filteredFlavors.length} of {flavors.length} flavors
+          </p>
+        </div>
+
+        {/* Flavor Grid */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+          {filteredFlavors.map((flavor, index) => (
+            <Link key={flavor.id} href={`/patron/browse/${flavor.id}`}>
+              <Card
+                className="group bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm border-orange-200 dark:border-orange-700 hover:border-orange-400 dark:hover:border-orange-500 transition-all duration-300 hover:shadow-lg hover:shadow-orange-100 dark:hover:shadow-orange-900/20 animate-fade-in-scale cursor-pointer"
+                style={{ animationDelay: `${0.3 + index * 0.1}s` }}
+              >
+                <CardHeader className="pb-3">
+                  <div className="flex items-start justify-between">
+                    <div className="flex items-center space-x-3">
+                      <Avatar className="w-12 h-12 bg-gradient-to-br from-orange-100 to-pink-100 dark:from-orange-900/30 dark:to-pink-900/30">
+                        <AvatarFallback className="text-2xl">
+                          {flavor.emoji}
+                        </AvatarFallback>
+                      </Avatar>
+                      <div>
+                        <CardTitle className="text-lg font-semibold text-gray-900 dark:text-white group-hover:text-orange-600 dark:group-hover:text-orange-400 transition-colors">
+                          {flavor.name}
+                        </CardTitle>
+                        <div className="flex items-center space-x-2 mt-1">
+                          <div className="flex items-center">
+                            <Star className="w-4 h-4 text-yellow-400 fill-current" />
+                            <span className="text-sm text-gray-600 dark:text-gray-300 ml-1">
+                              {flavor.rating}
+                            </span>
+                          </div>
+                          <span className="text-sm text-gray-500 dark:text-gray-400">
+                            ({flavor.reviews})
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={(e) => {
+                        e.preventDefault();
+                        toggleFavorite(flavor.id);
+                      }}
+                      className={`p-2 hover:bg-orange-50 dark:hover:bg-orange-950/20 transition-colors ${
+                        favorites.includes(flavor.id)
+                          ? "text-red-500"
+                          : "text-gray-400 hover:text-red-500"
+                      }`}
+                    >
+                      <Heart
+                        className={`w-5 h-5 ${
+                          favorites.includes(flavor.id) ? "fill-current" : ""
+                        }`}
+                      />
+                    </Button>
+                  </div>
+                </CardHeader>
+
+                <CardContent className="space-y-4">
+                  <p className="text-gray-600 dark:text-gray-300 text-sm">
+                    {flavor.description}
+                  </p>
+
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center space-x-2">
+                      <Badge
+                        variant="secondary"
+                        className="bg-orange-100 dark:bg-orange-900/30 text-orange-700 dark:text-orange-300"
+                      >
+                        {flavor.category}
+                      </Badge>
+                      {flavor.isPremium && (
+                        <Badge className="bg-gradient-to-r from-yellow-400 to-orange-500 text-white">
+                          <Award className="w-3 h-3 mr-1" />
+                          Premium
+                        </Badge>
+                      )}
+                      {flavor.isSeasonal && (
+                        <Badge className="bg-gradient-to-r from-green-400 to-emerald-500 text-white">
+                          <Sparkles className="w-3 h-3 mr-1" />
+                          Seasonal
+                        </Badge>
+                      )}
+                    </div>
+                    <span className="text-lg font-bold text-gray-900 dark:text-white">
+                      {flavor.price}
+                    </span>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-2 text-xs text-gray-500 dark:text-gray-400">
+                    <div className="flex items-center">
+                      <Clock className="w-3 h-3 mr-1" />
+                      {flavor.preparationTime}
+                    </div>
+                    <div className="flex items-center">
+                      <Users className="w-3 h-3 mr-1" />
+                      {flavor.calories} cal
+                    </div>
+                  </div>
+
+                  <div className="flex items-center justify-between pt-2">
+                    <div className="flex items-center space-x-1">
+                      <MapPin className="w-4 h-4 text-gray-400" />
+                      <span className="text-xs text-gray-500 dark:text-gray-400">
+                        {flavor.availableAt.length} stores
+                      </span>
+                    </div>
+                    <Button
+                      size="sm"
+                      onClick={(e) => {
+                        e.preventDefault();
+                        // Handle order action
+                      }}
+                      className="bg-gradient-to-r from-orange-400 to-pink-500 hover:from-orange-500 hover:to-pink-600 text-white"
+                    >
+                      <ShoppingCart className="w-4 h-4 mr-1" />
+                      Order
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
+            </Link>
+          ))}
+        </div>
+
+        {/* No Results */}
+        {filteredFlavors.length === 0 && (
+          <div className="text-center py-12 animate-fade-in-scale">
+            <div className="text-6xl mb-4">🍦</div>
+            <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">
+              No flavors found
+            </h3>
+            <p className="text-gray-600 dark:text-gray-300">
+              Try adjusting your search or filters
+            </p>
+          </div>
+        )}
       </div>
     </div>
   );

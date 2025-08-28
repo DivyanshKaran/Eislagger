@@ -1,639 +1,412 @@
 "use client";
 
-import AppShell from "@/components/layout/app-shell";
+import { ClerkKPICard } from "@/components/clerk/KPICard";
 import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import {
-  Receipt,
-  IceCream,
-  AlertTriangle,
-  Package,
-  TrendingUp,
-  Clock,
-  MapPin,
-  Bell,
-  User,
-  Settings,
-  Plus,
-  Eye,
-  FileText,
-  Truck,
-  CheckCircle,
-  XCircle,
-  AlertCircle,
-  Calendar,
-  ShoppingCart,
-  ChevronRight,
-  ChevronLeft,
-  RefreshCw,
-  Download,
-  Filter,
-  MessageSquare,
-  Mail,
-  BarChart3,
+  DollarSign,
   Store,
-  Thermometer,
-  Zap,
-  Info,
+  Gauge,
+  CheckCircle,
+  Plus,
+  ShoppingCart,
+  X,
 } from "lucide-react";
-import { useState } from "react";
+import {
+  LineChart,
+  Line,
+  XAxis,
+  YAxis,
+  Tooltip,
+  ResponsiveContainer,
+  BarChart,
+  Bar,
+} from "recharts";
 
 export default function ClerkDashboard() {
-  const [selectedFlavor, setSelectedFlavor] = useState<string | null>(null);
-
-  // Sample data
-  const flavorStock = [
+  // KPIs
+  const kpis = [
     {
-      id: 1,
-      name: "Mango Swirl",
-      inStock: 12,
-      unit: "L",
-      expiryDate: "Jul 5, 2024",
-      status: "Good",
-      statusColor: "success",
-      action: null,
+      title: "Sales Per Hour",
+      value: "₹2,300",
+      change: "+8%",
+      changeType: "increase" as const,
+      icon: <Gauge className="w-6 h-6" />,
+      subtitle: "Today",
     },
     {
-      id: 2,
-      name: "Choco Burst",
-      inStock: 4,
-      unit: "L",
-      expiryDate: "Jul 6, 2024",
-      status: "Low Stock",
-      statusColor: "warning",
-      action: "Restock",
+      title: "Avg. Transaction Value",
+      value: "₹480",
+      change: "+3%",
+      changeType: "increase" as const,
+      icon: <DollarSign className="w-6 h-6" />,
+      subtitle: "ATV",
     },
     {
-      id: 3,
-      name: "Raspberry Delight",
-      inStock: 0,
-      unit: "L",
-      expiryDate: "—",
-      status: "Out of Stock",
-      statusColor: "destructive",
-      action: "Urgent",
+      title: "Items Per Transaction",
+      value: "3.2",
+      change: "+0.4",
+      changeType: "increase" as const,
+      icon: <Store className="w-6 h-6" />,
+      subtitle: "IPT",
     },
     {
-      id: 4,
-      name: "Vanilla Dream",
-      inStock: 8,
-      unit: "L",
-      expiryDate: "Jul 3, 2024",
-      status: "Expiring Soon",
-      statusColor: "warning",
-      action: "Restock",
+      title: "Conversion Rate",
+      value: "41%",
+      change: "+2%",
+      changeType: "increase" as const,
+      icon: <CheckCircle className="w-6 h-6" />,
+      subtitle: "Customer Conversion",
     },
     {
-      id: 5,
-      name: "Blueberry Blast",
-      inStock: 15,
-      unit: "L",
-      expiryDate: "Jul 8, 2024",
-      status: "Good",
-      statusColor: "success",
-      action: null,
+      title: "Upsell Rate",
+      value: "18%",
+      change: "+1%",
+      changeType: "increase" as const,
+      icon: <Plus className="w-6 h-6" />,
+      subtitle: "Add-on Sales",
     },
     {
-      id: 6,
-      name: "Strawberry Fields",
-      inStock: 6,
-      unit: "L",
-      expiryDate: "Jul 7, 2024",
-      status: "Low Stock",
-      statusColor: "warning",
-      action: "Restock",
+      title: "Total Transactions",
+      value: "57",
+      change: "+5",
+      changeType: "increase" as const,
+      icon: <ShoppingCart className="w-6 h-6" />,
+      subtitle: "Today",
+    },
+    {
+      title: "Refund Rate",
+      value: "1.2%",
+      change: "-0.2%",
+      changeType: "decrease" as const,
+      icon: <X className="w-6 h-6" />,
+      subtitle: "Today",
+    },
+    {
+      title: "Customer Satisfaction",
+      value: "94%",
+      change: "+4%",
+      changeType: "increase" as const,
+      icon: <CheckCircle className="w-6 h-6" />,
+      subtitle: "Surveyed",
     },
   ];
 
+  // Weekly sales line chart
+  const weeklySales = [
+    { day: "Mon", sales: 12000 },
+    { day: "Tue", sales: 15000 },
+    { day: "Wed", sales: 18000 },
+    { day: "Thu", sales: 17000 },
+    { day: "Fri", sales: 21000 },
+    { day: "Sat", sales: 24000 },
+    { day: "Sun", sales: 20000 },
+  ];
+  // Top flavor bar chart
   const topFlavors = [
-    {
-      name: "Choco Burst",
-      percentage: 32,
-      color: "from-amber-400 to-orange-500",
-    },
-    {
-      name: "Mango Swirl",
-      percentage: 28,
-      color: "from-yellow-400 to-orange-400",
-    },
-    {
-      name: "Vanilla Dream",
-      percentage: 20,
-      color: "from-gray-300 to-gray-400",
-    },
-    {
-      name: "Raspberry Delight",
-      percentage: 12,
-      color: "from-pink-400 to-red-400",
-    },
-    { name: "Others", percentage: 8, color: "from-blue-400 to-purple-500" },
+    { name: "Choco Burst", sales: 32 },
+    { name: "Mango Swirl", sales: 28 },
+    { name: "Vanilla Dream", sales: 20 },
+    { name: "Raspberry Delight", sales: 12 },
+    { name: "Others", sales: 8 },
   ];
-
-  const alerts = [
-    {
-      id: 1,
-      type: "critical",
-      icon: <XCircle className="h-4 w-4 text-red-500" />,
-      message: "Raspberry Delight out of stock",
-      time: "2 minutes ago",
-    },
-    {
-      id: 2,
-      type: "warning",
-      icon: <AlertTriangle className="h-4 w-4 text-orange-500" />,
-      message: "Vanilla Dream expiring in 2 days",
-      time: "15 minutes ago",
-    },
-    {
-      id: 3,
-      type: "info",
-      icon: <Truck className="h-4 w-4 text-blue-500" />,
-      message: "Factory delivery delayed by 2 hours",
-      time: "1 hour ago",
-    },
-    {
-      id: 4,
-      type: "success",
-      icon: <CheckCircle className="h-4 w-4 text-green-500" />,
-      message: "Choco Burst restock completed",
-      time: "3 hours ago",
-    },
-    {
-      id: 5,
-      type: "warning",
-      icon: <Thermometer className="h-4 w-4 text-orange-500" />,
-      message: "Freezer temperature slightly high",
-      time: "4 hours ago",
-    },
+  // Today's sales trends (hourly)
+  const todaysTrends = [
+    { hour: "10 AM", sales: 1200 },
+    { hour: "11 AM", sales: 1800 },
+    { hour: "12 PM", sales: 2400 },
+    { hour: "1 PM", sales: 2100 },
+    { hour: "2 PM", sales: 1600 },
+    { hour: "3 PM", sales: 1900 },
+    { hour: "4 PM", sales: 2200 },
+    { hour: "5 PM", sales: 2800 },
+    { hour: "6 PM", sales: 3200 },
+    { hour: "7 PM", sales: 2600 },
   ];
-
-  const hourlySales = [
-    { hour: "10 AM", sales: 1200, units: 8 },
-    { hour: "11 AM", sales: 1800, units: 12 },
-    { hour: "12 PM", sales: 2400, units: 16 },
-    { hour: "1 PM", sales: 2100, units: 14 },
-    { hour: "2 PM", sales: 1600, units: 11 },
-    { hour: "3 PM", sales: 1900, units: 13 },
-    { hour: "4 PM", sales: 2200, units: 15 },
-    { hour: "5 PM", sales: 2800, units: 19 },
-    { hour: "6 PM", sales: 3200, units: 22 },
-    { hour: "7 PM", sales: 2600, units: 18 },
+  // Daily sales for this month (for line chart)
+  const dailySalesMonth = [
+    { day: 1, sales: 12000 },
+    { day: 2, sales: 15000 },
+    { day: 3, sales: 18000 },
+    { day: 4, sales: 17000 },
+    { day: 5, sales: 21000 },
+    { day: 6, sales: 24000 },
+    { day: 7, sales: 20000 },
+    { day: 8, sales: 22000 },
+    { day: 9, sales: 19500 },
+    { day: 10, sales: 25000 },
+    { day: 11, sales: 23000 },
+    { day: 12, sales: 21000 },
+    { day: 13, sales: 26000 },
+    { day: 14, sales: 27000 },
+    { day: 15, sales: 22500 },
+    { day: 16, sales: 24000 },
+    { day: 17, sales: 25500 },
+    { day: 18, sales: 26500 },
+    { day: 19, sales: 27500 },
+    { day: 20, sales: 28500 },
+    { day: 21, sales: 29500 },
+    { day: 22, sales: 30500 },
+    { day: 23, sales: 31500 },
+    { day: 24, sales: 32500 },
+    { day: 25, sales: 33500 },
+    { day: 26, sales: 34500 },
+    { day: 27, sales: 35500 },
+    { day: 28, sales: 36500 },
+    { day: 29, sales: 37500 },
+    { day: 30, sales: 38500 },
   ];
-
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case "Good":
-        return "bg-green-100 text-green-800 border-green-200";
-      case "Low Stock":
-        return "bg-orange-100 text-orange-800 border-orange-200";
-      case "Out of Stock":
-        return "bg-red-100 text-red-800 border-red-200";
-      case "Expiring Soon":
-        return "bg-yellow-100 text-yellow-800 border-yellow-200";
-      default:
-        return "bg-gray-100 text-gray-800 border-gray-200";
-    }
-  };
-
-  const getAlertColor = (type: string) => {
-    switch (type) {
-      case "critical":
-        return "border-red-200 bg-red-50 dark:bg-red-900/20";
-      case "warning":
-        return "border-orange-200 bg-orange-50 dark:bg-orange-900/20";
-      case "info":
-        return "border-blue-200 bg-blue-50 dark:bg-blue-900/20";
-      case "success":
-        return "border-green-200 bg-green-50 dark:bg-green-900/20";
-      default:
-        return "border-gray-200 bg-gray-50 dark:bg-gray-900/20";
-    }
-  };
-
+  // Weekly trends bar graph data
+  const weeklyTrends = [
+    { day: "Mon", sales: 12000 },
+    { day: "Tue", sales: 15000 },
+    { day: "Wed", sales: 18000 },
+    { day: "Thu", sales: 17000 },
+    { day: "Fri", sales: 21000 },
+    { day: "Sat", sales: 24000 },
+    { day: "Sun", sales: 20000 },
+  ];
+  // Flavor sales heatmap data (flavors x days)
+  const flavorNames = ["Choco", "Mango", "Vanilla", "Strawberry", "Hazelnut"];
+  const days = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
+  const flavorHeatmap = [
+    [12, 15, 18, 17, 21, 24, 20], // Choco
+    [9, 11, 14, 13, 16, 19, 15], // Mango
+    [7, 8, 10, 9, 12, 13, 11], // Vanilla
+    [5, 6, 8, 7, 9, 10, 8], // Strawberry
+    [3, 4, 5, 4, 6, 7, 5], // Hazelnut
+  ];
   return (
-    <AppShell role="clerk">
-      <div className="space-y-6">
-        {/* Header */}
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-3xl font-bold text-foreground">
-              Store Dashboard 🏪
-            </h1>
-            <p className="text-muted-foreground">
-              Bangalore Central Store - Sweet Dreams Creamery
-            </p>
-          </div>
-          <div className="flex items-center gap-3">
-            <Button variant="outline" className="gap-2">
-              <RefreshCw className="h-4 w-4" />
-              Refresh
-            </Button>
-            <Button className="bg-gradient-to-r from-eis-accent to-eis-primary hover:from-eis-accent/90 hover:to-eis-primary/90">
-              <Plus className="mr-2 h-4 w-4" />
-              New Sale
-            </Button>
-          </div>
-        </div>
-
-        {/* KPI Cards */}
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-          <Card className="bg-gradient-to-br from-eis-primary/10 to-eis-secondary/10 border-eis-primary/20">
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium text-foreground">
-                Sales Today
-              </CardTitle>
-              <Receipt className="h-4 w-4 text-eis-primary" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold text-foreground">₹18,400</div>
-              <p className="text-xs text-muted-foreground">
-                <span className="text-green-600">+15%</span> from yesterday
-              </p>
-              <div className="mt-2 text-xs text-muted-foreground">
-                148 scoops sold
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card className="bg-gradient-to-br from-eis-secondary/10 to-eis-accent/10 border-eis-secondary/20">
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium text-foreground">
-                Top Flavor
-              </CardTitle>
-              <IceCream className="h-4 w-4 text-eis-secondary" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold text-foreground">
-                Choco Burst
-              </div>
-              <p className="text-xs text-muted-foreground">
-                32% of total sales
-              </p>
-              <div className="mt-2 text-xs text-muted-foreground">
-                47 scoops today
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card className="bg-gradient-to-br from-eis-accent/10 to-eis-primary/10 border-eis-accent/20">
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium text-foreground">
-                Low Stock Items
-              </CardTitle>
-              <AlertTriangle className="h-4 w-4 text-eis-accent" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold text-foreground">3</div>
-              <p className="text-xs text-muted-foreground">Need restocking</p>
-              <div className="mt-2 text-xs text-muted-foreground">
-                1 out of stock
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card className="bg-gradient-to-br from-eis-warm/10 to-eis-cool/10 border-eis-warm/20">
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium text-foreground">
-                Total Stock Left
-              </CardTitle>
-              <Package className="h-4 w-4 text-eis-warm" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold text-foreground">45L</div>
-              <p className="text-xs text-muted-foreground">
-                Across all flavors
-              </p>
-              <div className="mt-2 text-xs text-muted-foreground">
-                ~2 days supply
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-
-        {/* Daily Sales Chart */}
-        <Card className="bg-gradient-to-br from-eis-primary/5 to-eis-secondary/5 border-eis-primary/20">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <TrendingUp className="h-5 w-5 text-eis-primary" />
-              Daily Sales Trend
-            </CardTitle>
-            <CardDescription>
-              Hourly sales performance for today
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-4">
-              <div className="flex items-center justify-between">
-                <div>
-                  <div className="text-2xl font-bold text-foreground">
-                    ₹18,400
-                  </div>
-                  <div className="text-sm text-muted-foreground">
-                    Total sales today
-                  </div>
-                </div>
-                <div className="text-right">
-                  <div className="text-sm text-green-600 font-medium">+15%</div>
-                  <div className="text-xs text-muted-foreground">
-                    vs yesterday
-                  </div>
-                </div>
-              </div>
-
-              {/* Simple Bar Chart */}
-              <div className="h-48 flex items-end justify-between gap-2">
-                {hourlySales.map((data, index) => (
-                  <div
-                    key={data.hour}
-                    className="flex flex-col items-center gap-1 flex-1"
-                  >
-                    <div className="text-xs text-muted-foreground text-center">
-                      ₹{data.sales}
-                    </div>
-                    <div
-                      className="w-full bg-gradient-to-t from-eis-primary to-eis-secondary rounded-t-sm min-h-[4px]"
-                      style={{ height: `${(data.sales / 3200) * 100}%` }}
-                    ></div>
-                    <span className="text-xs text-muted-foreground">
-                      {data.hour}
-                    </span>
-                  </div>
-                ))}
-              </div>
-
-              <div className="flex items-center justify-between text-sm">
-                <span className="text-muted-foreground">
-                  Peak hours: 5-7 PM
-                </span>
-                <span className="text-muted-foreground">
-                  Average: ₹1,840/hour
-                </span>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Main Content Grid */}
-        <div className="grid gap-6 lg:grid-cols-3">
-          {/* Flavor Stock Table */}
-          <Card className="lg:col-span-2">
-            <CardHeader>
-              <div className="flex items-center justify-between">
-                <div>
-                  <CardTitle className="flex items-center gap-2">
-                    <Package className="h-5 w-5 text-eis-secondary" />
-                    Flavor Stock Status
-                  </CardTitle>
-                  <CardDescription>
-                    Current inventory levels and expiry dates
-                  </CardDescription>
-                </div>
-                <div className="flex items-center gap-2">
-                  <Button variant="outline" size="sm">
-                    <Filter className="h-4 w-4 mr-2" />
-                    Filter
-                  </Button>
-                  <Button variant="outline" size="sm">
-                    <Download className="h-4 w-4 mr-2" />
-                    Export
-                  </Button>
-                </div>
-              </div>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-3">
-                {flavorStock.map((flavor) => (
-                  <div
-                    key={flavor.id}
-                    className="flex items-center justify-between p-4 bg-white dark:bg-gray-800 rounded-lg border border-border/50 hover:shadow-md transition-all duration-300"
-                  >
-                    <div className="flex items-center gap-4">
-                      <div className="w-10 h-10 bg-gradient-to-br from-eis-secondary to-eis-accent rounded-lg flex items-center justify-center text-white font-bold">
-                        {flavor.name.charAt(0)}
-                      </div>
-                      <div>
-                        <div className="flex items-center gap-2 mb-1">
-                          <span className="font-semibold text-foreground">
-                            {flavor.name}
-                          </span>
-                          <Badge className={getStatusColor(flavor.status)}>
-                            {flavor.status}
-                          </Badge>
-                        </div>
-                        <div className="text-sm text-muted-foreground">
-                          {flavor.inStock}
-                          {flavor.unit} in stock
-                        </div>
-                        <div className="text-xs text-muted-foreground">
-                          Expires: {flavor.expiryDate}
-                        </div>
-                      </div>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      {flavor.action && (
-                        <Button
-                          size="sm"
-                          variant={
-                            flavor.action === "Urgent"
-                              ? "destructive"
-                              : "outline"
-                          }
-                          onClick={() => setSelectedFlavor(flavor.name)}
-                        >
-                          {flavor.action === "Urgent" ? (
-                            <>
-                              <Zap className="h-3 w-3 mr-1" />
-                              Urgent
-                            </>
-                          ) : (
-                            <>
-                              <Plus className="h-3 w-3 mr-1" />
-                              Restock
-                            </>
-                          )}
-                        </Button>
-                      )}
-                      <Button variant="ghost" size="icon" className="h-8 w-8">
-                        <Eye className="h-4 w-4" />
-                      </Button>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Top Flavors Pie Chart */}
-          <Card className="bg-gradient-to-br from-eis-warm/5 to-eis-cool/5 border-eis-warm/20">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <BarChart3 className="h-5 w-5 text-eis-warm" />
-                Top Flavors Today
-              </CardTitle>
-              <CardDescription>Sales distribution by flavor</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-4">
-                <div className="flex items-center justify-center">
-                  <div className="relative w-48 h-48">
-                    {/* Donut Chart */}
-                    <svg
-                      className="w-48 h-48 transform -rotate-90"
-                      viewBox="0 0 120 120"
-                    >
-                      {/* Background circle */}
-                      <circle
-                        cx="60"
-                        cy="60"
-                        r="54"
-                        fill="none"
-                        stroke="#e5e7eb"
-                        strokeWidth="12"
-                      />
-                      {/* Choco Burst (32%) */}
-                      <circle
-                        cx="60"
-                        cy="60"
-                        r="54"
-                        fill="none"
-                        stroke="#f59e0b"
-                        strokeWidth="12"
-                        strokeDasharray={`${2 * Math.PI * 54}`}
-                        strokeDashoffset={`${2 * Math.PI * 54 * (1 - 0.32)}`}
-                        strokeLinecap="round"
-                      />
-                      {/* Mango Swirl (28%) */}
-                      <circle
-                        cx="60"
-                        cy="60"
-                        r="54"
-                        fill="none"
-                        stroke="#fbbf24"
-                        strokeWidth="12"
-                        strokeDasharray={`${2 * Math.PI * 54}`}
-                        strokeDashoffset={`${2 * Math.PI * 54 * (1 - 0.28)}`}
-                        strokeLinecap="round"
-                        transform={`rotate(${0.32 * 360} 60 60)`}
-                      />
-                      {/* Vanilla Dream (20%) */}
-                      <circle
-                        cx="60"
-                        cy="60"
-                        r="54"
-                        fill="none"
-                        stroke="#9ca3af"
-                        strokeWidth="12"
-                        strokeDasharray={`${2 * Math.PI * 54}`}
-                        strokeDashoffset={`${2 * Math.PI * 54 * (1 - 0.2)}`}
-                        strokeLinecap="round"
-                        transform={`rotate(${(0.32 + 0.28) * 360} 60 60)`}
-                      />
-                      {/* Raspberry Delight (12%) */}
-                      <circle
-                        cx="60"
-                        cy="60"
-                        r="54"
-                        fill="none"
-                        stroke="#ec4899"
-                        strokeWidth="12"
-                        strokeDasharray={`${2 * Math.PI * 54}`}
-                        strokeDashoffset={`${2 * Math.PI * 54 * (1 - 0.12)}`}
-                        strokeLinecap="round"
-                        transform={`rotate(${(0.32 + 0.28 + 0.2) * 360} 60 60)`}
-                      />
-                    </svg>
-                    {/* Center text */}
-                    <div className="absolute inset-0 flex flex-col items-center justify-center">
-                      <div className="text-lg font-bold text-foreground">
-                        Choco Burst
-                      </div>
-                      <div className="text-sm text-muted-foreground">32%</div>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Legend */}
-                <div className="space-y-2">
-                  {topFlavors.map((flavor, index) => (
-                    <div
-                      key={flavor.name}
-                      className="flex items-center justify-between"
-                    >
-                      <div className="flex items-center gap-2">
-                        <div
-                          className={`w-3 h-3 bg-gradient-to-r ${flavor.color} rounded-full`}
-                        ></div>
-                        <span className="text-sm text-foreground">
-                          {flavor.name}
-                        </span>
-                      </div>
-                      <span className="text-sm font-medium text-foreground">
-                        {flavor.percentage}%
-                      </span>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-
-        {/* Alerts Feed */}
-        <Card className="bg-gradient-to-br from-eis-accent/5 to-eis-primary/5 border-eis-accent/20">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Bell className="h-5 w-5 text-eis-accent" />
-              Store Alerts
-            </CardTitle>
-            <CardDescription>
-              Important notifications and warnings
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-3 max-h-64 overflow-y-auto">
-              {alerts.map((alert) => (
-                <div
-                  key={alert.id}
-                  className={`flex items-center gap-3 p-3 rounded-lg border ${getAlertColor(
-                    alert.type
-                  )} hover:shadow-sm transition-all duration-300`}
-                >
-                  {alert.icon}
-                  <div className="flex-1">
-                    <div className="text-sm font-medium text-foreground">
-                      {alert.message}
-                    </div>
-                    <div className="text-xs text-muted-foreground">
-                      {alert.time}
-                    </div>
-                  </div>
-                  <Button variant="ghost" size="sm">
-                    <Info className="h-4 w-4" />
-                  </Button>
-                </div>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Floating Restock Button */}
-        <div className="fixed bottom-6 right-6 z-50">
-          <Button
-            size="lg"
-            className="bg-gradient-to-r from-eis-accent to-eis-primary hover:from-eis-accent/90 hover:to-eis-primary/90 shadow-lg rounded-full w-14 h-14 p-0"
-            onClick={() => setSelectedFlavor("general")}
-          >
-            <Plus className="h-6 w-6" />
-          </Button>
+    <div className="flex flex-col gap-8">
+      {/* KPIs Row */}
+      <div className="w-full max-w-7xl mx-auto grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 2xl:grid-cols-8 gap-6 gap-y-6 mb-4">
+        {kpis.map((kpi, i) => (
+          <ClerkKPICard key={i} {...kpi} />
+        ))}
+      </div>
+      {/* Daily Sales This Month Line Chart (replaces Total Sales Today card) */}
+      <div className="w-full max-w-7xl mx-auto mb-4">
+        <div className="rounded-2xl bg-gradient-to-br from-pink-100/80 to-purple-100/80 dark:from-pink-900/30 dark:to-purple-900/30 shadow-xl border border-pink-200/60 dark:border-pink-800/40 backdrop-blur-xl p-8 flex flex-col items-center justify-center animate-fade-in-scale">
+          <h2 className="text-lg font-bold text-pink-900 dark:text-pink-100 mb-1">
+            Daily Sales This Month
+          </h2>
+          <ResponsiveContainer width="100%" height={220}>
+            <LineChart
+              data={dailySalesMonth}
+              margin={{ top: 10, right: 20, left: 0, bottom: 0 }}
+            >
+              <XAxis
+                dataKey="day"
+                tick={{ fill: "#ec4899", fontSize: 12 }}
+                axisLine={false}
+                tickLine={false}
+              />
+              <YAxis
+                tick={{ fill: "#a78bfa", fontSize: 12 }}
+                axisLine={false}
+                tickLine={false}
+              />
+              <Tooltip
+                contentStyle={{
+                  background: "#fdf2f8",
+                  borderRadius: 8,
+                  border: "none",
+                }}
+                labelStyle={{ color: "#ec4899" }}
+              />
+              <Line
+                type="monotone"
+                dataKey="sales"
+                stroke="#ec4899"
+                strokeWidth={3}
+                dot={false}
+                isAnimationActive
+              />
+            </LineChart>
+          </ResponsiveContainer>
         </div>
       </div>
-    </AppShell>
+      {/* Charts Section */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 auto-rows-fr">
+        {/* Weekly Trends Bar Graph */}
+        <div className="rounded-2xl bg-gradient-to-br from-pink-100/80 to-purple-100/80 dark:from-pink-900/30 dark:to-purple-900/30 shadow-xl border border-pink-200/60 dark:border-pink-800/40 backdrop-blur-xl p-8 flex flex-col gap-4 animate-fade-in-scale">
+          <h2 className="text-xl font-bold text-pink-900 dark:text-pink-100 mb-2">
+            Weekly Sales Trends
+          </h2>
+          <ResponsiveContainer width="100%" height={220}>
+            <BarChart
+              data={weeklyTrends}
+              margin={{ top: 10, right: 20, left: 0, bottom: 0 }}
+            >
+              <XAxis
+                dataKey="day"
+                tick={{ fill: "#ec4899", fontSize: 12 }}
+                axisLine={false}
+                tickLine={false}
+              />
+              <YAxis
+                tick={{ fill: "#a78bfa", fontSize: 12 }}
+                axisLine={false}
+                tickLine={false}
+              />
+              <Tooltip
+                contentStyle={{
+                  background: "#fdf2f8",
+                  borderRadius: 8,
+                  border: "none",
+                }}
+                labelStyle={{ color: "#ec4899" }}
+              />
+              <Bar
+                dataKey="sales"
+                fill="#ec4899"
+                radius={[8, 8, 0, 0]}
+                isAnimationActive
+              />
+            </BarChart>
+          </ResponsiveContainer>
+        </div>
+        {/* Flavor Sales Heatmap */}
+        <div className="rounded-2xl bg-gradient-to-br from-blue-100/80 to-pink-100/80 dark:from-blue-900/30 dark:to-pink-900/30 shadow-xl border border-blue-200/60 dark:border-blue-800/40 backdrop-blur-xl p-8 flex flex-col gap-6 animate-fade-in-scale">
+          <h2 className="text-xl font-bold text-blue-900 dark:text-blue-100 mb-2">
+            Flavor Sales Heatmap
+          </h2>
+          <div className="overflow-x-auto">
+            <table className="min-w-full border-separate border-spacing-2">
+              <thead>
+                <tr>
+                  <th className="text-left text-xs text-pink-700 dark:text-pink-200"></th>
+                  {days.map((day) => (
+                    <th
+                      key={day}
+                      className="text-xs text-pink-700 dark:text-pink-200 px-2 py-1"
+                    >
+                      {day}
+                    </th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody>
+                {flavorNames.map((flavor, i) => (
+                  <tr key={flavor}>
+                    <td className="text-sm font-semibold text-pink-900 dark:text-pink-100 pr-2">
+                      {flavor}
+                    </td>
+                    {flavorHeatmap[i].map((val, j) => {
+                      // Color intensity based on value
+                      const intensity = Math.min(1, val / 25);
+                      const bg = `rgba(236, 72, 153, ${0.2 + intensity * 0.7})`;
+                      return (
+                        <td
+                          key={j}
+                          className="rounded-lg w-8 h-8 text-center align-middle"
+                          style={{ background: bg }}
+                        >
+                          <span className="text-xs font-bold text-pink-900 dark:text-pink-100">
+                            {val}
+                          </span>
+                        </td>
+                      );
+                    })}
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+        {/* Top Flavor Horizontal Bar Chart */}
+        <div className="rounded-2xl bg-gradient-to-br from-pink-100/80 to-purple-100/80 dark:from-pink-900/30 dark:to-purple-900/30 shadow-xl border border-pink-200/60 dark:border-pink-800/40 backdrop-blur-xl p-8 flex flex-col gap-4 animate-fade-in-scale">
+          <h2 className="text-xl font-bold text-pink-900 dark:text-pink-100 mb-2">
+            Top Performing Flavors
+          </h2>
+          <ResponsiveContainer width="100%" height={220}>
+            <BarChart
+              data={topFlavors}
+              layout="vertical"
+              margin={{ top: 10, right: 20, left: 0, bottom: 0 }}
+            >
+              <XAxis
+                type="number"
+                tick={{ fill: "#ec4899", fontSize: 12 }}
+                axisLine={false}
+                tickLine={false}
+              />
+              <YAxis
+                dataKey="name"
+                type="category"
+                tick={{ fill: "#a78bfa", fontSize: 12 }}
+                axisLine={false}
+                tickLine={false}
+                width={120}
+              />
+              <Tooltip
+                contentStyle={{
+                  background: "#fdf2f8",
+                  borderRadius: 8,
+                  border: "none",
+                }}
+                labelStyle={{ color: "#ec4899" }}
+              />
+              <Bar
+                dataKey="sales"
+                fill="#ec4899"
+                radius={[8, 8, 8, 8]}
+                isAnimationActive
+              />
+            </BarChart>
+          </ResponsiveContainer>
+        </div>
+        {/* Top Flavors List */}
+        <div className="rounded-2xl bg-gradient-to-br from-purple-100/80 to-blue-100/80 dark:from-purple-900/30 dark:to-blue-900/30 shadow-xl border border-purple-200/60 dark:border-purple-800/40 backdrop-blur-xl p-8 flex flex-col gap-4 animate-fade-in-scale">
+          <h2 className="text-xl font-bold text-purple-900 dark:text-purple-100 mb-2">
+            Top Flavors List
+          </h2>
+          <ul className="space-y-3">
+            {topFlavors.map((flavor, idx) => (
+              <li key={flavor.name} className="flex items-center gap-4">
+                <span className="text-2xl font-bold text-pink-500">
+                  #{idx + 1}
+                </span>
+                <span className="font-semibold text-pink-900 dark:text-pink-100 flex-1">
+                  {flavor.name}
+                </span>
+                <span className="text-lg font-bold text-purple-700 dark:text-purple-200">
+                  {flavor.sales} sales
+                </span>
+              </li>
+            ))}
+          </ul>
+        </div>
+        {/* Flavor Leaderboard Card */}
+        <div className="rounded-2xl bg-gradient-to-br from-pink-100/80 to-blue-100/80 dark:from-pink-900/30 dark:to-blue-900/30 shadow-xl border border-pink-200/60 dark:border-pink-800/40 backdrop-blur-xl p-8 flex flex-col gap-6 animate-fade-in-scale col-span-1 lg:col-span-2">
+          <h2 className="text-xl font-bold text-pink-900 dark:text-pink-100 mb-2">
+            Flavor Leaderboard
+          </h2>
+          <ul className="space-y-4">
+            {topFlavors.slice(0, 5).map((flavor, idx) => {
+              const percent = Math.round(
+                (flavor.sales / topFlavors[0].sales) * 100
+              );
+              const emojis = ["🍫", "🥭", "🌿", "🍓", "🍦"];
+              return (
+                <li key={flavor.name} className="flex items-center gap-4">
+                  <span className="text-2xl">{emojis[idx] || "🍦"}</span>
+                  <span className="font-semibold text-pink-900 dark:text-pink-100 flex-1">
+                    {flavor.name}
+                  </span>
+                  <div className="flex-1 h-3 bg-pink-100 dark:bg-pink-900/30 rounded-full overflow-hidden">
+                    <div
+                      className="h-3 bg-gradient-to-r from-pink-400 to-purple-500 rounded-full transition-all duration-500"
+                      style={{ width: `${percent}%` }}
+                    ></div>
+                  </div>
+                  <span className="text-lg font-bold text-purple-700 dark:text-purple-200 ml-2">
+                    {flavor.sales}
+                  </span>
+                </li>
+              );
+            })}
+          </ul>
+        </div>
+      </div>
+    </div>
   );
 }
