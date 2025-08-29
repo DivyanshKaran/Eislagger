@@ -1,10 +1,8 @@
 import type { Request, Response } from "express";
 import bcrypt from "bcryptjs";
-import { signToken } from "../middleware/auth.ts";
+import prisma from "../prisma.ts";
 
-// --- Mock Database and Configuration ---
-// In a real application, this would come from a database and environment variables.
-let mockUsers: any[] = []; // In-memory user store
+import { signToken } from "../middleware/auth.ts";
 
 // --- Controller Logic ---
 
@@ -12,9 +10,12 @@ let mockUsers: any[] = []; // In-memory user store
 
 const register = async (req: Request, res: Response) => {
   try {
-    const { name, email, password, role = "Patron" } = req.body;
+    const { fullName, email, password, role = "Patron" } = req.body;
 
-    const existingUser = mockUsers.find((user) => user.email === email);
+    const existingUser = await prisma.user.findUnique({
+      where: { email },
+    });
+
     if (existingUser) {
       return res
         .status(409)
@@ -22,18 +23,24 @@ const register = async (req: Request, res: Response) => {
     }
 
     const hashedPassword = await bcrypt.hash(password, 12);
-    const newUser = {
-      id: `user-${Date.now()}`,
-      name,
-      email,
-      password: hashedPassword,
-      role,
-    };
-
-    mockUsers.push(newUser);
+    const newUser = await prisma.user.create({
+      data: {
+        email,
+        passwordHash: hashedPassword,
+        role,
+        profile: {
+          create: {
+            fullName,
+          },
+        },
+      },
+      include: {
+        profile: true,
+      },
+    });
 
     // Don't send the password back
-    const { password: _, ...userResponse } = newUser;
+    const { passwordHash: _, ...userResponse } = newUser;
 
     res
       .status(201)
@@ -52,12 +59,15 @@ const login = async (req: Request, res: Response) => {
   try {
     const { email, password } = req.body;
 
-    const user = mockUsers.find((u) => u.email === email);
+    const user = await prisma.user.findUnique({
+      where: { email },
+    });
+
     if (!user) {
       return res.status(401).json({ message: "Invalid credentials" });
     }
 
-    const isPasswordCorrect = await bcrypt.compare(password, user.password);
+    const isPasswordCorrect = await bcrypt.compare(password, user.passwordHash);
     if (!isPasswordCorrect) {
       return res.status(401).json({ message: "Invalid credentials" });
     }
@@ -84,50 +94,63 @@ const logout = (req: Request, res: Response) => {
 
 // Get the current user's profile.
 
-const getMe = (req: Request, res: Response) => {
+const getMe = async (req: Request, res: Response) => {
   // The `isAuthenticated` middleware has already verified the token and attached the user payload.
   if (!req.user) {
     return res.status(404).json({ message: "User not present" });
   }
 
-  const userFromDb = mockUsers.find((u) => u.id === req.user.id);
+  const userFromDb = await prisma.user.findUnique({
+    where: { id: req.user.id },
+    include: { profile: true },
+  });
+
   if (!userFromDb) {
     return res.status(404).json({ message: "User not found" });
   }
-  const { password, ...userResponse } = userFromDb;
+  const { passwordHash, ...userResponse } = userFromDb;
   res.status(200).json({ user: userResponse });
 };
 
 // --- Admin-facing Controllers ---
 
-const getAllUsers = (req: Request, res: Response) => {
-  const usersWithoutPasswords = mockUsers.map((u) => {
-    const { password, ...user } = u;
+const getAllUsers = async (req: Request, res: Response) => {
+  const users = await prisma.user.findMany({
+    include: { profile: true },
+  });
+  const usersWithoutPasswords = users.map((u) => {
+    const { passwordHash, ...user } = u;
     return user;
   });
   res.status(200).json({ users: usersWithoutPasswords });
 };
 
-const updateUserRole = (req: Request, res: Response) => {
+const updateUserRole = async (req: Request, res: Response) => {
   const { userId } = req.params;
   const { role } = req.body;
-  const userIndex = mockUsers.findIndex((u) => u.id === userId);
-  if (userIndex === -1) {
-    return res.status(404).json({ message: "User not found" });
+  try {
+    const updatedUser = await prisma.user.update({
+      where: { id: userId },
+      data: { role },
+      include: { profile: true },
+    });
+    const { passwordHash, ...userResponse } = updatedUser;
+    res.status(200).json({ message: "User role updated", user: userResponse });
+  } catch (error) {
+    res.status(404).json({ message: "User not found" });
   }
-  mockUsers[userIndex].role = role;
-  const { password, ...updatedUser } = mockUsers[userIndex];
-  res.status(200).json({ message: "User role updated", user: updatedUser });
 };
 
-const deleteUser = (req: Request, res: Response) => {
+const deleteUser = async (req: Request, res: Response) => {
   const { userId } = req.params;
-  const userIndex = mockUsers.findIndex((u) => u.id === userId);
-  if (userIndex === -1) {
-    return res.status(404).json({ message: "User not found" });
+  try {
+    await prisma.user.delete({
+      where: { id: userId },
+    });
+    res.status(204).send();
+  } catch (error) {
+    res.status(404).json({ message: "User not found" });
   }
-  mockUsers.splice(userIndex, 1);
-  res.status(204).send();
 };
 
 const verifyToken = (req: Request, res: Response) => {

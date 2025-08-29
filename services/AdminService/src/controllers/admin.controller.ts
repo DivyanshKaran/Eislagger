@@ -1,26 +1,15 @@
+import axios from "axios";
 import type { Request, Response } from "express";
 import { promises as fs } from "fs";
 import path from "path";
 import { fileURLToPath } from "url";
+// import { apiGatewayClient } from "../middleware/auth.ts";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-// --- Mock/Helper Clients for Demonstration ---
-// In a real application, these would be proper clients for your infrastructure.
-
-// Simulates an API client (like Axios) to communicate with other services via the API Gateway
-const apiGatewayClient = {
-  get: async (path: string) => ({
-    status: 200,
-    data: { message: `Data from ${path}` },
-  }),
-  put: async (path: string, body: any) => ({
-    status: 200,
-    data: { message: `Updated ${path} with ${JSON.stringify(body)}` },
-  }),
-  delete: async (path: string) => ({ status: 204 }),
-};
+const AUTH_SERVICE_URL =
+  process.env.AUTH_SERVICE_URL || "http://localhost:3002";
 
 // Simulates a client to publish events to a Kafka topic
 const kafkaProducer = {
@@ -38,7 +27,11 @@ const kafkaProducer = {
  */
 const getAllUsers = async (req: Request, res: Response) => {
   try {
-    const response = await apiGatewayClient.get("/auth/users");
+    const response = await axios.get(`${AUTH_SERVICE_URL}/api/v1/auth/users`, {
+      headers: {
+        Authorization: req.headers.authorization,
+      },
+    });
     res.status(response.status).json(response.data);
   } catch (error) {
     res
@@ -124,12 +117,7 @@ const getAuditLogs = async (req: Request, res: Response) => {
   try {
     const { startDate, endDate, serviceName, userId } = req.query;
 
-    const dataFilePath = path.join(
-      __dirname,
-      "..",
-      "data",
-      "auditlogs.json"
-    );
+    const dataFilePath = path.join(__dirname, "..", "data", "auditlogs.json");
     const fileContent = await fs.readFile(dataFilePath, "utf-8");
     let logs = JSON.parse(fileContent);
 

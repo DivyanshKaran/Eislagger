@@ -1,0 +1,56 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+// This is your Prisma schema file.
+// Learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// 1. Define the generator for the Prisma Client
+generator client {
+  provider = "prisma-client-js"
+}
+
+// 2. Define the datasource (your PostgreSQL database)
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL") // This will be read from your .env file
+}
+
+// ------------------ MODELS ------------------
+
+// Model for core user authentication data
+model User {
+  id            String      @id @default(uuid())
+  email         String      @unique
+  passwordHash  String
+  role          Role        @default(Patron) // Using the Role enum for type safety
+  createdAt     DateTime    @default(now())
+
+  // Relation to UserProfile
+  profile       UserProfile? // A user might have a profile
+}
+
+// Model for additional user profile information
+model UserProfile {
+  userId      String  @id
+  fullName    String?
+  avatarUrl   String?
+  phoneNumber String?
+
+  // One-to-one relation back to the User model
+  user        User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+
+// ------------------ ENUMS ------------------
+
+// Enum for the different user roles
+// This is a more type-safe and modern approach than a separate 'roles' table for fixed roles.
+enum Role {
+  Executive
+  Manufacturer
+  Clerk
+  Patron
+}
