@@ -3,7 +3,6 @@ import type { Request, Response } from "express";
 import { promises as fs } from "fs";
 import path from "path";
 import { fileURLToPath } from "url";
-// import { apiGatewayClient } from "../middleware/auth.ts";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -48,8 +47,12 @@ const updateUserRole = async (req: Request, res: Response) => {
   try {
     const { userId } = req.params;
     const { role } = req.body;
-    const response = await apiGatewayClient.put(`/auth/users/${userId}/role`, {
+    const response = await axios.put(`${AUTH_SERVICE_URL}/api/v1/auth/users/${userId}/role`, {
       role,
+    }, {
+        headers: {
+            Authorization: req.headers.authorization
+        }
     });
     res.status(response.status).json(response.data);
   } catch (error) {
@@ -66,7 +69,11 @@ const updateUserRole = async (req: Request, res: Response) => {
 const deleteUser = async (req: Request, res: Response) => {
   try {
     const { userId } = req.params;
-    await apiGatewayClient.delete(`/auth/users/${userId}`);
+    await axios.delete(`${AUTH_SERVICE_URL}/api/v1/auth/users/${userId}`, {
+        headers: {
+            Authorization: req.headers.authorization
+        }
+    });
     res.status(204).send();
   } catch (error) {
     res
@@ -81,19 +88,19 @@ const deleteUser = async (req: Request, res: Response) => {
  */
 const getSystemHealth = async (req: Request, res: Response) => {
   const services = [
-    "auth",
-    "inventory",
-    "sales",
-    "logistics",
-    "analytics",
-    "notifications",
+    { name: "auth", url: `${AUTH_SERVICE_URL}/api/v1/auth/health`},
+    // Add other services here
   ];
   try {
     const healthChecks = services.map((service) =>
-      apiGatewayClient.get(`/${service}/health`).then(
-        () => ({ service, status: "Operational", statusCode: 200 }),
+      axios.get(service.url, {
+          headers: {
+              Authorization: req.headers.authorization
+          }
+      }).then(
+        () => ({ service: service.name, status: "Operational", statusCode: 200 }),
         (err) => ({
-          service,
+          service: service.name,
           status: "Unreachable",
           statusCode: err.response?.status || 503,
         })
