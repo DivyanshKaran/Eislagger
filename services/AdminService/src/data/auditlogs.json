@@ -1,0 +1,607 @@
+[
+  {
+    "eventType": "USER_LOGIN_SUCCESS",
+    "timestamp": "2025-08-29T10:02:15Z",
+    "sourceService": "AuthService",
+    "userId": "exec-ceo-01",
+    "details": {
+      "ipAddress": "203.0.113.25",
+      "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/125.0.0.0 Safari/537.36"
+    }
+  },
+  {
+    "eventType": "BUDGET_ALLOCATED",
+    "timestamp": "2025-08-29T10:05:30Z",
+    "sourceService": "InventoryService",
+    "userId": "exec-ceo-01",
+    "details": {
+      "from": "exec-ceo-01",
+      "toFactoryId": "factory-a",
+      "amount": 50000,
+      "currency": "INR"
+    }
+  },
+  {
+    "eventType": "USER_LOGIN_SUCCESS",
+    "timestamp": "2025-08-29T10:15:10Z",
+    "sourceService": "AuthService",
+    "userId": "mfg-owner-a-01",
+    "details": {
+      "ipAddress": "198.51.100.10",
+      "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.2 Safari/605.1.15"
+    }
+  },
+  {
+    "eventType": "FLAVOR_CREATED",
+    "timestamp": "2025-08-29T10:20:05Z",
+    "sourceService": "InventoryService",
+    "userId": "mfg-owner-a-01",
+    "details": {
+      "flavorName": "Cosmic Caramel Crunch",
+      "dietaryTags": ["nut-free", "gluten-free"],
+      "description": "Creamy caramel with chocolate meteorites and a swirl of galaxy fudge."
+    }
+  },
+  {
+    "eventType": "STOCK_PRODUCED",
+    "timestamp": "2025-08-29T11:00:45Z",
+    "sourceService": "InventoryService",
+    "userId": "mfg-owner-a-01",
+    "details": {
+      "factoryId": "factory-a",
+      "batchId": "b-cc-20250829-001",
+      "flavorName": "Cosmic Caramel Crunch",
+      "quantity": 150,
+      "unit": "Liters",
+      "productionCost": 22500,
+      "expiryDate": "2026-02-28"
+    }
+  },
+  {
+    "eventType": "USER_REGISTERED",
+    "timestamp": "2025-08-29T11:10:22Z",
+    "sourceService": "AuthService",
+    "userId": "system-internal",
+    "details": {
+      "newUserId": "patron-jane-doe-01",
+      "name": "Jane Doe",
+      "email": "jane.doe@example.com",
+      "assignedRole": "Patron"
+    }
+  },
+  {
+    "eventType": "USER_LOGIN_SUCCESS",
+    "timestamp": "2025-08-29T11:30:18Z",
+    "sourceService": "AuthService",
+    "userId": "clerk-shop-alpha-01",
+    "details": {
+      "ipAddress": "192.0.2.44",
+      "userAgent": "EisLager POS Terminal v2.1.0"
+    }
+  },
+  {
+    "eventType": "PURCHASE_ORDER_CREATED",
+    "timestamp": "2025-08-29T11:35:00Z",
+    "sourceService": "SalesService",
+    "userId": "clerk-shop-alpha-01",
+    "details": {
+      "purchaseOrderId": "po-alpha-20250829-1",
+      "shopId": "shop-alpha",
+      "requestedFromFactoryId": "factory-a",
+      "items": [
+        {
+          "flavorName": "Cosmic Caramel Crunch",
+          "quantity": 20,
+          "unit": "Liters"
+        },
+        { "flavorName": "Dark Choco Fudge", "quantity": 15, "unit": "Liters" }
+      ]
+    }
+  },
+  {
+    "eventType": "INVOICE_GENERATED",
+    "timestamp": "2025-08-29T11:40:15Z",
+    "sourceService": "InventoryService",
+    "userId": "mfg-owner-a-01",
+    "details": {
+      "invoiceId": "inv-fa-sa-20250829-1",
+      "purchaseOrderId": "po-alpha-20250829-1",
+      "shopId": "shop-alpha",
+      "totalAmount": 7000,
+      "currency": "INR",
+      "status": "Awaiting Payment"
+    }
+  },
+  {
+    "eventType": "EMAIL_NOTIFICATION_SENT",
+    "timestamp": "2025-08-29T11:40:17Z",
+    "sourceService": "NotificationService",
+    "userId": "system-internal",
+    "details": {
+      "recipient": "clerk-shop-alpha-01",
+      "template": "NewInvoiceNotification",
+      "subject": "New Invoice INV-FA-SA-20250829-1 from Factory A"
+    }
+  },
+  {
+    "eventType": "SHIPMENT_CREATED",
+    "timestamp": "2025-08-29T12:05:00Z",
+    "sourceService": "LogisticsService",
+    "userId": "system-internal",
+    "details": {
+      "shipmentId": "shp-fa-sa-001",
+      "trackingNumber": "ELTRK20250829A01",
+      "originFactoryId": "factory-a",
+      "destinationShopId": "shop-alpha",
+      "status": "Pending Pickup"
+    }
+  },
+  {
+    "eventType": "SYSTEM_HEALTH_CHECK_PERFORMED",
+    "timestamp": "2025-08-29T12:30:00Z",
+    "sourceService": "AdminService",
+    "userId": "exec-ceo-01",
+    "details": {
+      "results": [
+        { "service": "AuthService", "status": "Operational" },
+        { "service": "InventoryService", "status": "Operational" },
+        { "service": "SalesService", "status": "Operational" },
+        { "service": "LogisticsService", "status": "Operational" }
+      ]
+    }
+  },
+  {
+    "eventType": "SHIPMENT_STATUS_UPDATED",
+    "timestamp": "2025-08-29T13:00:25Z",
+    "sourceService": "LogisticsService",
+    "userId": "system-internal",
+    "details": {
+      "shipmentId": "shp-fa-sa-001",
+      "oldStatus": "Pending Pickup",
+      "newStatus": "In Transit",
+      "notes": "Driver en route. ETA: 2 hours."
+    }
+  },
+  {
+    "eventType": "SHIPMENT_DELIVERED",
+    "timestamp": "2025-08-29T15:10:40Z",
+    "sourceService": "LogisticsService",
+    "userId": "system-internal",
+    "details": {
+      "shipmentId": "shp-fa-sa-001",
+      "oldStatus": "In Transit",
+      "newStatus": "Delivered",
+      "signedBy": "clerk-shop-alpha-01"
+    }
+  },
+  {
+    "eventType": "INVENTORY_RECEIVED",
+    "timestamp": "2025-08-29T15:15:00Z",
+    "sourceService": "SalesService",
+    "userId": "clerk-shop-alpha-01",
+    "details": {
+      "shopId": "shop-alpha",
+      "shipmentId": "shp-fa-sa-001",
+      "itemsReceived": [
+        {
+          "flavorName": "Cosmic Caramel Crunch",
+          "quantity": 20,
+          "unit": "Liters"
+        },
+        { "flavorName": "Dark Choco Fudge", "quantity": 15, "unit": "Liters" }
+      ],
+      "acquisitionCost": 7000
+    }
+  },
+  {
+    "eventType": "POS_SALE_COMPLETED",
+    "timestamp": "2025-08-29T16:05:12Z",
+    "sourceService": "SalesService",
+    "userId": "clerk-shop-alpha-01",
+    "details": {
+      "transactionId": "txn-alpha-20250829-001",
+      "shopId": "shop-alpha",
+      "patronId": "patron-jane-doe-01",
+      "items": [
+        { "flavorName": "Cosmic Caramel Crunch", "scoops": 2, "price": 180 },
+        { "flavorName": "Dark Choco Fudge", "scoops": 1, "price": 80 }
+      ],
+      "totalAmount": 260,
+      "paymentMethod": "Credit Card"
+    }
+  },
+  {
+    "eventType": "EMAIL_NOTIFICATION_SENT",
+    "timestamp": "2025-08-29T16:05:14Z",
+    "sourceService": "NotificationService",
+    "userId": "system-internal",
+    "details": {
+      "recipient": "patron-jane-doe-01",
+      "template": "TransactionReceipt",
+      "subject": "Your EisLager Receipt TXN-ALPHA-20250829-001"
+    }
+  },
+  {
+    "eventType": "CUSTOMER_FEEDBACK_SUBMITTED",
+    "timestamp": "2025-08-29T16:20:00Z",
+    "sourceService": "SalesService",
+    "userId": "patron-jane-doe-01",
+    "details": {
+      "shopId": "shop-alpha",
+      "flavorName": "Cosmic Caramel Crunch",
+      "rating": 5,
+      "comment": "Absolutely amazing! Best flavor ever."
+    }
+  },
+  {
+    "eventType": "USER_ROLE_UPDATED",
+    "timestamp": "2025-08-29T16:30:00Z",
+    "sourceService": "AdminService",
+    "userId": "exec-ceo-01",
+    "details": {
+      "targetUserId": "mfg-owner-b-01",
+      "oldRole": "Manufacturer",
+      "newRole": "Manufacturer-Premium"
+    }
+  },
+  {
+    "eventType": "REPORT_GENERATED",
+    "timestamp": "2025-08-29T17:00:00Z",
+    "sourceService": "AnalyticsService",
+    "userId": "system-scheduler",
+    "details": {
+      "reportType": "Daily Sales Summary",
+      "timeRange": "2025-08-28 to 2025-08-29",
+      "recipient": "exec-ceo-01"
+    }
+  },
+  {
+    "eventType": "USER_LOGIN_FAILURE",
+    "timestamp": "2025-08-29T17:05:45Z",
+    "sourceService": "AuthService",
+    "userId": "anonymous",
+    "details": {
+      "emailAttempt": "john.smith@example.com",
+      "reason": "Invalid password",
+      "ipAddress": "192.0.2.101"
+    }
+  },
+  {
+    "eventType": "PASSWORD_RESET_REQUEST",
+    "timestamp": "2025-08-29T17:06:10Z",
+    "sourceService": "AuthService",
+    "userId": "anonymous",
+    "details": {
+      "email": "john.smith@example.com",
+      "ipAddress": "192.0.2.101"
+    }
+  },
+  {
+    "eventType": "EMAIL_NOTIFICATION_SENT",
+    "timestamp": "2025-08-29T17:06:11Z",
+    "sourceService": "NotificationService",
+    "userId": "system-internal",
+    "details": {
+      "recipientEmail": "john.smith@example.com",
+      "template": "PasswordResetRequest",
+      "subject": "Reset Your EisLager Password"
+    }
+  },
+  {
+    "eventType": "PASSWORD_RESET_SUCCESS",
+    "timestamp": "2025-08-29T17:08:30Z",
+    "sourceService": "AuthService",
+    "userId": "patron-john-smith-02",
+    "details": {
+      "email": "john.smith@example.com",
+      "ipAddress": "192.0.2.101"
+    }
+  },
+  {
+    "eventType": "STOCK_EXPIRED",
+    "timestamp": "2025-08-29T17:15:00Z",
+    "sourceService": "InventoryService",
+    "userId": "system-auditor",
+    "details": {
+      "factoryId": "factory-a",
+      "batchId": "b-vf-20250228-004",
+      "flavorName": "Vanilla Fields",
+      "quantity": 5,
+      "unit": "Liters",
+      "actionTaken": "Marked for disposal"
+    }
+  },
+  {
+    "eventType": "BROADCAST_MESSAGE_SENT",
+    "timestamp": "2025-08-29T17:20:00Z",
+    "sourceService": "AdminService",
+    "userId": "exec-ceo-01",
+    "details": {
+      "targetAudience": "All Clerks",
+      "message": "Reminder: All shops close at 10 PM tonight for system maintenance."
+    }
+  },
+  {
+    "eventType": "WEBSOCKET_MESSAGE_SENT",
+    "timestamp": "2025-08-29T17:20:01Z",
+    "sourceService": "NotificationService",
+    "userId": "system-internal",
+    "details": {
+      "channel": "clerks-global",
+      "eventType": "system-broadcast",
+      "message": "Reminder: All shops close at 10 PM tonight for system maintenance."
+    }
+  },
+  {
+    "eventType": "REFUND_PROCESSED",
+    "timestamp": "2025-08-29T17:25:50Z",
+    "sourceService": "SalesService",
+    "userId": "clerk-shop-alpha-01",
+    "details": {
+      "originalTransactionId": "txn-alpha-20250829-001",
+      "refundTransactionId": "ref-alpha-20250829-001",
+      "amount": 80,
+      "currency": "INR",
+      "reason": "Customer complaint - wrong flavor"
+    }
+  },
+  {
+    "eventType": "PURCHASE_ORDER_CREATED",
+    "timestamp": "2025-08-29T17:30:00Z",
+    "sourceService": "SalesService",
+    "userId": "clerk-shop-beta-01",
+    "details": {
+      "purchaseOrderId": "po-beta-20250829-1",
+      "shopId": "shop-beta",
+      "requestedFromFactoryId": "factory-b",
+      "items": [
+        {
+          "flavorName": "Strawberry Sensation",
+          "quantity": 25,
+          "unit": "Liters"
+        }
+      ]
+    }
+  },
+  {
+    "eventType": "AUDIT_LOG_VIEWED",
+    "timestamp": "2025-08-29T17:40:00Z",
+    "sourceService": "AdminService",
+    "userId": "exec-ceo-01",
+    "details": {
+      "filter": { "sourceService": "SalesService", "timeRange": "last 2 hours" }
+    }
+  },
+  {
+    "eventType": "SALES_THRESHOLD_ALERT",
+    "timestamp": "2025-08-29T18:00:00Z",
+    "sourceService": "AnalyticsService",
+    "userId": "system-monitor",
+    "details": {
+      "alertType": "Flavor Popularity Spike",
+      "flavorName": "Cosmic Caramel Crunch",
+      "shopId": "shop-alpha",
+      "salesInLastHour": 35,
+      "threshold": 20
+    }
+  },
+  {
+    "eventType": "DISCOUNT_APPLIED",
+    "timestamp": "2025-08-29T18:05:20Z",
+    "sourceService": "SalesService",
+    "userId": "clerk-shop-alpha-01",
+    "details": {
+      "transactionId": "txn-alpha-20250829-042",
+      "discountCode": "CORPORATE10",
+      "discountPercentage": 10,
+      "amountSaved": 150
+    }
+  },
+  {
+    "eventType": "USER_LOGIN_SUCCESS",
+    "timestamp": "2025-08-29T18:10:00Z",
+    "sourceService": "AuthService",
+    "userId": "mfg-owner-b-01",
+    "details": {
+      "ipAddress": "203.0.113.88",
+      "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/125.0.0.0 Safari/537.36"
+    }
+  },
+  {
+    "eventType": "STOCK_PRODUCED",
+    "timestamp": "2025-08-29T18:15:00Z",
+    "sourceService": "InventoryService",
+    "userId": "mfg-owner-b-01",
+    "details": {
+      "factoryId": "factory-b",
+      "batchId": "b-ss-20250829-001",
+      "flavorName": "Strawberry Sensation",
+      "quantity": 200,
+      "unit": "Liters",
+      "productionCost": 28000,
+      "expiryDate": "2026-02-28"
+    }
+  },
+  {
+    "eventType": "INVOICE_GENERATED",
+    "timestamp": "2025-08-29T18:20:10Z",
+    "sourceService": "InventoryService",
+    "userId": "mfg-owner-b-01",
+    "details": {
+      "invoiceId": "inv-fb-sb-20250829-1",
+      "purchaseOrderId": "po-beta-20250829-1",
+      "shopId": "shop-beta",
+      "totalAmount": 5500,
+      "currency": "INR",
+      "status": "Awaiting Payment"
+    }
+  },
+  {
+    "eventType": "SHIPMENT_CREATED",
+    "timestamp": "2025-08-29T18:25:00Z",
+    "sourceService": "LogisticsService",
+    "userId": "system-internal",
+    "details": {
+      "shipmentId": "shp-fb-sb-001",
+      "trackingNumber": "ELTRK20250829B01",
+      "originFactoryId": "factory-b",
+      "destinationShopId": "shop-beta",
+      "status": "Pending Pickup"
+    }
+  },
+  {
+    "eventType": "USER_DELETED",
+    "timestamp": "2025-08-29T18:30:00Z",
+    "sourceService": "AdminService",
+    "userId": "exec-ceo-01",
+    "details": {
+      "deletedUserId": "patron-test-user-99",
+      "reason": "Test account cleanup"
+    }
+  },
+  {
+    "eventType": "TOKEN_REFRESHED",
+    "timestamp": "2025-08-29T18:40:15Z",
+    "sourceService": "AuthService",
+    "userId": "exec-ceo-01",
+    "details": {
+      "ipAddress": "203.0.113.25",
+      "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/125.0.0.0 Safari/537.36"
+    }
+  },
+  {
+    "eventType": "SHIPMENT_STATUS_UPDATED",
+    "timestamp": "2025-08-29T18:45:00Z",
+    "sourceService": "LogisticsService",
+    "userId": "system-internal",
+    "details": {
+      "shipmentId": "shp-fb-sb-001",
+      "oldStatus": "Pending Pickup",
+      "newStatus": "In Transit",
+      "notes": "Driver en route. ETA: 3 hours."
+    }
+  },
+  {
+    "eventType": "DELIVERY_DELAY_DETECTED",
+    "timestamp": "2025-08-29T19:00:00Z",
+    "sourceService": "LogisticsService",
+    "userId": "system-monitor",
+    "details": {
+      "shipmentId": "shp-fb-sb-001",
+      "reason": "Heavy traffic reported on route",
+      "newETA": "2025-08-29T22:30:00Z"
+    }
+  },
+  {
+    "eventType": "EMAIL_NOTIFICATION_FAILED",
+    "timestamp": "2025-08-29T19:00:05Z",
+    "sourceService": "NotificationService",
+    "userId": "system-internal",
+    "details": {
+      "recipient": "clerk-shop-beta-01",
+      "template": "ShipmentDelayNotification",
+      "reason": "Recipient mailbox is full"
+    }
+  },
+  {
+    "eventType": "STOCK_LEVEL_LOW",
+    "timestamp": "2025-08-29T19:10:00Z",
+    "sourceService": "InventoryService",
+    "userId": "system-monitor",
+    "details": {
+      "factoryId": "factory-a",
+      "flavorName": "Dark Choco Fudge",
+      "currentQuantity": 40,
+      "unit": "Liters",
+      "threshold": 50
+    }
+  },
+  {
+    "eventType": "POS_SALE_COMPLETED",
+    "timestamp": "2025-08-29T19:15:30Z",
+    "sourceService": "SalesService",
+    "userId": "clerk-shop-beta-01",
+    "details": {
+      "transactionId": "txn-beta-20250829-081",
+      "shopId": "shop-beta",
+      "patronId": "patron-john-smith-02",
+      "items": [{ "flavorName": "Classic Vanilla", "scoops": 3, "price": 210 }],
+      "totalAmount": 210,
+      "paymentMethod": "UPI"
+    }
+  },
+  {
+    "eventType": "CUSTOMER_FEEDBACK_SUBMITTED",
+    "timestamp": "2025-08-29T19:20:10Z",
+    "sourceService": "SalesService",
+    "userId": "patron-john-smith-02",
+    "details": {
+      "shopId": "shop-beta",
+      "flavorName": "Classic Vanilla",
+      "rating": 4,
+      "comment": "Good, but could be creamier."
+    }
+  },
+  {
+    "eventType": "BUDGET_ALLOCATED",
+    "timestamp": "2025-08-29T19:25:00Z",
+    "sourceService": "InventoryService",
+    "userId": "exec-ceo-01",
+    "details": {
+      "from": "exec-ceo-01",
+      "toFactoryId": "factory-b",
+      "amount": 30000,
+      "currency": "INR"
+    }
+  },
+  {
+    "eventType": "SHIPMENT_DELIVERED",
+    "timestamp": "2025-08-29T22:35:00Z",
+    "sourceService": "LogisticsService",
+    "userId": "system-internal",
+    "details": {
+      "shipmentId": "shp-fb-sb-001",
+      "oldStatus": "In Transit",
+      "newStatus": "Delivered",
+      "signedBy": "clerk-shop-beta-01"
+    }
+  },
+  {
+    "eventType": "INVENTORY_RECEIVED",
+    "timestamp": "2025-08-29T22:40:00Z",
+    "sourceService": "SalesService",
+    "userId": "clerk-shop-beta-01",
+    "details": {
+      "shopId": "shop-beta",
+      "shipmentId": "shp-fb-sb-001",
+      "itemsReceived": [
+        {
+          "flavorName": "Strawberry Sensation",
+          "quantity": 25,
+          "unit": "Liters"
+        }
+      ],
+      "acquisitionCost": 5500
+    }
+  },
+  {
+    "eventType": "USER_LOGOUT",
+    "timestamp": "2025-08-29T23:00:10Z",
+    "sourceService": "AuthService",
+    "userId": "clerk-shop-alpha-01",
+    "details": {
+      "reason": "End of shift",
+      "ipAddress": "192.0.2.44"
+    }
+  },
+  {
+    "eventType": "USER_LOGOUT",
+    "timestamp": "2025-08-29T23:01:05Z",
+    "sourceService": "AuthService",
+    "userId": "clerk-shop-beta-01",
+    "details": {
+      "reason": "End of shift",
+      "ipAddress": "198.51.100.55"
+    }
+  }
+]
