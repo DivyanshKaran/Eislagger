@@ -1,137 +1,133 @@
 import type { Request, Response } from "express";
 
-// Dummy data for factories
-let factories = [
-  {
-    id: 1,
-    name: "Factory A",
-    stock: [
-      { flavor: "chocolate", quantity: 100 },
-      { flavor: "vanilla", quantity: 150 },
-    ],
-    budget: 5000,
-  },
-  {
-    id: 2,
-    name: "Factory B",
-    stock: [
-      { flavor: "strawberry", quantity: 120 },
-      { flavor: "mint", quantity: 80 },
-    ],
-    budget: 7000,
-  },
-];
-
-// Dummy data for flavors
-const flavors = [
-  "chocolate",
-  "vanilla",
-  "strawberry",
-  "mint",
-  "caramel",
-  "pistachio",
-];
-
-// Dummy data for invoices
-let invoices: any[] = [];
+import prisma from "../prisma.ts";
 
 /**
  * @description Get a factory's details, including its stock and budget.
- * @param req
- * @param res
  */
 export const getFactory = async (req: Request, res: Response) => {
-  const factoryId = parseInt(req.params.factoryId);
-  const factory = factories.find((f) => f.id === factoryId);
+  try {
+    const factoryId = req.params.factoryId;
+    const factory = await prisma.factory.findUnique({
+      where: { id: factoryId },
+    });
 
-  if (factory) {
-    res.json(factory);
-  } else {
-    res.status(404).json({ message: "Factory not found" });
+    if (factory) {
+      res.json({ message: "Factory found successfully", factory: factory });
+    } else {
+      res.status(404).json({ message: "Factory not found" });
+    }
+  } catch (error) {
+    res.status(500).json({ message: "Internal server error", error });
   }
 };
 
 /**
  * @description Allocate or update a factory's budget.
- * @param req
- * @param res
  */
 export const updateFactoryBudget = async (req: Request, res: Response) => {
-  const factoryId = parseInt(req.params.factoryId);
-  const { budget } = req.body;
-  const factoryIndex = factories.findIndex((f) => f.id === factoryId);
+  try {
+    const factoryId = req.params.factoryId;
+    const { budget } = req.body;
 
-  if (factoryIndex !== -1) {
-    factories[factoryIndex].budget = budget;
-    res.json(factories[factoryIndex]);
-  } else {
-    res.status(404).json({ message: "Factory not found" });
+    const updatedFactory = await prisma.factory.update({
+      where: { id: factoryId },
+      data: { budget: parseInt(budget) },
+    });
+
+    if (updatedFactory) {
+      res.json(updatedFactory);
+    } else {
+      res.status(404).json({ message: "Factory not found" });
+    }
+  } catch (error) {
+    res.status(500).json({ message: "Internal server error", error });
   }
 };
 
 /**
  * @description Register newly produced ice cream stock.
- * @param req
- * @param res
  */
 export const createFactoryStockItem = async (req: Request, res: Response) => {
-  const factoryId = parseInt(req.params.factoryId);
-  const { flavor, quantity } = req.body;
-  const factoryIndex = factories.findIndex((f) => f.id === factoryId);
+  try {
+    const factoryId = req.params.factoryId;
+    const { batchId, expiryDate, flavorId, productionCost, quantity, unit } =
+      req.body;
 
-  if (factoryIndex !== -1) {
-    const stockIndex = factories[factoryIndex].stock.findIndex(
-      (s) => s.flavor === flavor
-    );
-    if (stockIndex !== -1) {
-      factories[factoryIndex].stock[stockIndex].quantity += quantity;
-    } else {
-      factories[factoryIndex].stock.push({ flavor, quantity });
+    const updatedFactory = await prisma.factory.findUnique({
+      where: { id: factoryId },
+    });
+
+    if (!updatedFactory) {
+      res.status(404).json({ message: "Factory not found" });
     }
-    res.status(201).json(factories[factoryIndex]);
-  } else {
-    res.status(404).json({ message: "Factory not found" });
+
+    const newStockItem = await prisma.stockItem.create({
+      data: {
+        factoryId: factoryId,
+        batchId,
+        expiryDate: new Date(expiryDate),
+        flavorId,
+        productionCost,
+        quantity,
+        unit,
+      },
+    });
+
+    res.status(200).json({ message: "Stock added to factory", newStockItem });
+  } catch (error) {
+    res.status(500).json({ message: "Internal server error", error });
   }
 };
 
 /**
  * @description Get a list of all available flavors.
- * @param req
- * @param res
  */
 export const getFlavors = async (req: Request, res: Response) => {
-  res.json(flavors);
+  try {
+    const flavors = await prisma.flavor.findMany();
+    res.json({ message: "Flavors obtained", flavors });
+  } catch (error) {
+    res.status(500).json({ message: "Internal server error", error });
+  }
 };
 
 /**
  * @description Create an invoice for a shop based on a purchase order.
- * @param req
- * @param res
+ * To be implemented using Kafka Events
+ * still left to be implemented
  */
 export const createInvoice = async (req: Request, res: Response) => {
-  const { shopId, items } = req.body;
-  const newInvoice = {
-    id: invoices.length + 1,
-    shopId,
-    items,
-    createdAt: new Date(),
-  };
-  invoices.push(newInvoice);
-  res.status(201).json(newInvoice);
+  try {
+    const { shopId, items } = req.body;
+    const newInvoice = await prisma.invoice.create({
+      data: {
+        shopId: shopId,
+        items: items, // Assuming 'items' is a JSON string or compatible type
+      },
+    });
+    res.status(201).json(newInvoice);
+  } catch (error) {
+    res.status(500).json({ message: "Internal server error", error });
+  }
 };
 
 /**
  * @description Retrieve details for a specific invoice.
- * @param req
- * @param res
  */
 export const getInvoice = async (req: Request, res: Response) => {
-  const invoiceId = parseInt(req.params.invoiceId);
-  const invoice = invoices.find((i) => i.id === invoiceId);
+  try {
+    const invoiceId = req.params.invoiceId;
+    const invoice = await prisma.invoice.findUnique({
+      where: { id: invoiceId },
+    });
 
-  if (invoice) {
-    res.json(invoice);
-  } else {
-    res.status(404).json({ message: "Invoice not found" });
+    if (invoice) {
+      res.status(200).json({ message: "Invoice found successfully", invoice });
+    } else {
+      res.status(404).json({ message: "Invoice not found" });
+    }
+  } catch (error) {
+    res.status(500).json({ message: "Internal server error", error });
   }
 };

@@ -9,6 +9,9 @@
     "build": "tsc",
     "dev": "ts-node --esm src/index.ts"
   },
+  "prisma": {
+    "seed": "ts-node prisma/seed.ts"
+  },
   "keywords": [],
   "author": "",
   "license": "ISC",

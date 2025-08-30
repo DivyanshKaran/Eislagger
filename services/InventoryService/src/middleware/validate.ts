@@ -17,7 +17,7 @@ export const validate =
       next();
     } catch (error) {
       if (error instanceof ZodError) {
-        // console.log(error);
+        console.log(error);
         return res.status(400).json({
           message: "Validation failed",
           errors: error.issues.map((err) => ({
