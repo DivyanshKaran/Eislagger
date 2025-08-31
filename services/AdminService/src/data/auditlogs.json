@@ -38,7 +38,10 @@
     "userId": "mfg-owner-a-01",
     "details": {
       "flavorName": "Cosmic Caramel Crunch",
-      "dietaryTags": ["nut-free", "gluten-free"],
+      "dietaryTags": [
+        "nut-free",
+        "gluten-free"
+      ],
       "description": "Creamy caramel with chocolate meteorites and a swirl of galaxy fudge."
     }
   },
@@ -94,7 +97,11 @@
           "quantity": 20,
           "unit": "Liters"
         },
-        { "flavorName": "Dark Choco Fudge", "quantity": 15, "unit": "Liters" }
+        {
+          "flavorName": "Dark Choco Fudge",
+          "quantity": 15,
+          "unit": "Liters"
+        }
       ]
     }
   },
@@ -143,10 +150,22 @@
     "userId": "exec-ceo-01",
     "details": {
       "results": [
-        { "service": "AuthService", "status": "Operational" },
-        { "service": "InventoryService", "status": "Operational" },
-        { "service": "SalesService", "status": "Operational" },
-        { "service": "LogisticsService", "status": "Operational" }
+        {
+          "service": "AuthService",
+          "status": "Operational"
+        },
+        {
+          "service": "InventoryService",
+          "status": "Operational"
+        },
+        {
+          "service": "SalesService",
+          "status": "Operational"
+        },
+        {
+          "service": "LogisticsService",
+          "status": "Operational"
+        }
       ]
     }
   },
@@ -188,7 +207,11 @@
           "quantity": 20,
           "unit": "Liters"
         },
-        { "flavorName": "Dark Choco Fudge", "quantity": 15, "unit": "Liters" }
+        {
+          "flavorName": "Dark Choco Fudge",
+          "quantity": 15,
+          "unit": "Liters"
+        }
       ],
       "acquisitionCost": 7000
     }
@@ -203,8 +226,16 @@
       "shopId": "shop-alpha",
       "patronId": "patron-jane-doe-01",
       "items": [
-        { "flavorName": "Cosmic Caramel Crunch", "scoops": 2, "price": 180 },
-        { "flavorName": "Dark Choco Fudge", "scoops": 1, "price": 80 }
+        {
+          "flavorName": "Cosmic Caramel Crunch",
+          "scoops": 2,
+          "price": 180
+        },
+        {
+          "flavorName": "Dark Choco Fudge",
+          "scoops": 1,
+          "price": 80
+        }
       ],
       "totalAmount": 260,
       "paymentMethod": "Credit Card"
@@ -369,7 +400,10 @@
     "sourceService": "AdminService",
     "userId": "exec-ceo-01",
     "details": {
-      "filter": { "sourceService": "SalesService", "timeRange": "last 2 hours" }
+      "filter": {
+        "sourceService": "SalesService",
+        "timeRange": "last 2 hours"
+      }
     }
   },
   {
@@ -525,7 +559,13 @@
       "transactionId": "txn-beta-20250829-081",
       "shopId": "shop-beta",
       "patronId": "patron-john-smith-02",
-      "items": [{ "flavorName": "Classic Vanilla", "scoops": 3, "price": 210 }],
+      "items": [
+        {
+          "flavorName": "Classic Vanilla",
+          "scoops": 3,
+          "price": 210
+        }
+      ],
       "totalAmount": 210,
       "paymentMethod": "UPI"
     }
@@ -602,6 +642,25 @@
     "details": {
       "reason": "End of shift",
       "ipAddress": "198.51.100.55"
+    }
+  },
+  {
+    "eventType": "POS_SALE_COMPLETED",
+    "timestamp": "2025-08-31T10:49:08.846Z",
+    "sourceService": "SalesService",
+    "details": {
+      "shopId": 2,
+      "items": [
+        {
+          "flavor": "hazelnut",
+          "quantity": 15
+        },
+        {
+          "flavor": "pistachio",
+          "quantity": 10
+        }
+      ],
+      "location": "Kothri Kalan, Madhya Pradesh, India"
     }
   }
 ]

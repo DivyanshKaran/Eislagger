@@ -10,14 +10,6 @@ const __dirname = path.dirname(__filename);
 const AUTH_SERVICE_URL =
   process.env.AUTH_SERVICE_URL || "http://localhost:3002";
 
-// Simulates a client to publish events to a Kafka topic
-const kafkaProducer = {
-  publish: async (topic: string, message: any) => {
-    console.log(`Published to Kafka topic '${topic}':`, message);
-    return { status: "success" };
-  },
-};
-
 // --- Controller Logic ---
 
 /**
@@ -47,13 +39,17 @@ const updateUserRole = async (req: Request, res: Response) => {
   try {
     const { userId } = req.params;
     const { role } = req.body;
-    const response = await axios.put(`${AUTH_SERVICE_URL}/api/v1/auth/users/${userId}/role`, {
-      role,
-    }, {
+    const response = await axios.put(
+      `${AUTH_SERVICE_URL}/api/v1/auth/users/${userId}/role`,
+      {
+        role,
+      },
+      {
         headers: {
-            Authorization: req.headers.authorization
-        }
-    });
+          Authorization: req.headers.authorization,
+        },
+      }
+    );
     res.status(response.status).json(response.data);
   } catch (error) {
     res
@@ -70,9 +66,9 @@ const deleteUser = async (req: Request, res: Response) => {
   try {
     const { userId } = req.params;
     await axios.delete(`${AUTH_SERVICE_URL}/api/v1/auth/users/${userId}`, {
-        headers: {
-            Authorization: req.headers.authorization
-        }
+      headers: {
+        Authorization: req.headers.authorization,
+      },
     });
     res.status(204).send();
   } catch (error) {
@@ -88,23 +84,29 @@ const deleteUser = async (req: Request, res: Response) => {
  */
 const getSystemHealth = async (req: Request, res: Response) => {
   const services = [
-    { name: "auth", url: `${AUTH_SERVICE_URL}/api/v1/auth/health`},
+    { name: "auth", url: `${AUTH_SERVICE_URL}/api/v1/auth/health` },
     // Add other services here
   ];
   try {
     const healthChecks = services.map((service) =>
-      axios.get(service.url, {
+      axios
+        .get(service.url, {
           headers: {
-              Authorization: req.headers.authorization
-          }
-      }).then(
-        () => ({ service: service.name, status: "Operational", statusCode: 200 }),
-        (err) => ({
-          service: service.name,
-          status: "Unreachable",
-          statusCode: err.response?.status || 503,
+            Authorization: req.headers.authorization,
+          },
         })
-      )
+        .then(
+          () => ({
+            service: service.name,
+            status: "Operational",
+            statusCode: 200,
+          }),
+          (err) => ({
+            service: service.name,
+            status: "Unreachable",
+            statusCode: err.response?.status || 503,
+          })
+        )
     );
     const results = await Promise.all(healthChecks);
     res.status(200).json({ overallStatus: "Checked", services: results });
@@ -124,7 +126,8 @@ const getAuditLogs = async (req: Request, res: Response) => {
   try {
     const { startDate, endDate, serviceName, userId } = req.query;
 
-    const dataFilePath = path.join(__dirname, "..", "data", "auditlogs.json");
+    const dataFilePath = path.join(__dirname, "..", "data", "auditlogs-1.json");
+    console.log(dataFilePath);
     const fileContent = await fs.readFile(dataFilePath, "utf-8");
     let logs = JSON.parse(fileContent);
 
