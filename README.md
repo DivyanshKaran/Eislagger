@@ -6,6 +6,8 @@ A full-stack SaaS platform designed specifically for the ice cream industry, com
 
 EisLager enables ice cream executives, manufacturers, clerks, and patrons to interact within a single ecosystem. The platform tracks supply, demand, manufacturing budgets, and retail operations while providing real-time communication and analytics.
 
+![Role Based Features Placeholder](https://res.cloudinary.com/doskdadrw/image/upload/v1756657950/role_features_iyew1l.png)
+
 ## 👥 User Roles & Features
 
 ### 1. Executive (CEO)
@@ -20,6 +22,8 @@ EisLager enables ice cream executives, manufacturers, clerks, and patrons to int
 - 📧 **Email Interface**: Approve requests, handle communications
 - 🗺️ **Map Interface**: View shops and factories locations
 
+![Analytics Placeholder](https://res.cloudinary.com/doskdadrw/image/upload/v1756656715/analytics_yrlsbv.png)
+
 ### 2. Manufacturer (Factory Owner)
 
 **Role**: Produces ice cream stock
@@ -31,6 +35,8 @@ EisLager enables ice cream executives, manufacturers, clerks, and patrons to int
 - 💬 **Chat Interface**: Direct communication with Executive and Clerks
 - 📧 **Email Interface**: Send invoices and reports
 - 🚚 **Delivery Pipeline**: Visual shipment tracking and status
+
+![Stock Registration Placeholder](https://res.cloudinary.com/doskdadrw/image/upload/v1756658348/stock_registration_iemanc.png)
 
 ### 3. Clerk (Shop Operator)
 
@@ -44,6 +50,8 @@ EisLager enables ice cream executives, manufacturers, clerks, and patrons to int
 - 💬 **Chat Interface**: Report shortages, get support
 - 📧 **Email Interface**: Daily summaries, incident reports
 
+![Chat system Placeholder](https://res.cloudinary.com/doskdadrw/image/upload/v1756656717/chatsystem_g3qofh.png)
+
 ### 4. Patron (Customer)
 
 **Role**: Buys ice cream
@@ -54,6 +62,8 @@ EisLager enables ice cream executives, manufacturers, clerks, and patrons to int
 - 🛒 **Purchase Flow**: Add to cart, checkout, pickup/delivery options
 - ⭐ **Feedback System**: Review flavors, report issues
 - 📍 **Location Awareness**: Find nearest shops with stock
+
+![My Orders Placeholder](https://res.cloudinary.com/doskdadrw/image/upload/v1756658347/my_odrers_xosetp.png)
 
 ## 🏗️ Technical Stack
 
