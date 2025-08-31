@@ -9,6 +9,9 @@
     "build": "tsc",
     "dev": "ts-node --esm src/index.ts"
   },
+  "prisma": {
+    "seed": "ts-node prisma/seed.ts"
+  },
   "keywords": [],
   "author": "",
   "license": "ISC",
@@ -17,6 +20,7 @@
     "axios": "^1.11.0",
     "dotenv": "^17.2.1",
     "express": "^5.0.0",
+    "kafkajs": "^2.2.4",
     "prisma": "^6.15.0",
     "zod": "^4.1.4"
   },

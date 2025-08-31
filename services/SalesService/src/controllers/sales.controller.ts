@@ -1,42 +1,42 @@
 import type { Request, Response } from "express";
+import { PrismaClient } from "@prisma/client";
+import { sendAuditLog } from "../kafka/kafka.ts";
 
-// Mock data
-const shops = [
-  {
-    id: 1,
-    name: "Eisladen am Marktplatz",
-    location: "Hauptstraße 1, 10115 Berlin",
-  },
-  { id: 2, name: "Gelato Fantastico", location: "Via Roma 1, 00184 Roma" },
-];
+const prisma = new PrismaClient();
 
-const menus = {
-  1: [
-    { flavor: "chocolate", price: 2.5 },
-    { flavor: "vanilla", price: 2.5 },
-    { flavor: "strawberry", price: 2.8 },
-  ],
-  2: [
-    { flavor: "pistachio", price: 3.0 },
-    { flavor: "hazelnut", price: 3.0 },
-    { flavor: "stracciatella", price: 2.8 },
-  ],
+/**
+ * @description Get all shops.
+ * @param req
+ * @param res
+ */
+export const getAllShops = async (req: Request, res: Response) => {
+  try {
+    const shops = await prisma.shop.findMany();
+    res.json(shops);
+  } catch (error) {
+    res.status(500).json({ message: "Error getting shops", error });
+  }
 };
 
-const inventories = {
-  1: [
-    { flavor: "chocolate", quantity: 50 },
-    { flavor: "vanilla", quantity: 45 },
-    { flavor: "strawberry", quantity: 30 },
-  ],
-  2: [
-    { flavor: "pistachio", quantity: 40 },
-    { flavor: "hazelnut", quantity: 35 },
-    { flavor: "stracciatella", quantity: 25 },
-  ],
+/**
+ * @description Create a new shop.
+ * @param req
+ * @param res
+ */
+export const createShop = async (req: Request, res: Response) => {
+  const { name, location } = req.body;
+  try {
+    const newShop = await prisma.shop.create({
+      data: {
+        name,
+        location,
+      },
+    });
+    res.status(201).json(newShop);
+  } catch (error) {
+    res.status(500).json({ message: "Error creating shop", error });
+  }
 };
-
-let feedback = [];
 
 /**
  * @description Get details for a specific retail shop.
@@ -44,12 +44,57 @@ let feedback = [];
  * @param res
  */
 export const getShop = async (req: Request, res: Response) => {
-  const shopId = parseInt(req.params.shopId);
-  const shop = shops.find((s) => s.id === shopId);
-  if (shop) {
-    res.json(shop);
-  } else {
-    res.status(404).json({ message: "Shop not found" });
+  const { shopId } = req.params;
+  try {
+    const shop = await prisma.shop.findUnique({
+      where: { id: shopId },
+    });
+    if (shop) {
+      res.json(shop);
+    } else {
+      res.status(404).json({ message: "Shop not found" });
+    }
+  } catch (error) {
+    res.status(500).json({ message: "Error getting shop", error });
+  }
+};
+
+/**
+ * @description Update a shop.
+ * @param req
+ * @param res
+ */
+export const updateShop = async (req: Request, res: Response) => {
+  const { shopId } = req.params;
+  const { name, location } = req.body;
+  try {
+    const updatedShop = await prisma.shop.update({
+      where: { id: shopId },
+      data: {
+        name,
+        location,
+      },
+    });
+    res.json(updatedShop);
+  } catch (error) {
+    res.status(500).json({ message: "Error updating shop", error });
+  }
+};
+
+/**
+ * @description Delete a shop.
+ * @param req
+ * @param res
+ */
+export const deleteShop = async (req: Request, res: Response) => {
+  const { shopId } = req.params;
+  try {
+    await prisma.shop.delete({
+      where: { id: shopId },
+    });
+    res.status(204).send();
+  } catch (error) {
+    res.status(500).json({ message: "Error deleting shop", error });
   }
 };
 
@@ -59,12 +104,22 @@ export const getShop = async (req: Request, res: Response) => {
  * @param res
  */
 export const getShopMenu = async (req: Request, res: Response) => {
-  const shopId = parseInt(req.params.shopId);
-  const menu = menus[shopId];
-  if (menu) {
-    res.json(menu);
-  } else {
-    res.status(404).json({ message: "Menu not found for this shop" });
+  const { shopId } = req.params;
+  try {
+    const stock = await prisma.shopStock.findMany({
+      where: { shopId },
+      select: {
+        flavorName: true,
+        pricePerUnit: true,
+      },
+    });
+    if (stock.length > 0) {
+      res.json(stock);
+    } else {
+      res.status(404).json({ message: "Menu not found for this shop" });
+    }
+  } catch (error) {
+    res.status(500).json({ message: "Error getting shop menu", error });
   }
 };
 
@@ -74,12 +129,18 @@ export const getShopMenu = async (req: Request, res: Response) => {
  * @param res
  */
 export const getShopInventory = async (req: Request, res: Response) => {
-  const shopId = parseInt(req.params.shopId);
-  const inventory = inventories[shopId];
-  if (inventory) {
-    res.json(inventory);
-  } else {
-    res.status(404).json({ message: "Inventory not found for this shop" });
+  const { shopId } = req.params;
+  try {
+    const stock = await prisma.shopStock.findMany({
+      where: { shopId },
+    });
+    if (stock.length > 0) {
+      res.json(stock);
+    } else {
+      res.status(404).json({ message: "Inventory not found for this shop" });
+    }
+  } catch (error) {
+    res.status(500).json({ message: "Error getting shop inventory", error });
   }
 };
 
@@ -89,31 +150,81 @@ export const getShopInventory = async (req: Request, res: Response) => {
  * @param res
  */
 export const createPosTransaction = async (req: Request, res: Response) => {
-  const shopId = parseInt(req.params.shopId);
-  const { items } = req.body; // items: [{ flavor: string, quantity: number }]
+  const { shopId } = req.params;
+  const { items, clerkId, patronId } = req.body; // items: [{ flavorId: string, quantity: number }]
 
-  const shopInventory = inventories[shopId];
+  try {
+    const transaction = await prisma.$transaction(async (tx) => {
+      let totalAmount = 0;
 
-  if (!shopInventory) {
-    return res.status(404).json({ message: 'Inventory not found for this shop' });
+      for (const item of items) {
+        const stockItem = await tx.shopStock.findFirst({
+          where: {
+            shopId,
+            flavorId: item.flavorId,
+          },
+        });
+
+        if (!stockItem || stockItem.quantity < item.quantity) {
+          throw new Error(`Not enough stock for ${item.flavorName}`);
+        }
+
+        await tx.shopStock.update({
+          where: {
+            id: stockItem.id,
+          },
+          data: {
+            quantity: {
+              decrement: item.quantity,
+            },
+          },
+        });
+
+        totalAmount += Number(stockItem.pricePerUnit) * item.quantity;
+      }
+
+      const newTransaction = await tx.posTransaction.create({
+        data: {
+          shopId,
+          clerkId,
+          patronId,
+          totalAmount,
+          items: {
+            create: items.map((item) => ({
+              flavorId: item.flavorId,
+              flavorName: item.flavorName, // You might want to fetch this from the stock item
+              quantity: item.quantity,
+              unitPrice: item.unitPrice, // You might want to fetch this from the stock item
+            })),
+          },
+        },
+        include: {
+          items: true,
+        },
+      });
+
+      return newTransaction;
+    });
+
+    res.status(201).json({ message: "Transaction successful", transaction });
+
+    const auditLog = {
+      eventType: "POS_SALE_COMPLETED",
+      timestamp: new Date().toISOString(),
+      sourceService: "SalesService",
+      userId: clerkId,
+      details: {
+        shopId,
+        transactionId: transaction.id,
+        items: transaction.items,
+        totalAmount: transaction.totalAmount,
+      },
+    };
+
+    await sendAuditLog(auditLog);
+  } catch (error) {
+    res.status(400).json({ message: error.message });
   }
-
-  // Check if there is enough stock for the transaction
-  for (const item of items) {
-    const inventoryItem = shopInventory.find(i => i.flavor === item.flavor);
-    if (!inventoryItem || inventoryItem.quantity < item.quantity) {
-      return res.status(400).json({ message: `Not enough stock for ${item.flavor}` });
-    }
-  }
-
-  // Deduct the stock
-  for (const item of items) {
-    const inventoryItem = shopInventory.find(i => i.flavor === item.flavor);
-    inventoryItem.quantity -= item.quantity;
-  }
-
-  console.log(`New sale at shop ${shopId}:`, items);
-  res.status(201).json({ message: "Transaction successful" });
 };
 
 /**
@@ -122,11 +233,34 @@ export const createPosTransaction = async (req: Request, res: Response) => {
  * @param res
  */
 export const createPurchaseOrder = async (req: Request, res: Response) => {
-  const shopId = parseInt(req.params.shopId);
-  const { items } = req.body; // items: [{ flavor: string, quantity: number }]
-  // In a real implementation, you would send a request to the Inventory Service
-  console.log(`Purchase order from shop ${shopId}:`, items);
-  res.status(201).json({ message: "Purchase order created" });
+  const { shopId } = req.params;
+  const { items, clerkId } = req.body; // items: [{ flavorId: string, quantity: number, unit: string }]
+
+  try {
+    const purchaseOrder = await prisma.purchaseOrder.create({
+      data: {
+        shopId,
+        clerkId,
+        items: {
+          create: items.map((item) => ({
+            flavorId: item.flavorId,
+            flavorName: item.flavorName,
+            quantity: item.quantity,
+            unit: item.unit,
+          })),
+        },
+      },
+      include: {
+        items: true,
+      },
+    });
+
+    res.status(201).json(purchaseOrder);
+
+    // TODO: Emit a KAFKA event to notify the Inventory Service
+  } catch (error) {
+    res.status(500).json({ message: "Error creating purchase order", error });
+  }
 };
 
 /**
@@ -135,14 +269,19 @@ export const createPurchaseOrder = async (req: Request, res: Response) => {
  * @param res
  */
 export const createFeedback = async (req: Request, res: Response) => {
-  const { shopId, rating, comment } = req.body;
-  const newFeedback = {
-    id: feedback.length + 1,
-    shopId,
-    rating,
-    comment,
-    createdAt: new Date(),
-  };
-  feedback.push(newFeedback);
-  res.status(201).json(newFeedback);
+  const { shopId, patronId, rating, comment } = req.body;
+
+  try {
+    const feedback = await prisma.feedback.create({
+      data: {
+        shopId,
+        patronId,
+        rating,
+        comment,
+      },
+    });
+    res.status(201).json(feedback);
+  } catch (error) {
+    res.status(500).json({ message: "Error creating feedback", error });
+  }
 };

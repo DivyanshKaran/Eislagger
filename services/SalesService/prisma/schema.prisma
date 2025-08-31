@@ -1,0 +1,141 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+// 1. Define the generator for the Prisma Client
+generator client {
+  provider = "prisma-client-js"
+}
+
+// 2. Define the datasource (your PostgreSQL database)
+// This should point to the dedicated database for the Sales Service.
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// --- SALES SERVICE MODELS ---
+
+// Represents a single retail shop location
+model Shop {
+  id        String      @id @default(uuid())
+  name      String
+  location  String
+  
+  stock     ShopStock[]
+  transactions PosTransaction[]
+  purchaseOrders PurchaseOrder[]
+  feedback  Feedback[]
+}
+
+// Represents the stock of a specific flavor at a specific shop
+model ShopStock {
+  id          String   @id @default(uuid())
+  shopId      String
+  shop        Shop     @relation(fields: [shopId], references: [id])
+
+  // --- Foreign Keys from other services ---
+  // We do NOT have a Flavor model. We trust the ID from the Inventory Service.
+  flavorId    String
+  
+  // Denormalized data for performance and independence
+  flavorName  String
+  pricePerUnit Decimal @db.Decimal(10, 2) // Retail price (e.g., per scoop)
+  
+  quantity    Float    // The current stock level (e.g., in scoops or tubs)
+  unit        String   // "Scoops", "Tubs", etc.
+  
+  @@unique([shopId, flavorId]) // A shop can only have one stock entry per flavor
+}
+
+// Represents a single transaction at the Point of Sale
+model PosTransaction {
+  id          String   @id @default(uuid())
+  shopId      String
+  shop        Shop     @relation(fields: [shopId], references: [id])
+  
+  // --- Foreign Keys from other services ---
+  // From the Clerk's JWT
+  clerkId     String   
+  // Optional: From the Patron's JWT if they are a registered user
+  patronId    String?  
+  
+  totalAmount Decimal  @db.Decimal(12, 2)
+  createdAt   DateTime @default(now())
+
+  items       TransactionItem[]
+}
+
+// An item within a POS transaction
+model TransactionItem {
+  id            String   @id @default(uuid())
+  transactionId String
+  transaction   PosTransaction @relation(fields: [transactionId], references: [id])
+  
+  flavorId      String
+  flavorName    String
+  quantity      Int
+  unitPrice     Decimal  @db.Decimal(10, 2) // Price at the time of sale
+}
+
+// A purchase order sent from a shop to a factory
+model PurchaseOrder {
+  id        String      @id @default(uuid())
+  shopId    String
+  shop      Shop        @relation(fields: [shopId], references: [id])
+  clerkId   String      // The clerk who created the order
+  
+  status    PurchaseOrderStatus @default(Pending)
+  createdAt DateTime    @default(now())
+  
+  // --- Denormalized data from the Logistics Service ---
+  // These fields are populated by listening to Kafka events.
+  shipmentId            String?   @unique // The ID from the Logistics Service
+  shipmentStatus        ShipmentStatus? @default(Pending)   // e.g., "In Transit", "Delivered"
+  estimatedDeliveryDate DateTime?
+
+  items     PurchaseOrderItem[]
+}
+
+// An item within a purchase order
+model PurchaseOrderItem {
+  id              String   @id @default(uuid())
+  purchaseOrderId String
+  purchaseOrder   PurchaseOrder @relation(fields: [purchaseOrderId], references: [id])
+  
+  flavorId        String
+  flavorName      String
+  quantity        Float
+  unit            String   // e.g., "Liters"
+}
+
+// Feedback submitted by a patron for a specific shop
+model Feedback {
+  id        String   @id @default(uuid())
+  shopId    String
+  shop      Shop     @relation(fields: [shopId], references: [id])
+  
+  patronId  String?
+  rating    Int      // e.g., 1 to 5
+  comment   String?
+  createdAt DateTime @default(now())
+}
+
+// --- ENUMS ---
+enum PurchaseOrderStatus {
+  Pending
+  Accepted // The order has been accepted and a shipment has been created.
+  Rejected
+  Fulfilled
+}
+
+enum ShipmentStatus {
+  Pending
+  InTransit
+  Delivered
+}
+
+
+

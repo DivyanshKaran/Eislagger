@@ -1,6 +1,10 @@
 import { Router } from "express";
 import {
+  getAllShops,
+  createShop,
   getShop,
+  updateShop,
+  deleteShop,
   getShopMenu,
   getShopInventory,
   createPosTransaction,
@@ -8,8 +12,7 @@ import {
   createFeedback,
 } from "../controllers/sales.controller.ts";
 import { isAuthenticated } from "../middleware/auth.ts";
-import { isClerk } from "../middleware/roleCheck.ts";
-import { isPatron } from "../middleware/roleCheck.ts";
+import { isClerk, isPatron } from "../middleware/roleCheck.ts";
 import { validate } from "../middleware/validate.ts";
 import {
   getShopSchema,
@@ -18,17 +21,23 @@ import {
   createPosTransactionSchema,
   createPurchaseOrderSchema,
   createFeedbackSchema,
+  createShopSchema,
+  updateShopSchema,
+  deleteShopSchema,
 } from "../schemas.ts";
 
 const router = Router();
 
-// Get details for a specific retail shop. (Public access)
-router.get("/shops/:shopId", isAuthenticated, validate(getShopSchema), getShop);
+// Shop Routes
+router.get("/shops", getAllShops);
+router.post("/shops", isAuthenticated, /* isAdmin, */ validate(createShopSchema), createShop);
+router.get("/shops/:shopId", validate(getShopSchema), getShop);
+router.put("/shops/:shopId", isAuthenticated, /* isAdmin, */ validate(updateShopSchema), updateShop);
+router.delete("/shops/:shopId", isAuthenticated, /* isAdmin, */ validate(deleteShopSchema), deleteShop);
 
 // Get the publicly visible menu with prices for patrons. (Public access)
 router.get(
   "/shops/:shopId/menu",
-  isAuthenticated,
   validate(getShopMenuSchema),
   getShopMenu
 );
@@ -54,6 +63,8 @@ router.post(
 // (Inter-service) Create a purchase order to request stock from the Inventory Service.
 router.post(
   "/shops/:shopId/purchase-orders",
+  isAuthenticated,
+  isClerk,
   validate(createPurchaseOrderSchema),
   createPurchaseOrder
 );
