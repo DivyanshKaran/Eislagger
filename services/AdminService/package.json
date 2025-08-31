@@ -1,0 +1,31 @@
+{
+  "name": "admin-service",
+  "version": "1.0.0",
+  "description": "Admin microservice for Eislagger",
+  "main": "dist/index.js",
+  "type": "module",
+  "scripts": {
+    "start": "node dist/index.js",
+    "build": "tsc",
+    "dev": "ts-node --esm src/index.ts"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@prisma/client": "^6.15.0",
+    "axios": "^1.11.0",
+    "dotenv": "^17.2.1",
+    "express": "^5.0.0",
+    "kafkajs": "^2.2.4",
+    "prisma": "^6.15.0",
+    "zod": "^4.1.4"
+  },
+  "devDependencies": {
+    "@types/express": "^5.0.0",
+    "@types/node": "^24.2.1",
+    "nodemon": "^2.0.15",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.9.2"
+  }
+}

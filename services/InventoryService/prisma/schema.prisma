@@ -1,0 +1,77 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// 1. Define the generator for the Prisma Client
+generator client {
+  provider = "prisma-client-js"
+}
+
+// 2. Define the datasource (your PostgreSQL database)
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// --- INVENTORY SERVICE MODELS ---
+
+model Factory {
+  id        String      @id @default(uuid())
+  name      String      @unique
+  location  String
+  budget    Decimal     @db.Decimal(12, 2) // For handling money precisely
+
+  stockItems StockItem[] // A factory has many stock items
+}
+
+model Flavor {
+  id          String      @id @default(uuid())
+  name        String      @unique
+  description String
+  dietaryTags String[]
+
+  stockItems  StockItem[] // A flavor can be in many stock items
+}
+
+model StockItem {
+  id              String   @id @default(uuid())
+  batchId         String   @unique
+  quantity        Float    // e.g., in Liters
+  unit            String   // "Liters", "Kg", etc.
+  productionCost  Decimal  @db.Decimal(10, 2)
+  expiryDate      DateTime
+
+  factoryId       String
+  factory         Factory  @relation(fields: [factoryId], references: [id])
+
+  flavorId        String
+  flavor          Flavor   @relation(fields: [flavorId], references: [id])
+}
+
+model Invoice {
+  id              String       @id @default(uuid())
+  purchaseOrderId String       // From the Sales Service
+  shopId          String       // The ID of the shop being invoiced
+  totalAmount     Decimal      @db.Decimal(12, 2)
+  status          InvoiceStatus @default(Pending)
+  createdAt       DateTime     @default(now())
+  
+  items           InvoiceItem[]
+}
+
+model InvoiceItem {
+  id          String   @id @default(uuid())
+  flavorName  String
+  quantity    Float
+  unitPrice   Decimal  @db.Decimal(10, 2)
+  totalPrice  Decimal  @db.Decimal(12, 2)
+
+  invoiceId   String
+  invoice     Invoice  @relation(fields: [invoiceId], references: [id])
+}
+
+enum InvoiceStatus {
+  Pending
+  Paid
+  Overdue
+}
+
