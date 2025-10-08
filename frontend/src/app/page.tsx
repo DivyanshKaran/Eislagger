@@ -1,5 +1,9 @@
 "use client";
 
+import { useEffect, useRef, useState } from "react";
+
+import Link from "next/link";
+
 import {
   ArrowRight,
   CheckCircle,
@@ -18,8 +22,6 @@ import {
   Users,
   Zap,
 } from "lucide-react";
-import Link from "next/link";
-import { useEffect, useRef, useState } from "react";
 
 // Lazy loading hook
 function useIntersectionObserver(options = {}) {
@@ -102,7 +104,7 @@ function TestimonialCard({
         ))}
       </div>
       <p className="text-gray-600 dark:text-gray-300 mb-4 italic">
-        "{content}"
+        &ldquo;{content}&rdquo;
       </p>
       <div className="flex items-center gap-3">
         <div className="w-10 h-10 bg-gradient-to-br from-pink-400 to-purple-500 rounded-full flex items-center justify-center text-white font-bold">
@@ -128,7 +130,7 @@ function FeatureCard({
   description,
   delay = 0,
 }: {
-  icon: any;
+  icon: React.ComponentType<{ className?: string }>;
   title: string;
   description: string;
   delay?: number;
@@ -244,7 +246,7 @@ export default function HomePage() {
           <div className="flex justify-between items-center h-16">
             <div className="flex items-center space-x-2">
               <div className="text-2xl">
-                <img src="./favicon.png" width="48px" />
+                <img src="./favicon.png" width="48px" alt="EisLager Logo" />
               </div>
               <span className="text-xl font-bold text-gradient">
                 EisLager Pro
@@ -772,7 +774,7 @@ export default function HomePage() {
               <div>
                 <div className="flex items-center space-x-2 mb-4">
                   <div className="text-2xl">
-                    <img src="./favicon.png" width="48px" />
+                    <img src="./favicon.png" width="48px" alt="EisLager Logo" />
                   </div>
                   <span className="text-xl font-bold text-gradient">
                     EisLager Pro

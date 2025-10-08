@@ -1,0 +1,389 @@
+// Prisma schema for the Communications Service
+// This schema handles chat, email, notifications, and real-time communication
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// --- COMMUNICATIONS SERVICE MODELS ---
+
+// Chat conversations between users or groups
+model Conversation {
+  id              String   @id @default(uuid())
+  
+  // Conversation details
+  title           String?  // Group chat title (null for direct messages)
+  description     String?  // Optional description for group chats
+  conversationType ConversationType @default(DIRECT)
+  
+  // Participants
+  participants    ConversationParticipant[]
+  messages        Message[]
+  
+  // Metadata
+  lastMessageId   String?  // Reference to most recent message
+  lastActivityAt  DateTime @default(now())
+  
+  // Status
+  isActive        Boolean  @default(true)
+  
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  
+  @@map("conversations")
+}
+
+// Users participating in conversations
+model ConversationParticipant {
+  id              String   @id @default(uuid())
+  
+  // Relations
+  conversationId  String
+  conversation    Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  
+  // Participant details
+  userId          String   // Reference to user in Auth service
+  userName        String   // Cached user name
+  userRole        String?  // Cached user role
+  
+  // Participation details
+  joinedAt        DateTime @default(now())
+  lastReadAt      DateTime @default(now())
+  isActive        Boolean  @default(true)
+  
+  // Permissions
+  canSendMessages Boolean  @default(true)
+  canInviteUsers  Boolean  @default(false) // Only group admins
+  
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  
+  @@unique([conversationId, userId])
+  @@map("conversation_participants")
+}
+
+// Individual messages within conversations
+model Message {
+  id              String   @id @default(uuid())
+  
+  // Parent conversation
+  conversationId  String
+  conversation    Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  
+  // Sender information
+  senderId        String   // User ID from Auth service
+  senderName      String   // Cached sender name
+  senderRole      String?  // Cached sender role
+  
+  // Message content
+  content         String?  // Text message content
+  messageType     MessageType @default(TEXT)
+  
+  // Reply/Thread support
+  replyToMessageId String? // For message threading
+  replyToMessage  Message? @relation("MessageReplies", fields: [replyToMessageId], references: [id])
+  replies         Message[] @relation("MessageReplies")
+  
+  // File attachments
+  attachments     MessageAttachment[]
+  
+  // Message status
+  status          MessageStatus @default(SENT)
+  isEdited        Boolean  @default(false)
+  editedAt        DateTime?
+  
+  // Delivery tracking
+  deliveredAt     DateTime?
+  
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  
+  @@map("messages")
+}
+
+// File attachments for messages
+model MessageAttachment {
+  id              String   @id @default(uuid())
+  
+  // Parent message
+  messageId       String
+  message         Message  @relation(fields: [messageId], references: [id], onDelete: Cascade)
+  
+  // File details
+  fileName        String
+  filePath        String
+  fileSize        Int      // Size in bytes
+  mimeType        String
+  
+  // Metadata
+  thumbnailPath   String?  // Thumbnail for images/videos
+  description     String?  // Optional description
+  
+  createdAt       DateTime @default(now())
+  
+  @@map("message_attachment")
+}
+
+// Email messages
+model Email {
+  id              String   @id @default(uuid())
+  
+  // Email participants
+  senderId        String   // User ID from Auth service
+  senderName      String   // Cached sender name
+  senderEmail     String   // Sender email address
+  
+  recipientId     String   // Recipient user ID
+  recipientName   String   // Cached recipient name
+  recipientEmail  String   // Recipient email address
+  
+  // Email content
+  subject         String
+  content         String   // HTML content
+  plainText       String?  // Plain text version
+  
+  // Email status
+  status          EmailStatus @default(DRAFT)
+  priority        EmailPriority @default(NORMAL)
+  
+  // Thread information
+  threadId        String?  // For email threading
+  replyToEmailId  String?  // For email replies
+  
+  // Attachments
+  attachments     EmailAttachment[]
+  
+  // Delivery tracking
+  sentAt          DateTime?
+  deliveredAt     DateTime?
+  openedAt        DateTime?
+  repliedAt       DateTime?
+  
+  // Flags
+  isRead          Boolean  @default(false)
+  isStarred       Boolean  @default(false)
+  isImportant     Boolean  @default(false)
+  
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  
+  @@map("emails")
+}
+
+// Email attachments
+model EmailAttachment {
+  id              String   @id @default(uuid())
+  
+  // Parent email
+  emailId         String
+  email           Email    @relation(fields: [emailId], references: [id], onDelete: Cascade)
+  
+  // File details
+  fileName        String
+  filePath        String
+  fileSize        Int      // Size in bytes
+  mimeType        String
+  
+  createdAt       DateTime @default(now())
+  
+  @@map("email_attachments")
+}
+
+// System notifications
+model Notification {
+  id              String   @id @default(uuid())
+  
+  // Recipient
+  userId          String   // User ID from Auth service
+  
+  // Notification content
+  title           String
+  message         String
+  type            NotificationType
+  
+  // Data payload
+  data            Json?    // Additional data for deep linking, etc.
+  
+  // Delivery channels
+  channels        NotificationChannel[]
+  
+  // Status
+  status          NotificationStatus @default(PENDING)
+  priority        NotificationPriority @default(MEDIUM)
+  
+  // Tracking
+  sentAt          DateTime?
+  receivedAt      DateTime?
+  readAt          DateTime?
+  
+  // Expiry
+  expiresAt       DateTime?
+  
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  
+  @@map("notifications")
+}
+
+// Notification delivery channels
+model NotificationChannel {
+  id              String   @id @default(uuid())
+  
+  // Parent notification
+  notificationId  String
+  notification    Notification @relation(fields: [notificationId], references: [id], onDelete: Cascade)
+  
+  // Channel details
+  channel         NotificationChannelType @default(IN_APP)
+  channelData     Json?    // Channel-specific data (email address, device token, etc.)
+  
+  // Delivery status
+  status          ChannelStatus @default(PENDING)
+  sentAt          DateTime?
+  deliveredAt     DateTime?
+  openedAt        DateTime?
+  
+  createdAt       DateTime @default(now())
+  
+  @@map("notification_channels")
+}
+
+// User presence and online status
+model UserPresence {
+  id              String   @id @default(uuid())
+  
+  // User info
+  userId          String   @unique
+  userName        String
+  
+  // Status
+  status          PresenceStatus @default(OFFLINE)
+  lastSeenAt      DateTime @default(now())
+  statusMessage   String?  // Custom status message
+  
+  // Connection info
+  connectedClientIds String[] // List of connected Socket.IO client IDs
+  
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  
+  @@map("user_presence")
+}
+
+// Chat room typing indicators
+model TypingIndicator {
+  id              String   @id @default(uuid())
+  
+  // Context
+  conversationId  String
+  userId          String
+  userName        String
+  
+  // Status
+  isTyping        Boolean
+  
+  // Timing
+  startedAt       DateTime @default(now())
+  expiresAt       DateTime // Auto-cleanup
+  
+  @@unique([conversationId, userId])
+  @@map("typing_indicators")
+}
+
+// --- ENUMS ---
+
+enum ConversationType {
+  DIRECT     // 1-on-1 conversation
+  GROUP       // Multi-user conversation
+  BROADCAST   // System announcements
+}
+
+enum MessageType {
+  TEXT        // Plain text message
+  IMAGE       // Image with caption
+  FILE        // File attachment with message
+  AUDIO       // Voice message
+  VIDEO       // Video message
+  SYSTEM      // System-generated message
+  ANNCMKTNENT // System announcement
+}
+
+enum MessageStatus {
+  SENDING     // Being sent
+  SENT        // Successfully sent
+  DELIVERED   // Delivered to recipients
+  READ        // Read by recipient(s)
+  FAILED      // Failed to send
+}
+
+enum EmailStatus {
+  DRAFT       // Being composed
+  QUEUED      // Queued for sending
+  SENT        // Successfully sent
+  DELIVERED   // Delivered to server
+  BOUNCED     // Delivery failed
+  FAILED      // Send failed
+}
+
+enum EmailPriority {
+  LOW         // Low priority
+  NORMAL      // Normal priority
+  HIGH        // High priority
+  URGENT      // Urgent priority
+}
+
+enum NotificationType {
+  INFO        // Informational
+  SUCCESS     // Success message
+  WARNING     // Warning message
+  ERROR       // Error message
+  SYSTEM      // System notification
+  MAINTENANCE // Maintenance announcement
+  PROMOTION   // Marketing/promotional
+}
+
+enum NotificationChannelType {
+  IN_APP      // In-app notification
+  EMAIL       // Email notification
+  SMS         // SMS notification
+  PUSH        // Push notification
+  SLACK       // Slack integration
+  WEBHOOK     // Webhook
+}
+
+enum NotificationStatus {
+  PENDING     // Scheduled/pending
+  SENT        // Sent successfully
+  DELIVERED   // Delivered
+  FAILED      // Failed to send
+  CANCELLED   // Cancelled
+}
+
+enum NotificationPriority {
+  LOW         // Low priority
+  MEDIUM      // Medium priority
+  HIGH        // High priority
+  CRITICAL    // Critical priority
+}
+
+enum ChannelStatus {
+  PENDING     // Pending delivery
+  QUEUED      // Queued for delivery
+  SENT        // Sent
+  DELIVERED   // Delivered
+  FAILED      // Failed
+  CANCELLED   // Cancelled
+}
+
+enum PresenceStatus {
+  ONLINE      // Currently online
+  AWAY        // Away/temporarily offline
+  BUSY        // Busy/do not disturb
+  OFFLINE     // Currently offline
+}
+

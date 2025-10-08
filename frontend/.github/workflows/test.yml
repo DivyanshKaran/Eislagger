@@ -1,0 +1,128 @@
+name: Test and Coverage
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main, develop ]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        node-version: [18.x, 20.x]
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Setup Node.js ${{ matrix.node-version }}
+      uses: actions/setup-node@v4
+      with:
+        node-version: ${{ matrix.node-version }}
+        cache: 'npm'
+
+    - name: Install dependencies
+      run: npm ci
+
+    - name: Run linting
+      run: npm run lint
+
+    - name: Run type checking
+      run: npm run type-check
+
+    - name: Run tests
+      run: npm run test:ci
+
+    - name: Generate coverage report
+      run: npm run coverage:report
+
+    - name: Upload coverage to Codecov
+      uses: codecov/codecov-action@v3
+      with:
+        file: ./coverage/lcov.info
+        flags: unittests
+        name: codecov-umbrella
+        fail_ci_if_error: true
+
+    - name: Upload coverage artifacts
+      uses: actions/upload-artifact@v3
+      with:
+        name: coverage-report-${{ matrix.node-version }}
+        path: coverage/
+
+    - name: Comment PR with coverage
+      if: github.event_name == 'pull_request'
+      uses: actions/github-script@v6
+      with:
+        script: |
+          const fs = require('fs');
+          const path = require('path');
+          
+          try {
+            const coveragePath = path.join(process.cwd(), 'coverage', 'coverage-summary.json');
+            if (fs.existsSync(coveragePath)) {
+              const coverage = JSON.parse(fs.readFileSync(coveragePath, 'utf8'));
+              const total = coverage.total;
+              
+              const comment = `## 📊 Coverage Report
+              
+              | Metric | Coverage | Status |
+              |--------|----------|--------|
+              | Lines | ${total.lines.pct}% | ${total.lines.pct >= 80 ? '✅' : '❌'} |
+              | Functions | ${total.functions.pct}% | ${total.functions.pct >= 80 ? '✅' : '❌'} |
+              | Branches | ${total.branches.pct}% | ${total.branches.pct >= 80 ? '✅' : '❌'} |
+              | Statements | ${total.statements.pct}% | ${total.statements.pct >= 80 ? '✅' : '❌'} |
+              
+              **Overall Coverage**: ${total.lines.pct}%
+              
+              ${total.lines.pct >= 80 ? '🎉 Coverage threshold met!' : '⚠️ Coverage below threshold (80%)'}
+              `;
+              
+              github.rest.issues.createComment({
+                issue_number: context.issue.number,
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                body: comment
+              });
+            }
+          } catch (error) {
+            console.log('Could not generate coverage comment:', error.message);
+          }
+
+  coverage-threshold:
+    runs-on: ubuntu-latest
+    needs: test
+    if: always()
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '20.x'
+        cache: 'npm'
+
+    - name: Install dependencies
+      run: npm ci
+
+    - name: Download coverage artifacts
+      uses: actions/download-artifact@v3
+      with:
+        name: coverage-report-20.x
+        path: coverage/
+
+    - name: Check coverage thresholds
+      run: npm run coverage:report
+      continue-on-error: true
+
+    - name: Fail if coverage below threshold
+      if: failure()
+      run: |
+        echo "❌ Coverage thresholds not met!"
+        echo "Please improve test coverage to meet the required thresholds."
+        exit 1

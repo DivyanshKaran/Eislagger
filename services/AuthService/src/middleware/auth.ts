@@ -1,66 +1,33 @@
-import type { Request, Response, NextFunction } from "express";
 import jwt from "jsonwebtoken";
+const JWT_SECRET = process.env.JWT_SECRET || "your-super-secret-jwt-key-change-in-production";
 
-// In a real application, this secret should be stored securely in environment variables.
-const JWT_SECRET =
-  process.env.JWT_SECRET || "your-super-secret-key-that-is-long";
-const JWT_EXPIRES_IN = "1d";
-// Define the structure of the JWT payload
-interface UserPayload {
-  id: string;
-  role: string;
-}
-
-// Extend the Express Request type to include the optional 'user' property
-declare global {
-  namespace Express {
-    interface Request {
-      user?: UserPayload | undefined;
-    }
-  }
-}
-
-/**
- * Middleware to verify the JWT from the Authorization header.
- * If the token is valid, it decodes the payload and attaches it to the request object.
- */
-export const isAuthenticated = (
-  req: Request,
-  res: Response,
-  next: NextFunction
-) => {
+export const isAuthenticated = (req: any, res: any, next: any) => {
   const authHeader = req.headers.authorization;
 
   if (!authHeader || !authHeader.startsWith("Bearer ")) {
-    return res
-      .status(401)
-      .json({ message: "Authentication required: No token provided" });
+    return res.status(401).json({
+      success: false,
+      error: {
+        code: "UNAUTHORIZED",
+        message: "Authentication token required"
+      }
+    });
   }
 
   const token = authHeader.split(" ")[1];
 
   try {
-    // Verify the token using the secret key
-    const user = jwt.verify(token, JWT_SECRET) as UserPayload;
-    // Attach the decoded user payload to the request for use in subsequent handlers
-    if (!user)
-      return res.status(401).json({
-        error: "Forbidden",
-        message: "Authentication failed: Invalid or expired token",
-      });
-
+    const user = jwt.verify(token, JWT_SECRET) as any;
     req.user = user;
-    console.log(user);
     next();
   } catch (error) {
-    return res
-      .status(401)
-      .json({ message: "Authentication failed: Invalid or expired token" });
+    return res.status(401).json({
+      success: false,
+      error: {
+        code: "INVALID_TOKEN",
+        message: "Invalid or expired token"
+      }
+    });
   }
 };
 
-export const signToken = (user: { id: string; role: string }) => {
-  return jwt.sign({ id: user.id, role: user.role }, JWT_SECRET, {
-    expiresIn: JWT_EXPIRES_IN,
-  });
-};

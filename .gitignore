@@ -1,0 +1,24 @@
+# Dependencies
+node_modules
+.env
+
+# Logs
+*.log
+logs/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Build artifacts
+*.tsbuildinfo
+
+# Docker
+docker-compose.yml
+docker-compose.infrastructure.yml
+
+# Data
+final_ice_cream_data.json
+
+# Markdown files
+*.md
+!README.md

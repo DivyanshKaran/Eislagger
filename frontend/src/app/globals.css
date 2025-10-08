@@ -3,6 +3,8 @@
 @import "leaflet/dist/leaflet.css";
 @import "leaflet.markercluster/dist/MarkerCluster.css";
 @import "leaflet.markercluster/dist/MarkerCluster.Default.css";
+@import "../styles/animations.css";
+@import "../styles/common-styles.css";
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -164,7 +166,9 @@
 
 body {
   @apply bg-background text-foreground font-sans;
-  font-feature-settings: "rlig" 1, "calt" 1;
+  font-feature-settings:
+    "rlig" 1,
+    "calt" 1;
 }
 
 /* Custom Scrollbar */
@@ -348,9 +352,12 @@ body {
 /* EisLager Pro Dropdown Menu Style */
 .eis-dropdown {
   @apply rounded-xl border border-orange-100 dark:border-zinc-800 shadow-glow bg-white/90 dark:bg-[#1a151b]/90 backdrop-blur-md p-2 min-w-[180px] animate-fade-in;
-  box-shadow: 0 8px 32px 0 rgba(249, 115, 22, 0.15),
+  box-shadow:
+    0 8px 32px 0 rgba(249, 115, 22, 0.15),
     0 1.5px 6px 0 rgba(59, 130, 246, 0.08);
-  transition: box-shadow 0.2s, background 0.2s;
+  transition:
+    box-shadow 0.2s,
+    background 0.2s;
 }
 @media (max-width: 640px) {
   .eis-dropdown {
@@ -362,7 +369,8 @@ body {
 .orange-dropdown {
   background: #ffedd5;
   border: 1.5px solid #fdba74;
-  box-shadow: 0 8px 32px 0 rgba(253, 186, 116, 0.15),
+  box-shadow:
+    0 8px 32px 0 rgba(253, 186, 116, 0.15),
     0 1.5px 8px 0 rgba(251, 146, 60, 0.1);
   border-radius: 18px;
   transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
@@ -395,7 +403,8 @@ body {
 .glassy-dropdown {
   background: #ffb86c;
   border: 1.5px solid #fdba74;
-  box-shadow: 0 8px 32px 0 rgba(253, 186, 116, 0.1),
+  box-shadow:
+    0 8px 32px 0 rgba(253, 186, 116, 0.1),
     0 1.5px 8px 0 rgba(251, 146, 60, 0.08);
   border-radius: 18px;
   transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);

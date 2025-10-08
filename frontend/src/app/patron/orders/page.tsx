@@ -1,17 +1,11 @@
 "use client";
 
 import { useState } from "react";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+
 import {
   Search,
-  Clock,
   MapPin,
   Star,
-  ShoppingBag,
   Truck,
   CheckCircle,
   AlertCircle,
@@ -21,8 +15,12 @@ import {
   Share2,
   Calendar,
   DollarSign,
-  Package,
 } from "lucide-react";
+
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
 
 // Custom styles for animations
 const customStyles = `
@@ -203,14 +201,14 @@ const filters = [
 export default function PatronOrdersPage() {
   const [search, setSearch] = useState("");
   const [selectedFilter, setSelectedFilter] = useState("all");
-  const [selectedOrder, setSelectedOrder] = useState<string | null>(null);
+  // const [selectedOrder, setSelectedOrder] = useState<string | null>(null);
 
   const filteredOrders = orders.filter((order) => {
     const matchesSearch =
       order.id.toLowerCase().includes(search.toLowerCase()) ||
       order.store.toLowerCase().includes(search.toLowerCase()) ||
       order.items.some((item) =>
-        item.name.toLowerCase().includes(search.toLowerCase())
+        item.name.toLowerCase().includes(search.toLowerCase()),
       );
 
     let matchesFilter = true;
@@ -552,7 +550,7 @@ export default function PatronOrdersPage() {
                           Your review:
                         </p>
                         <p className="text-sm text-gray-900 dark:text-white italic">
-                          "{order.review}"
+                          &ldquo;{order.review}&rdquo;
                         </p>
                       </div>
                     </div>

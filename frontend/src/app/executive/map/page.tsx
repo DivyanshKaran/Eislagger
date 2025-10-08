@@ -1,711 +1,745 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
+import {
+  ShoppingBag,
+  Heart,
+  Star,
+  Store,
+  Gift,
+  Truck,
+  MapPin as LocationIcon,
+  Target as TargetIcon,
+  Filter,
+  Download,
+  RefreshCw,
+  Search,
+  Plus,
+  Eye,
+  EyeOff,
+  Locate,
+  Compass,
+  Award,
+  TrendingUp,
+  BarChart3,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import {
-  Search,
-  Bell,
-  User,
-  MapPin,
-  Factory,
-  Truck,
-  Store,
-  Filter,
-  ChevronDown,
-  Layers,
-  Navigation,
-  BarChart3,
-  Activity,
-  Maximize2,
-  Minimize2,
-  Map,
-  Satellite,
-  Cloud,
-  X,
-} from "lucide-react";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuCheckboxItem,
-} from "@/components/ui/dropdown-menu";
 
-// Custom styles for animations
-const customStyles = `
-  @keyframes float {
-    0%, 100% { transform: translateY(0px); }
-    50% { transform: translateY(-10px); }
+// Leaflet types
+declare global {
+  interface Window {
+    L: any;
   }
-  
-  @keyframes pulse-glow {
-    0%, 100% { opacity: 0.5; transform: scale(1); }
-    50% { opacity: 0.8; transform: scale(1.05); }
-  }
-  
-  @keyframes slideInUp {
-    from {
-      opacity: 0;
-      transform: translateY(30px);
-    }
-    to {
-      opacity: 1;
-      transform: translateY(0);
-    }
-  }
-  
-  @keyframes fadeInScale {
-    from {
-      opacity: 0;
-      transform: scale(0.9);
-    }
-    to {
-      opacity: 1;
-      transform: scale(1);
-    }
-  }
-  
-  .animate-float {
-    animation: float 3s ease-in-out infinite;
-  }
-  
-  .animate-pulse-glow {
-    animation: pulse-glow 2s ease-in-out infinite;
-  }
-  
-  .animate-slide-in-up {
-    animation: slideInUp 0.6s ease-out forwards;
-  }
-  
-  .animate-fade-in-scale {
-    animation: fadeInScale 0.5s ease-out forwards;
-  }
-  
-  .leaflet-container {
-    border-radius: 1rem;
-    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
-  }
-  
-  .leaflet-popup-content-wrapper {
-    border-radius: 1rem;
-    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
-  }
-  
-  .leaflet-popup-content {
-    margin: 1rem;
-    font-family: inherit;
-  }
-  
-  .leaflet-control-zoom {
-    border-radius: 1rem;
-    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
-  }
-  
-  .leaflet-control-zoom a {
-    border-radius: 0.5rem;
-    margin: 2px;
-  }
-`;
+}
 
-// Mock data for locations
-const storeLocations = [
+let L: any;
+
+// Patron-themed locations (ice cream stores)
+const iceCreamStores = [
   {
-    id: 1,
-    name: "EisLager Berlin Central",
-    type: "store",
-    coordinates: [52.52, 13.405],
-    address: "Unter den Linden 1, 10117 Berlin, Germany",
-    status: "active",
-    revenue: "€2.1M",
-    orders: 15420,
+    id: "1",
+    name: "Sweet Dreams Downtown",
+    type: "flagship",
+    lat: 28.6139,
+    lng: 77.2090,
+    address: "Connaught Place, New Delhi, India",
+    revenue: "₹2.5M",
+    staff: 25,
+    performance: "excellent",
+    specialties: ["Artisan Gelato", "Custom Cones", "Seasonal Flavors"],
+    status: "open",
+    lastUpdated: "2024-01-15",
     rating: 4.8,
-    employees: 12,
-    specialties: ["Artisan Ice Cream", "Gelato", "Sorbet"],
-    hours: "8:00 AM - 10:00 PM",
-    phone: "+49 30 12345678",
-    email: "berlin@eislagger.com",
-    manager: "Anna Schmidt",
-    lastOrder: "2 minutes ago",
-    deliveryRadius: 15,
-    popularFlavors: ["Mango Tango", "Chocolate Dream", "Vanilla Bean"],
+    reviews: 120
   },
   {
-    id: 2,
-    name: "EisLager Mumbai Downtown",
-    type: "store",
-    coordinates: [19.076, 72.8777],
-    address: "Colaba Causeway, Mumbai, Maharashtra 400001, India",
-    status: "active",
+    id: "2", 
+    name: "Choco Heaven Mall Store",
+    type: "branch",
+    lat: 19.0760,
+    lng: 72.8777,
+    address: "Phoenix Mall, Mumbai, Maharashtra",
     revenue: "₹1.8M",
-    orders: 12850,
+    staff: 18,
+    performance: "good",
+    specialties: ["Premium Chocolate", "Kids Special", "Party Orders"],
+    status: "open",
+    lastUpdated: "2024-01-14",
     rating: 4.6,
-    employees: 15,
-    specialties: ["Kulfi", "Falooda", "Ice Cream"],
-    hours: "9:00 AM - 11:00 PM",
-    phone: "+91 22 12345678",
-    email: "mumbai@eislagger.com",
-    manager: "Rajesh Kumar",
-    lastOrder: "5 minutes ago",
-    deliveryRadius: 12,
-    popularFlavors: ["Kesar Pista", "Mango", "Chocolate"],
+    reviews: 98
   },
   {
-    id: 3,
-    name: "EisLager Pune HQ",
-    type: "store",
-    coordinates: [18.5204, 73.8567],
-    address: "FC Road, Pune, Maharashtra 411005, India",
-    status: "active",
-    revenue: "₹1.5M",
-    orders: 9850,
-    rating: 4.7,
-    employees: 10,
-    specialties: ["Gelato", "Ice Cream", "Smoothies"],
-    hours: "8:30 AM - 10:30 PM",
-    phone: "+91 20 12345678",
-    email: "pune@eislagger.com",
-    manager: "Priya Sharma",
-    lastOrder: "1 minute ago",
-    deliveryRadius: 10,
-    popularFlavors: ["Strawberry", "Vanilla", "Coffee"],
-  },
-  {
-    id: 4,
-    name: "EisLager New York",
-    type: "store",
-    coordinates: [40.7128, -74.006],
-    address: "Times Square, New York, NY 10036, USA",
-    status: "active",
-    revenue: "$2.5M",
-    orders: 18200,
+    id: "3",
+    name: "Garden Ice Cream Corner",
+    type: "outlet",
+    lat: 12.9716,
+    lng: 77.5946,
+    address: "Cubbon Park, Bengaluru, Karnataka",
+    revenue: "₹1.2M",
+    staff: 12,
+    performance: "excellent",
+    specialties: ["Organic Options", "Sugar Free", "Weight Watchers"],
+    status: "open",
+    lastUpdated: "2024-01-13",
     rating: 4.9,
-    employees: 18,
-    specialties: ["Artisan Ice Cream", "Frozen Yogurt", "Sorbet"],
-    hours: "7:00 AM - 11:00 PM",
-    phone: "+1 212 1234567",
-    email: "newyork@eislagger.com",
-    manager: "Michael Johnson",
-    lastOrder: "3 minutes ago",
-    deliveryRadius: 20,
-    popularFlavors: ["Rocky Road", "Mint Chocolate", "Cookie Dough"],
+    reviews: 87
   },
   {
-    id: 5,
-    name: "EisLager London",
-    type: "store",
-    coordinates: [51.5074, -0.1278],
-    address: "Oxford Street, London W1D 1BS, UK",
-    status: "active",
-    revenue: "£1.9M",
-    orders: 14200,
-    rating: 4.7,
-    employees: 14,
-    specialties: ["Gelato", "Ice Cream", "Frozen Desserts"],
-    hours: "8:00 AM - 10:00 PM",
-    phone: "+44 20 12345678",
-    email: "london@eislagger.com",
-    manager: "Emma Wilson",
-    lastOrder: "4 minutes ago",
-    deliveryRadius: 18,
-    popularFlavors: ["Salted Caramel", "Vanilla", "Strawberry"],
-  },
-];
-
-const factoryLocations = [
-  {
-    id: 1,
-    name: "EisLager Berlin Factory",
-    type: "factory",
-    coordinates: [52.52, 13.405],
-    address: "Industriepark 15, 10115 Berlin, Germany",
-    status: "operational",
-    production: "50,000 units/day",
-    capacity: "85%",
-    employees: 150,
-    manager: "Hans Mueller",
-    phone: "+49 30 87654321",
-    email: "factory.berlin@eislagger.com",
-    specialties: ["Gelato", "Sorbet", "Ice Cream"],
-    lastProduction: "2 hours ago",
-    qualityScore: 98.5,
-    efficiency: 92.3,
+    id: "4",
+    name: "Beachy Frozen Treats",
+    type: "seasonal",
+    lat: 13.0827,
+    lng: 80.2707,
+    address: "Marina Beach, Chennai, Tamil Nadu",
+    revenue: "₹950K",
+    staff: 8,
+    performance: "good",
+    specialties: ["Cold Treats", "Beach Vibes", "Street Food"],
+    status: "seasonal",
+    lastUpdated: "2024-01-12",
+    rating: 4.4,
+    reviews: 65
   },
   {
-    id: 2,
-    name: "EisLager Mumbai Factory",
-    type: "factory",
-    coordinates: [19.076, 72.8777],
-    address: "Industrial Area, Mumbai, Maharashtra 400001, India",
-    status: "operational",
-    production: "45,000 units/day",
-    capacity: "78%",
-    employees: 200,
-    manager: "Amit Patel",
-    phone: "+91 22 87654321",
-    email: "factory.mumbai@eislagger.com",
-    specialties: ["Kulfi", "Falooda", "Ice Cream"],
-    lastProduction: "1 hour ago",
-    qualityScore: 97.8,
-    efficiency: 89.5,
-  },
-  {
-    id: 3,
-    name: "EisLager Pune Factory",
-    type: "factory",
-    coordinates: [18.5204, 73.8567],
-    address: "Industrial Zone, Pune, Maharashtra 411005, India",
-    status: "operational",
-    production: "35,000 units/day",
-    capacity: "72%",
-    employees: 120,
-    manager: "Suresh Deshmukh",
-    phone: "+91 20 87654321",
-    email: "factory.pune@eislagger.com",
-    specialties: ["Gelato", "Ice Cream", "Frozen Yogurt"],
-    lastProduction: "3 hours ago",
-    qualityScore: 96.9,
-    efficiency: 87.2,
-  },
-];
-
-const deliveryRoutes = [
-  {
-    id: 1,
-    name: "Berlin Central Route",
-    start: "EisLager Berlin Factory",
-    end: "EisLager Berlin Central",
-    coordinates: [
-      [52.52, 13.405],
-      [52.52, 13.405],
-    ],
-    status: "in-transit",
-    driver: "Klaus Weber",
-    vehicle: "Truck-001",
-    estimatedArrival: "30 minutes",
-    currentLocation: [52.52, 13.405],
-    items: ["Mango Tango", "Chocolate Dream", "Vanilla Bean"],
-    temperature: "2.5°C",
-    humidity: "85%",
-  },
-  {
-    id: 2,
-    name: "Mumbai Downtown Route",
-    start: "EisLager Mumbai Factory",
-    end: "EisLager Mumbai Downtown",
-    coordinates: [
-      [19.076, 72.8777],
-      [19.076, 72.8777],
-    ],
-    status: "delivered",
-    driver: "Ramesh Singh",
-    vehicle: "Truck-002",
-    estimatedArrival: "Delivered",
-    currentLocation: [19.076, 72.8777],
-    items: ["Kesar Pista", "Mango", "Chocolate"],
-    temperature: "3.2°C",
-    humidity: "90%",
-  },
-];
-
-const mapLayers = [
-  { id: "stores", label: "Stores", icon: Store, visible: true },
-  { id: "factories", label: "Factories", icon: Factory, visible: true },
-  { id: "deliveries", label: "Deliveries", icon: Truck, visible: true },
-  { id: "traffic", label: "Traffic", icon: Activity, visible: false },
-  { id: "weather", label: "Weather", icon: Cloud, visible: false },
+    id: "5",
+    name: "Arctic Dreams Ice Cream",
+    type: "coming-soon",
+    lat: 22.5726,
+    lng: 88.3639,
+    address: "Park Street, Kolkata, West Bengal",
+    revenue: "₹0",
+    staff: 0,
+    performance: "pending",
+    specialties: ["Planning Phase"],
+    status: "construction",
+    lastUpdated: "2024-01-10",
+    rating: 0,
+    reviews: 0
+  }
 ];
 
 export default function ExecutiveMapPage() {
-  const [map, setMap] = useState<any>(null);
-  const [selectedLocation, setSelectedLocation] = useState<any>(null);
-  const [search, setSearch] = useState("");
-  const [activeLayers, setActiveLayers] = useState<string[]>([
-    "stores",
-    "factories",
-    "deliveries",
-  ]);
-  const [mapType, setMapType] = useState("street");
-  const [isFullscreen, setIsFullscreen] = useState(false);
   const mapRef = useRef<HTMLDivElement>(null);
+  const [map, setMap] = useState<any>(null);
+  const [markers, setMarkers] = useState<any[]>([]);
+  const [selectedStore, setSelectedStore] = useState<any>(null);
+  const [showFilters, setShowFilters] = useState(false);
+  const [selectedTypes, setSelectedTypes] = useState(["flagship", "branch", "outlet", "seasonal", "coming-soon"]);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [userLocation, setUserLocation] = useState<{lat: number, lng: number} | null>(null);
+  const [locationPermission, setLocationPermission] = useState<string>("prompt");
+  const [mapLoading, setMapLoading] = useState(true);
 
+  // Custom styles for patron theme
+  const customStyles = `
+    @keyframes float {
+      0%, 100% { transform: translateY(0px); }
+      50% { transform: translateY(-10px); }
+    }
+    
+    @keyframes pulse-glow {
+      0% { opacity: 0.6; transform: scale(1); }
+      50% { opacity: 1; transform: scale(1.05); }
+      100% { opacity: 0.6; transform: scale(1); }
+    }
+    
+    @keyframes slideInUp {
+      from {
+        opacity: 0;
+        transform: translateY(30px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+    
+    @keyframes fadeInScale {
+      from {
+        opacity: 0;
+        transform: scale(0.9);
+      }
+      to {
+        opacity: 1;
+        transform: scale(1);
+      }
+    }
+    
+    .animate-float { animation: float 3s ease-in-out infinite; }
+    .animate-pulse-glow { animation: pulse-glow 2s ease-in-out infinite; }
+    .animate-slide-in-up { animation: slideInUp 0.6s ease-out forwards; }
+    .animate-fade-in-scale { animation: fadeInScale 0.5s ease-out forwards; }
+  `;
+
+  // Load Leaflet dynamically
   useEffect(() => {
-    const loadMap = async () => {
-      if (typeof window !== "undefined") {
-        const L = await import("leaflet");
-        await import("leaflet.markercluster");
-
-        // Set up map
-        const mapInstance = L.map(mapRef.current!).setView([20, 0], 2);
-
-        // Add tile layer based on map type
-        const tileLayer = L.tileLayer(
-          mapType === "satellite"
-            ? "https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}"
-            : "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
-          {
-            attribution: "© OpenStreetMap contributors",
-            maxZoom: 19,
-          }
-        );
-        tileLayer.addTo(mapInstance);
-
-        // Add markers for stores
-        if (activeLayers.includes("stores")) {
-          storeLocations.forEach((store) => {
-            const marker = L.marker(store.coordinates as [number, number])
-              .bindPopup(`
-                <div class="p-4">
-                  <h3 class="font-bold text-lg mb-2">${store.name}</h3>
-                  <p class="text-sm text-gray-600 mb-2">${store.address}</p>
-                  <div class="flex items-center gap-2 mb-2">
-                    <span class="px-2 py-1 bg-green-100 text-green-800 rounded-full text-xs">${
-                      store.status
-                    }</span>
-                    <span class="text-sm font-medium">${store.revenue}</span>
-                  </div>
-                  <p class="text-sm mb-2">Orders: ${store.orders.toLocaleString()}</p>
-                  <p class="text-sm mb-2">Rating: ${store.rating}/5 ⭐</p>
-                  <div class="flex gap-2">
-                    <button class="px-3 py-1 bg-blue-500 text-white rounded text-xs">View Details</button>
-                    <button class="px-3 py-1 bg-gray-500 text-white rounded text-xs">Directions</button>
-                  </div>
-                </div>
-              `);
-            marker.addTo(mapInstance);
-          });
+    const loadLeaflet = async () => {
+      if (typeof window === "undefined") return;
+      
+      try {
+        // Load Leaflet CSS
+        const existingCSS = document.querySelector('link[href*="leaflet"]');
+        if (!existingCSS) {
+          const link = document.createElement('link');
+          link.rel = 'stylesheet';
+          link.href = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.css';
+          document.head.appendChild(link);
         }
 
-        // Add markers for factories
-        if (activeLayers.includes("factories")) {
-          factoryLocations.forEach((factory) => {
-            const marker = L.marker(factory.coordinates as [number, number], {
-              icon: L.divIcon({
-                className: "custom-div-icon",
-                html: `<div class="w-8 h-8 bg-red-500 rounded-full flex items-center justify-center text-white font-bold">🏭</div>`,
-                iconSize: [32, 32],
-                iconAnchor: [16, 16],
-              }),
-            }).bindPopup(`
-                <div class="p-4">
-                  <h3 class="font-bold text-lg mb-2">${factory.name}</h3>
-                  <p class="text-sm text-gray-600 mb-2">${factory.address}</p>
-                  <div class="flex items-center gap-2 mb-2">
-                    <span class="px-2 py-1 bg-blue-100 text-blue-800 rounded-full text-xs">${factory.status}</span>
-                    <span class="text-sm font-medium">${factory.production}</span>
-                  </div>
-                  <p class="text-sm mb-2">Capacity: ${factory.capacity}</p>
-                  <p class="text-sm mb-2">Quality Score: ${factory.qualityScore}%</p>
-                  <div class="flex gap-2">
-                    <button class="px-3 py-1 bg-blue-500 text-white rounded text-xs">View Details</button>
-                    <button class="px-3 py-1 bg-gray-500 text-white rounded text-xs">Production Data</button>
-                  </div>
-                </div>
-              `);
-            marker.addTo(mapInstance);
+        // Load Leaflet JS
+        const { default: Leaflet } = await import("leaflet");
+        L = Leaflet;
+        
+        // Fix marker icons
+        delete (L.Icon.Default.prototype as any)._getIconUrl;
+        L.Icon.Default.mergeOptions({
+          iconRetinaUrl: "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon-2x.png",
+          iconUrl: "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon.png",
+          shadowUrl: "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png",
+        });
+
+        // Create ice cream themed icons
+        const createIceCreamIcon = (type: string, performance: string) => {
+          const getColor = (perf: string) => {
+            switch (perf) {
+              case "excellent": return "#10b981"; // Green
+              case "good": return "#3b82f6"; // Blue  
+              case "pending": return "#f59e0b"; // Yellow
+              default: return "#ef4444"; // Red
+            }
+          };
+
+          const getEmoji = (storeType: string) => {
+            switch (storeType) {
+              case "flagship": return "🍦";
+              case "branch": return "🛍️";
+              case "outlet": return "🏪";
+              case "seasonal": return "🌊";
+              case "coming-soon": return "🚧";
+              default: return "❓";
+            }
+          };
+
+          return L.divIcon({
+            className: 'ice-cream-marker',
+            html: `
+              <div style="
+                width: 40px;
+                height: 40px;
+                background: linear-gradient(135deg, ${getColor(performance)}, ${getColor(performance)}dd);
+                border: 3px solid white;
+                border-radius: 50%;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                box-shadow: 0 6px 20px rgba(0,0,0,0.3);
+                font-size: 18px;
+                animation: pulse-glow 2s ease-in-out infinite;
+              ">
+                ${getEmoji(type)}
+              </div>
+            `,
+            iconSize: [40, 40],
+            iconAnchor: [20, 20]
           });
+        };
+
+        if (mapRef.current && !map) {
+          // Center on India with ice cream themed initial view
+          const initialCenter: [number, number] = [20.5937, 78.9629];
+          const initialZoom = 5;
+
+          const mapInstance = L.map(mapRef.current, {
+            center: initialCenter,
+            zoom: initialZoom,
+            scrollWheelZoom: true,
+            zoomControl: true,
+            attributionControl: true,
+          });
+
+          // Add tile layer with ice cream themed style
+          L.tileLayer(
+            "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
+            {
+              attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+              maxZoom: 19,
+              subdomains: ['a', 'b', 'c'],
+            }
+          ).addTo(mapInstance);
+
+          setMap(mapInstance);
+          
+          // Add ice cream store markers
+          addIceCreamMarkersToMap(mapInstance, createIceCreamIcon);
+          
+          setMapLoading(false);
         }
 
-        // Add delivery routes
-        if (activeLayers.includes("deliveries")) {
-          deliveryRoutes.forEach((route) => {
-            const polyline = L.polyline(
-              route.coordinates as [number, number][],
-              {
-                color: route.status === "in-transit" ? "orange" : "green",
-                weight: 4,
-                opacity: 0.8,
-              }
-            ).bindPopup(`
-                <div class="p-4">
-                  <h3 class="font-bold text-lg mb-2">${route.name}</h3>
-                  <p class="text-sm text-gray-600 mb-2">${route.start} → ${
-              route.end
-            }</p>
-                  <div class="flex items-center gap-2 mb-2">
-                    <span class="px-2 py-1 ${
-                      route.status === "in-transit"
-                        ? "bg-orange-100 text-orange-800"
-                        : "bg-green-100 text-green-800"
-                    } rounded-full text-xs">${route.status}</span>
-                    <span class="text-sm font-medium">${
-                      route.estimatedArrival
-                    }</span>
-                  </div>
-                  <p class="text-sm mb-2">Driver: ${route.driver}</p>
-                  <p class="text-sm mb-2">Vehicle: ${route.vehicle}</p>
-                  <p class="text-sm mb-2">Temperature: ${route.temperature}</p>
-                  <div class="flex gap-2">
-                    <button class="px-3 py-1 bg-blue-500 text-white rounded text-xs">Track Route</button>
-                    <button class="px-3 py-1 bg-gray-500 text-white rounded text-xs">Contact Driver</button>
-                  </div>
-                </div>
-              `);
-            polyline.addTo(mapInstance);
-          });
-        }
-
-        setMap(mapInstance);
+      } catch (error) {
+        console.error("Error loading Leaflet:", error);
+        setMapLoading(false);
       }
     };
 
-    loadMap();
-  }, [activeLayers, mapType]);
+    loadLeaflet();
 
-  const toggleLayer = (layerId: string) => {
-    setActiveLayers((prev) =>
-      prev.includes(layerId)
-        ? prev.filter((id) => id !== layerId)
-        : [...prev, layerId]
+    return () => {
+      if (map) {
+        map.remove();
+      }
+    };
+  }, [userLocation]);
+
+  // Get user's ice cream location 🌹
+  const getMyIceCreamLocation = () => {
+    if (!navigator.geolocation) {
+      setLocationPermission("denied");
+      return;
+    }
+
+    setLocationPermission("getting");
+    
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        const userPos = {
+          lat: position.coords.latitude,
+          lng: position.coords.longitude
+        };
+        setUserLocation(userPos);
+        setLocationPermission("granted");
+        
+        // Add user location marker with ice cream theme
+        if (map) {
+          const userMarker = (L as any).marker([userPos.lat, userPos.lng], {
+            icon: (L as any).divIcon({
+              className: 'user-ice-cream-marker',
+              html: `
+                <div style="
+                  width: 28px;
+                  height: 28px;
+                  background: linear-gradient(135deg, #ec4899, #f43f5e);
+                  border: 4px solid white;
+                  border-radius: 50%;
+                  display: flex;
+                  align-items: center;
+                  justify-content: center;
+                  box-shadow: <｜tool▁call▁begin｜>
+0 8px 25px rgba(236,72,153,0.4);
+                  animation: pulse-glow 1s ease-in-out infinite;
+                ">
+                  🍧
+                </div>
+              `,
+              iconSize: [28, 28],
+              iconAnchor: [14, 14]
+            })
+          });
+
+          userMarker.bindPopup(`
+            <div style="padding: 16px; text-align: center; max-width: 200px;">
+              <div style="font-size: 24px; margin-bottom: 8px;">😊</div>
+              <h3 style="margin: 0 0 8px 0; color: #ec4899; font-size: 16px;">Your Ice Cream Journey Starts Here!</h3>
+              <p style="margin: 0; font-size: 12px; color: #64748b;">
+                ${userPos.lat.toFixed(4)}, ${userPos.lng.toFixed(4)}
+              </p>
+              <p style="margin: 4px 0 0 0; font-size: 11px; color: #9ca3af;">
+                Find nearby ice cream stores 🍦
+              </p>
+            </div>
+          `);
+
+          userMarker.addTo(map);
+          setMarkers(prev => [...prev, userMarker]);
+          
+          // Pan to user location
+          map.setView([userPos.lat, userPos.lng], 12);
+        }
+      },
+      (error) => {
+        console.error("Error getting location:", error);
+        setLocationPermission("denied");
+      },
+      {
+        enableHighAccuracy: true,
+        timeout: 10000,
+        maximumAge: 300000
+      }
     );
   };
 
-  const toggleFullscreen = () => {
-    setIsFullscreen(!isFullscreen);
+  const addIceCreamMarkersToMap = (mapInstance: any, createIceCreamIcon: Function) => {
+    // Clear existing markers
+    markers.forEach((marker: any) => mapInstance.removeLayer(marker));
+    
+    const newMarkers: any[] = [];
+    
+    // Add ice cream store markers
+    iceCreamStores
+      .filter(store => selectedTypes.includes(store.type) && 
+        store.name.toLowerCase().includes(searchTerm.toLowerCase()))
+      .forEach(store => {
+        const marker = (L as any).marker([store.lat, store.lng], {
+          icon: createIceCreamIcon(store.type, store.performance)
+        });
+
+        // Create delightful ice cream store popup
+        const popupContent = `
+          <div style="min-width: 320px; padding: 20px; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;">
+            <div style="display: flex; align-items: center; gap: 16px; margin-bottom: 16px;">
+              <div style="
+                width: 56px;
+                height: 56px;
+                background: linear-gradient(135deg, #ec4899, #db2777);
+                border-radius: 16px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                font-size: 24px;
+                box-shadow: 0 4px 12px rgba(236,72,153,0.3);
+              ">
+                ${store.type === "flagship" ? "🍦" : store.type === "bridge" ? "🛍️" : 
+                  store.type === "outlet" ? "🏪" : store.type === "seasonal" ? "🌊" : "🚧"}
+              </div>
+              <div>
+                <h3 style="margin: 0; font-size: 20px; font-weight: bold; color: #1e293b; line-height: 1.2;">
+                  ${store.name}
+                </h3>
+                <p style="margin: 4px 0 0 0; font-size: 14px; color: #ec4899; text-transform: capitalize; font-weight: 600;">
+                  ${store.type.replace('-', ' ')} Store
+                </p>
+                <div style="display: flex; align-items: center; gap: 8px; margin-top: 4px;">
+                  <div style="display: flex; align-items: center;">
+                    ${"⭐".repeat(Math.floor(store.rating))}
+                    <span style="margin-left: 4px; font-size: 12px; color: #64748b;">(${store.reviews} reviews)</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+            
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px;">
+              <div style="text-align: center; padding: 16px; background: linear-gradient(135deg, #fdf2f8, #fce7f3); border-radius: 12px; border: 1px solid #f9a8d4;">
+                <p style="margin: 0; font-size: 12px; color: #831843; font-weight: 600;">Monthly Revenue</p>
+                <p style="margin: 8px 0 0 0; font-size: 18px; font-weight: bold; color: #be185d;">${store.revenue}</p>
+              </div>
+              <div style="text-align: center; padding: 16px; background: linear-gradient(135deg, #ecfdf5, #d1fae5); border-radius: 12px; border: 1px solid #86efac;">
+                <p style="margin: 0; font-size: 12px; color: #14532d; font-weight: 600;">Team Size</p>
+                <p style="margin: 8px 0 0 0; font-size: 18px; font-weight: bold; color: #166534;">${store.staff} 🧑‍🍳</p>
+              </div>
+            </div>
+            
+            <div style="margin-bottom: 16px;">
+              <p style="margin: 0 0 8px 0; font-size: 12px; color: #64748b; font-weight: 600;">Status:</p>
+              <span style="
+                padding: 6px 12px;
+                border-radius: 20px;
+                font-size: 12px;
+                font-weight: 600;
+                ${store.status === 'open' ? 'background: linear-gradient(135deg, #d1fae5, #a7f3d0); color: #065f46; border: 1px solid #86efac;' : 
+                  store.status === 'seasonal' ? 'background: linear-gradient(135deg, #fef3c7, #fde68a); color: #92400e; border: 1px solid #fbbf24;' :
+                  'background: linear-gradient(135deg, #fecaca, #fca5a5); color: #991b1b; border: 1px solid #f87171;'}
+              ">
+                ${store.status === 'open' ? '🟢 Open Now' : 
+                  store.status === 'seasonal' ? '🌊 Seasonal' : 
+                  store.status === 'construction' ? '🚧 Coming Soon' : store.status.toUpperCase()}
+              </span>
+            </div>
+            
+            <div style="margin-bottom: 16px;">
+              <p style="margin: 0 0 8px 0; font-size: 12px; color: #64748b; font-weight: 600;">Specialties:</p>
+              <div style="display: flex; flex-wrap: wrap; gap: 6px;">
+                ${store.specialties.map((specialty: string) => 
+                  `<span style="padding: 4px 8px; background: linear-gradient(135deg, #ede9fe, #ddd6fe); color: #7c3aed; border-radius: 12px; font-size: 11px; font-weight: 500;">${specialty}</span>`
+                ).join('')}
+              </div>
+            </div>
+            
+            <div style="font-size: 11px; color: #64748b; border-top: 1px solid #e2e8f0; padding-top: 12px;">
+              <p style="margin: 0 0 4px 0;">📍 ${store.address}</p>
+              <p style="margin: 0;">Last updated: ${store.lastUpdated}</p>
+            </div>
+          </div>
+        `;
+
+        marker.bindPopup(popupContent);
+        marker.addTo(mapInstance);
+
+        marker.on('click', () => {
+          setSelectedStore(store);
+        });
+
+        newMarkers.push(marker);
+      });
+
+    setMarkers(newMarkers);
+  };
+
+  const updateMarkers = () => {
+    if (map) {
+      addIceCreamMarkersToMap(map, () => {});
+    }
+  };
+
+  useEffect(() => {
+    if (map) {
+      updateMarkers();
+    }
+  }, [selectedTypes, searchTerm]);
+
+  const toggleStoreType = (type: string) => {
+    setSelectedTypes(prev => 
+      prev.includes(type) 
+        ? prev.filter(t => t !== type)
+        : [...prev, type]
+    );
+  };
+
+  const getPerformanceColor = (performance: string) => {
+    switch (performance) {
+      case "excellent": return "bg-emerald-100 text-emerald-700 border-emerald-300 dark:bg-emerald-900/20 dark:text-emerald-400";
+      case "good": return "bg-blue-100 text-blue-700 border-blue-300 dark:bg-blue-900/20 dark:text-blue-400";
+      case "pending": return "bg-yellow-100 text-yellow-700 border-yellow-300 dark:bg-yellow-900/20 dark:text-yellow-400";
+      default: return "bg-red-100 text-red-700 border-red-300 dark:bg-red-900/20 dark:text-red-400";
+    }
+  };
+
+  const getStoreIcon = (type: string) => {
+    switch (type) {
+      case "flagship": return Store;
+      case "branch": return ShoppingBag;
+      case "outlet": return Gift;
+      case "seasonal": return TargetIcon;
+      default: return Star;
+    }
   };
 
   return (
-    <>
+    <div className="h-screen w-full bg-gradient-to-br from-purple-50 via-pink-50 to-rose-50 dark:from-slate-900 dark:via-purple-900/20 dark:to-pink-900/20 relative">
       <style dangerouslySetInnerHTML={{ __html: customStyles }} />
-      <div className="flex flex-col h-screen overflow-hidden">
-        {/* Stunning Glassy Top Navigation */}
-        <header className="sticky top-0 z-30 bg-white/70 dark:bg-slate-800/70 border-b border-pink-200/50 dark:border-slate-700/50 px-8 py-6 flex items-center justify-between backdrop-blur-xl shadow-lg">
-          <div className="flex items-center gap-4">
-            <div className="relative">
-              <div className="w-12 h-12 bg-gradient-to-br from-pink-400 to-purple-500 rounded-2xl flex items-center justify-center shadow-lg">
-                <span className="text-2xl">🗺️</span>
+      
+      {/* Map Container */}
+      <div className="absolute inset-0 z-0">
+        <div ref={mapRef} className="h-full w-full"></div>
+        
+        {/* Ice Cream Loading Overlay */}
+        {mapLoading && (
+          <div className="absolute inset-0 bg-gradient-to-br from-purple-100/90 via-pink-100/90 to-rose-100/90 dark:from-slate-900/90 dark:via-purple-900/90 dark:to-pink-900/90 backdrop-blur-sm flex items-center justify-center z-10">
+            <div className="text-center">
+              <div className="text-6xl mb-4 animate-float">🍦</div>
+              <p className="text-xl font-bold text-purple-800 dark:text-purple-200 mb-2">Sweet Map Loading...</p>
+              <p className="text-sm text-purple-600 dark:text-purple-400">Finding ice cream stores near you</p>
+              <div className="w-12 h-2 bg-pink-200 dark:bg-pink-800 rounded-full mx-auto mt-4 overflow-hidden">
+                <div className="w-full h-full bg-gradient-to-r from-purple-600 to-pink-600 animate-pulse-glow"></div>
               </div>
-              <div className="absolute -top-1 -right-1 w-4 h-4 bg-gradient-to-br from-emerald-400 to-teal-500 rounded-full animate-pulse"></div>
-            </div>
-            <div>
-              <h1 className="font-bold text-2xl bg-gradient-to-r from-pink-600 to-purple-600 dark:from-pink-400 dark:to-purple-400 bg-clip-text text-transparent">
-                Global Operations Map
-              </h1>
-              <p className="text-sm text-slate-600 dark:text-slate-400">
-                Real-time location tracking & analytics
-              </p>
             </div>
           </div>
+        )}
+      </div>
+      
+      {/* Top Ice Cream Control Bar */}
+      <div className="absolute top-4 left-4 right-4 z-20">
+        <div className="bg-gradient-to-r from-purple-200/95 via-pink-200/95 to-rose-200/95 dark:from-purple-900/95 dark:via-pink-900/95 dark:to-slate-900/95 backdrop-blur-xl rounded-2xl p-4 shadow-xl border border-purple-300/50 dark:border-purple-800/50">
+          <div className="flex items-center justify-between">
+            {/* Left - Sweet Branding */}
+            <div className="flex items-center gap-3">
+              <div className="w-12 h-12 bg-gradient-to-br from-purple-600 via-pink-600 to-rose-600 rounded-2xl flex items-center justify-center animate-pulse-glow">
+                <ShoppingBag className="w-6 h-6 text-white" />
+              </div>
+              <div>
+                <h1 className="text-xl font-bold text-purple-900 dark:text-white flex items-center gap-2">
+                  🍦 Ice Cream Store Locator
+                </h1>
+                <p className="text-sm text-purple-600 dark:text-purple-400">Find your favorite frozen treats!</p>
+              </div>
+            </div>
 
-          <div className="flex-1 flex justify-center max-w-2xl mx-8">
-            <div className="relative w-full group">
-              <Input
-                type="text"
-                placeholder="Search locations, routes, or coordinates..."
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-                className="rounded-2xl pl-12 pr-4 py-3 bg-white/70 dark:bg-slate-800/70 shadow-lg border-0 focus:ring-2 focus:ring-pink-500/50 transition-all duration-300 group-hover:shadow-xl"
-              />
-              <Search className="absolute left-4 top-3.5 w-5 h-5 text-slate-400 group-hover:text-slate-600 transition-colors" />
+            {/* Center - Search & Location */}
+            <div className="flex items-center gap-3 flex-1 max-w-md mx-4">
+              <div className="relative flex-1">
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-purple-600" />
+                <Input
+                  type="text"
+                  placeholder="Search ice cream stores..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="pl-10 bg-white/90 dark:bg-slate-800/90 border-purple-300 dark:border-purple-700 rounded-xl text-purple-900 dark:text-white"
+                />
+              </div>
+              <Button
+                onClick={getMyIceCreamLocation}
+                disabled={locationPermission === "getting"}
+                className={`rounded-xl transition-all ${
+                  locationPermission === "granted" 
+                    ? "bg-emerald-600 hover:bg-emerald-700 text-white animate-pulse-glow" 
+                    : locationPermission === "denied"
+                    ? "bg-red-600 hover:bg-red-700 text-white"
+                    : "bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white"
+                }`}
+              >
+                {locationPermission === "getting" ? (
+                  <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                ) : (
+                  <Locate className="w-4 h-4" />
+                )}
+              </Button>
+            </div>
+
+            {/* Right - Actions */}
+            <div className="flex items-center gap-2">
+              <Button
+                onClick={() => setShowFilters(!showFilters)}
+                className="bg-white/90 hover:bg-purple-100 dark:bg-slate-800/90 dark:hover:bg-purple-900/90 text-purple-900 dark:text-purple-200 border-purple-300 dark:border-purple-700 rounded-xl transition-all"
+              >
+                <Filter className="w-4 h-4 mr-2" />
+                Store Types
+              </Button>
+              <Button
+                onClick={() => window.location.reload()}
+                className="bg-white/90 hover:bg-purple-100 dark:bg-slate-800/90 dark:hover:bg-purple-900/90 text-purple-900 dark:text-purple-200 border-purple-300 dark:border-purple-700 rounded-xl transition-all"
+              >
+                <RefreshCw className="w-4 h-4" />
+              </Button>
             </div>
           </div>
+        </div>
+      </div>
 
-          <div className="flex items-center gap-4">
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button
-                  variant="ghost"
-                  className="hover:bg-pink-100 dark:hover:bg-slate-800 rounded-xl"
-                >
-                  <Layers className="w-4 h-4 mr-2" />
-                  Map Type
-                  <ChevronDown className="w-4 h-4 ml-2" />
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end">
-                <DropdownMenuLabel>Map Type</DropdownMenuLabel>
-                <DropdownMenuSeparator />
-                <DropdownMenuItem onClick={() => setMapType("street")}>
-                  <Map className="w-4 h-4 mr-2" />
-                  Street View
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => setMapType("satellite")}>
-                  <Satellite className="w-4 h-4 mr-2" />
-                  Satellite View
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
-
-            <Button
-              onClick={toggleFullscreen}
-              variant="ghost"
-              size="icon"
-              className="hover:bg-pink-100 dark:hover:bg-slate-800 rounded-xl transition-all duration-300"
-            >
-              {isFullscreen ? (
-                <Minimize2 className="w-5 h-5" />
-              ) : (
-                <Maximize2 className="w-5 h-5" />
-              )}
-            </Button>
-
-            <Button
-              variant="ghost"
-              size="icon"
-              className="relative hover:bg-pink-100 dark:hover:bg-slate-800 rounded-xl transition-all duration-300"
-            >
-              <Bell className="w-5 h-5" />
-              <div className="absolute -top-1 -right-1 w-3 h-3 bg-red-500 rounded-full animate-pulse"></div>
-            </Button>
-
-            <Avatar className="ml-2 ring-2 ring-pink-200 dark:ring-slate-700 hover:ring-pink-400 transition-all duration-300">
-              <AvatarFallback className="bg-gradient-to-br from-pink-500 to-purple-600 text-white">
-                <User className="w-5 h-5" />
-              </AvatarFallback>
-            </Avatar>
-          </div>
-        </header>
-
-        {/* Map Controls */}
-        <div className="sticky top-[5.5rem] z-20 flex justify-center w-full px-6 py-4">
-          <div className="flex gap-3 bg-white/70 dark:bg-slate-800/70 backdrop-blur-xl rounded-2xl shadow-xl px-6 py-3 border border-pink-200/50 dark:border-slate-700/50">
-            <div className="flex items-center gap-2 text-slate-600 dark:text-slate-400">
-              <Layers className="w-4 h-4" />
-              <span className="text-sm font-medium">Layers:</span>
-            </div>
-            {mapLayers.map((layer) => {
-              const IconComponent = layer.icon;
+      {/* Store Type Filter Panel */}
+      {showFilters && (
+        <div className="absolute top-24 left-4 z-20 w-80 bg-gradient-to-br from-purple-100/95 via-pink-100/95 to-rose-100/95 dark:from-purple-900/95 dark:via-pink-900/95 dark:to-slate-900/95 backdrop-blur-xl rounded-2xl shadow-xl border border-purple-300/50 dark:border-purple-800/50 p-4 animate-slide-in-up">
+          <h3 className="text-lg font-bold text-purple-900 dark:text-white mb-4 flex items-center gap-2">
+            🏪 Store Types
+          </h3>
+          <div className="space-y-3">
+            {["flagship", "branch", "outlet", "seasonal", "coming-soon"].map((type) => {
+              const Icon = getStoreIcon(type);
+              const getStoreLabel = (storeType: string) => {
+                switch (storeType) {
+                  case "flagship": return "🍦 Flagship Stores";
+                  case "branch": return "🛍️ Mall Branches";
+                  case "outlet": return "🏪 Quick Outlets";
+                  case "seasonal": return "🌊 Beach Stores";
+                  case "coming-soon": return "🚧 Coming Soon";
+                  default: return storeType;
+                }
+              };
+              
               return (
-                <Button
-                  key={layer.id}
-                  variant={
-                    activeLayers.includes(layer.id) ? "default" : "ghost"
-                  }
-                  size="sm"
-                  onClick={() => toggleLayer(layer.id)}
-                  className={`rounded-xl px-4 py-2 text-sm transition-all duration-300 flex items-center gap-2 ${
-                    activeLayers.includes(layer.id)
-                      ? "bg-gradient-to-r from-pink-500 to-purple-600 text-white shadow-lg"
-                      : "hover:bg-pink-100 dark:hover:bg-slate-700"
-                  }`}
-                >
-                  <IconComponent className="w-4 h-4" />
-                  {layer.label}
-                </Button>
+                <label key={type} className="flex items-center gap-3 p-3 rounded-xl hover:bg-white/50 dark:hover:bg-slate-700/50 cursor-pointer transition-all">
+                  <input
+                    type="checkbox"
+                    checked={selectedTypes.includes(type)}
+                    onChange={() => toggleStoreType(type)}
+                    className="w-4 h-4 text-purple-600 rounded border-purple-400 focus:ring-purple-500"
+                  />
+                  <Icon className="w-5 h-5 text-purple-600 dark:text-purple-400" />
+                  <span className="text-sm font-semibold text-purple-900 dark:text-white">
+                    {getStoreLabel(type)}
+                  </span>
+                </label>
               );
             })}
           </div>
         </div>
+      )}
 
-        {/* Main Map Area */}
-        <div className="flex-1 relative">
-          {/* Map Container */}
-          <div
-            ref={mapRef}
-            className={`w-full h-full ${
-              isFullscreen ? "fixed inset-0 z-50" : ""
-            }`}
-          />
-
-          {/* Map Overlay Controls */}
-          {!isFullscreen && (
-            <div className="absolute top-4 right-4 z-40 space-y-2">
-              <Card className="bg-white/90 dark:bg-slate-800/90 backdrop-blur-xl border-pink-200/50 dark:border-slate-700/50 shadow-xl">
-                <CardHeader className="pb-3">
-                  <CardTitle className="text-sm font-semibold text-slate-800 dark:text-white">
-                    Quick Stats
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-2">
-                  <div className="flex items-center justify-between text-xs">
-                    <span className="text-slate-600 dark:text-slate-400">
-                      Stores:
-                    </span>
-                    <Badge className="bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-400">
-                      {storeLocations.length}
-                    </Badge>
-                  </div>
-                  <div className="flex items-center justify-between text-xs">
-                    <span className="text-slate-600 dark:text-slate-400">
-                      Factories:
-                    </span>
-                    <Badge className="bg-blue-100 text-blue-800 dark:bg-blue-900/20 dark:text-blue-400">
-                      {factoryLocations.length}
-                    </Badge>
-                  </div>
-                  <div className="flex items-center justify-between text-xs">
-                    <span className="text-slate-600 dark:text-slate-400">
-                      Active Routes:
-                    </span>
-                    <Badge className="bg-orange-100 text-orange-800 dark:bg-orange-900/20 dark:text-orange-400">
-                      {
-                        deliveryRoutes.filter((r) => r.status === "in-transit")
-                          .length
-                      }
-                    </Badge>
-                  </div>
-                </CardContent>
-              </Card>
+      {/* Store Details Panel */}
+      {selectedStore && (
+        <div className="absolute bottom-4 right-4 z-20 w-96 bg-gradient-to-br from-purple-100/95 via-pink-100/95 to-rose-100/95 dark:from-purple-900/95 dark:via-pink-900/95 dark:to-slate-900/95 backdrop-blur-xl rounded-2xl shadow-xl border border-purple-300/50 dark:border-purple-800/50 p-6 animate-slide-in-up">
+          <div className="flex items-center justify-between mb-4">
+            <div className="flex items-center gap-3">
+              <div className="w-14 h-14 bg-gradient-to-br from-purple-600 via-pink-600 to-rose-600 rounded-2xl flex items-center justify-center animate-pulse-glow">
+                <span className="text-white text-xl">
+                  {selectedStore.type === "flagship" ? "🍦" : selectedStore.type === "branch" ? "🛍️" : 
+                   selectedStore.type === "outlet" ? "🏪" : selectedStore.type === "seasonal" ? "🌊" : "🚧"}
+                </span>
+              </div>
+              <div>
+                <h3 className="text-xl font-bold text-purple-900 dark:text-white">{selectedStore.name}</h3>
+                <p className="text-sm text-purple-600 dark:text-purple-400 capitalize">{selectedStore.type} Store</p>
+              </div>
             </div>
-          )}
+            <Button
+              onClick={() => setSelectedStore(null)}
+              size="sm"
+              className="bg-white/80 hover:bg-purple-100 dark:bg-slate-800/80 dark:hover:bg-purple-900/80 text-purple-900 dark:text-purple-200 border-purple-300 dark:border-purple-700"
+            >
+              <EyeOff className="w-4 h-4" />
+            </Button>
+          </div>
 
-          {/* Location Details Panel */}
-          {selectedLocation && !isFullscreen && (
-            <div className="absolute bottom-4 left-4 z-40 w-96">
-              <Card className="bg-white/95 dark:bg-slate-800/95 backdrop-blur-xl border-pink-200/50 dark:border-slate-700/50 shadow-xl">
-                <CardHeader className="pb-3">
-                  <div className="flex items-center justify-between">
-                    <CardTitle className="text-lg font-bold text-slate-800 dark:text-white">
-                      {selectedLocation.name}
-                    </CardTitle>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      onClick={() => setSelectedLocation(null)}
-                      className="hover:bg-pink-100 dark:hover:bg-slate-700 rounded-xl"
-                    >
-                      <X className="w-4 h-4" />
-                    </Button>
-                  </div>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <div className="flex items-center gap-2">
-                    <MapPin className="w-4 h-4 text-slate-400" />
-                    <span className="text-sm text-slate-600 dark:text-slate-400">
-                      {selectedLocation.address}
-                    </span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <Badge
-                      className={`${
-                        selectedLocation.status === "active" ||
-                        selectedLocation.status === "operational"
-                          ? "bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-400"
-                          : "bg-red-100 text-red-800 dark:bg-red-900/20 dark:text-red-400"
-                      }`}
-                    >
-                      {selectedLocation.status}
-                    </Badge>
-                    {selectedLocation.revenue && (
-                      <span className="text-sm font-medium text-slate-800 dark:text-white">
-                        {selectedLocation.revenue}
-                      </span>
-                    )}
-                  </div>
-                  <div className="flex gap-2">
-                    <Button
-                      size="sm"
-                      className="bg-gradient-to-r from-pink-500 to-purple-600 text-white rounded-xl"
-                    >
-                      <Navigation className="w-4 h-4 mr-2" />
-                      Directions
-                    </Button>
-                    <Button size="sm" variant="outline" className="rounded-xl">
-                      <BarChart3 className="w-4 h-4 mr-2" />
-                      Analytics
-                    </Button>
-                  </div>
-                </CardContent>
-              </Card>
+          <div className="grid grid-cols-2 gap-4 mb-4">
+            <div className="bg-gradient-to-br from-purple-50 to-pink-50 dark:from-slate-700 dark:to-slate-700 rounded-xl p-4 text-center">
+              <p className="text-xs text-purple-700 dark:text-purple-300 mb-1">Monthly Revenue</p>
+              <p className="text-lg font-bold text-purple-900 dark:text-white">{selectedStore.revenue}</p>
             </div>
-          )}
+            <div className="bg-gradient-to-br from-pink-50 to-rose-50 dark:from-slate-700 dark:to-slate-700 rounded-xl p-4 text-center">
+              <p className="text-xs text-pink-700 dark:text-pink-300 mb-1">Team Size</p>
+              <p className="text-lg font-bold text-pink-900 dark:text-white">{selectedStore.staff} 🧑‍🍳</p>
+            </div>
+          </div>
+
+          <div className="mb-4">
+            <div className="flex justify-between items-center mb-2">
+              <span className="text-sm font-semibold text-purple-900 dark:text-white">Rating & Performance</span>
+              <span className={`px-3 py-1 rounded-full text-xs font-bold border ${getPerformanceColor(selectedStore.performance)}`}>
+                {selectedStore.performance.toUpperCase()}
+              </span>
+            </div>
+            <div className="flex items-center gap-2 mb-2">
+              <div className="flex text-yellow-400">
+                {"⭐".repeat(Math.floor(selectedStore.rating))}
+              </div>
+              <span className="text-sm text-purple-700 dark:text-purple-300">
+                {selectedStore.rating} ({selectedStore.reviews} reviews)
+              </span>
+            </div>
+            <div className="text-xs text-purple-600 dark:text-purple-400">
+              Last updated: {selectedStore.lastUpdated}
+            </div>
+          </div>
+
+          <div className="mb-4">
+            <p className="text-xs text-purple-700 dark:text-purple-300 mb-2 font-semibold">Specialties:</p>
+            <div className="flex flex-wrap gap-2">
+              {selectedStore.specialties.map((specialty: string) => (
+                <span key={specialty} className="px-3 py-1 bg-gradient-to-r from-purple-200 to-pink-200 dark:from-purple-900/20 dark:to-pink-900/20 text-purple-800 dark:text-purple-300 text-xs rounded-full font-medium">
+                  {specialty}
+                </span>
+              ))}
+            </div>
+          </div>
+
+          <div className="text-xs text-purple-600 dark:text-purple-400 bg-white/50 dark:bg-slate-700/50 rounded-lg p-3">
+            <p>📍 {selectedStore.address}</p>
+          </div>
+        </div>
+      )}
+
+      {/* Sweet Stats Legend */}
+      <div className="absolute bottom-4 left-4 z-20 bg-gradient-to-br from-purple-100/95 via-pink-100/95 to-rose-100/95 dark:from-purple-900/95 dark:via-pink-900/95 dark:to-slate-900/95 backdrop-blur-xl rounded-2xl shadow-xl border border-purple-300/50 dark:border-purple-800/50 p-4 animate-slide-in-up">
+        <div className="flex items-center gap-3 mb-3">
+          <ShoppingBag className="w-5 h-5 text-purple-600 dark:text-purple-400" />
+          <h4 className="text-sm font-bold text-purple-900 dark:text-white">🍦 Store Network</h4>
+        </div>
+        <div className="space-y-2 text-xs">
+          <div className="flex justify-between">
+            <span className="text-purple-700 dark:text-purple-300">Open Stores:</span>
+            <span className="text-purple-900 dark:text-white font-bold">{iceCreamStores.filter(s => s.status === 'open' || s.status === 'seasonal').length}</span>
+          </div>
+          <div className="flex justify-between">
+            <span className="text-purple-700 dark:text-purple-300">Total Staff:</span>
+            <span className="text-purple-900 dark:text-white font-bold">{iceCreamStores.reduce((sum, s) => sum + s.staff, 0)} 🧑‍🍳</span>
+          </div>
+          <div className="flex justify-between">
+            <span className="text-purple-700 dark:text-purple-300">Your Location:</span>
+            <span className="text-purple-900 dark:text-white font-bold">
+              {locationPermission === "granted" ? "🍧 Found!" : locationPermission === "denied" ? "❌ Hidden" : "📍 Locate"}
+            </span>
+          </div>
         </div>
       </div>
-    </>
+
+    </div>
   );
 }

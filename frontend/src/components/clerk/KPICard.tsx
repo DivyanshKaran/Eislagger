@@ -23,8 +23,8 @@ export function ClerkKPICard({
     changeType === "increase"
       ? "text-pink-600"
       : changeType === "decrease"
-      ? "text-red-500"
-      : "text-slate-400";
+        ? "text-red-500"
+        : "text-slate-400";
 
   return (
     <div className="relative rounded-2xl p-6 bg-gradient-to-br from-pink-100/80 to-purple-100/80 dark:from-pink-900/30 dark:to-purple-900/30 shadow-xl border border-pink-200/60 dark:border-pink-800/40 backdrop-blur-xl overflow-hidden group transition-transform hover:scale-[1.025] animate-fade-in-scale">

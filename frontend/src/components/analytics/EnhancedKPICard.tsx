@@ -1,9 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Card, CardContent, CardHeader } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
+
 import {
   TrendingUp,
   TrendingDown,
@@ -12,6 +10,10 @@ import {
   ChevronDown,
   ChevronUp,
 } from "lucide-react";
+
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader } from "@/components/ui/card";
 
 interface KPICardProps {
   id: number;

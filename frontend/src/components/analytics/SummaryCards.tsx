@@ -1,10 +1,12 @@
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import { TrendingUp, TrendingDown } from "lucide-react";
+
+import { Badge } from "@/components/ui/badge";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import type { KPIData } from "@/types";
 
 interface Metric {
   title: string;
-  value: string;
+  value: number | string;
   icon: React.ReactNode;
   trend?: string;
   trendDirection?: "up" | "down" | "neutral";
@@ -61,7 +63,14 @@ export default function SummaryCards({ metrics }: { metrics: Metric[] }) {
           </CardHeader>
           <CardContent>
             <div className="text-3xl font-bold text-slate-900 dark:text-white group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors duration-300">
-              {metric.value}
+              {typeof metric.value === 'number' 
+                ? metric.value.toLocaleString('en-IN', { 
+                    style: 'currency', 
+                    currency: 'INR',
+                    minimumFractionDigits: 0,
+                    maximumFractionDigits: 2
+                  })
+                : metric.value}
             </div>
           </CardContent>
         </Card>

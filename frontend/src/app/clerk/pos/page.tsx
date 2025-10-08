@@ -1,5 +1,7 @@
 "use client";
+
 import React, { useState } from "react";
+import { useTheme } from "next-themes";
 import {
   Search,
   ShoppingCart,
@@ -9,8 +11,11 @@ import {
   Star,
   Heart,
   Sparkles,
+  Moon,
+  Sun,
 } from "lucide-react";
 
+// POS-specific data
 const categories = [
   {
     id: "all",
@@ -50,7 +55,25 @@ const categories = [
   },
 ];
 
-const products = [
+interface Product {
+  id: number;
+  name: string;
+  price: number;
+  originalPrice: number;
+  stock: number;
+  category: string;
+  emoji: string;
+  rating: number;
+  reviews: number;
+  isPopular: boolean;
+  description: string;
+}
+
+interface CartItem extends Product {
+  qty: number;
+}
+
+const products: Product[] = [
   {
     id: 1,
     name: "Mango Tango Swirl",
@@ -157,11 +180,18 @@ const products = [
   },
 ];
 
-export default function DessertPOSPage() {
+export default function ClerkPOSPage() {
+  const { theme, setTheme } = useTheme();
   const [search, setSearch] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("all");
-  const [cart, setCart] = useState([]);
+  const [cart, setCart] = useState<CartItem[]>([]);
   const [favorites, setFavorites] = useState(new Set());
+
+  const toggleDarkMode = () => {
+    setTheme(theme === "dark" ? "light" : "dark");
+  };
+
+  const isDark = theme === "dark";
 
   const filteredProducts = products.filter((p) => {
     const matchesSearch = p.name.toLowerCase().includes(search.toLowerCase());
@@ -170,35 +200,35 @@ export default function DessertPOSPage() {
     return matchesSearch && matchesCategory;
   });
 
-  const addToCart = (product) => {
+  const addToCart = (product: Product) => {
     setCart((prev) => {
       const existing = prev.find((item) => item.id === product.id);
       if (existing) {
         return prev.map((item) =>
-          item.id === product.id ? { ...item, qty: item.qty + 1 } : item
+          item.id === product.id ? { ...item, qty: item.qty + 1 } : item,
         );
       }
       return [...prev, { ...product, qty: 1 }];
     });
   };
 
-  const removeFromCart = (id) => {
+  const removeFromCart = (id: number) => {
     setCart((prev) => prev.filter((item) => item.id !== id));
   };
 
-  const updateQty = (id, delta) => {
+  const updateQty = (id: number, delta: number) => {
     setCart((prev) =>
       prev
         .map((item) =>
           item.id === id
             ? { ...item, qty: Math.max(1, item.qty + delta) }
-            : item
+            : item,
         )
-        .filter((item) => item.qty > 0)
+        .filter((item) => item.qty > 0),
     );
   };
 
-  const toggleFavorite = (id) => {
+  const toggleFavorite = (id: number) => {
     setFavorites((prev) => {
       const newFavorites = new Set(prev);
       if (newFavorites.has(id)) {
@@ -214,18 +244,40 @@ export default function DessertPOSPage() {
   const itemCount = cart.reduce((sum, item) => sum + item.qty, 0);
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-rose-50 via-pink-50 to-purple-100 flex">
+    <div className="w-full h-full bg-transparent flex flex-col lg:flex-row min-h-screen">
       {/* Floating Background Elements */}
-      <div className="fixed inset-0 pointer-events-none overflow-hidden">
-        <div className="absolute top-20 left-10 w-32 h-32 bg-pink-200/30 rounded-full blur-xl animate-pulse"></div>
-        <div className="absolute top-1/3 right-20 w-24 h-24 bg-purple-200/30 rounded-full blur-xl animate-pulse delay-1000"></div>
-        <div className="absolute bottom-20 left-1/4 w-40 h-40 bg-rose-200/30 rounded-full blur-xl animate-pulse delay-2000"></div>
+      <div className="fixed inset-0 pointer-events-none overflow-hidden z-0">
+        <div className="absolute top-20 left-10 w-32 h-32 bg-pink-200/30 dark:bg-pink-400/20 rounded-full blur-xl animate-pulse"></div>
+        <div className="absolute top-1/3 right-20 w-24 h-24 bg-purple-200/30 dark:bg-purple-400/20 rounded-full blur-xl animate-pulse delay-1000"></div>
+        <div className="absolute bottom-20 left-1/4 w-40 h-40 bg-rose-200/30 dark:bg-rose-400/20 rounded-full blur-xl animate-pulse delay-2000"></div>
       </div>
 
       {/* Main Content Area */}
       <div className="flex-1 p-6 pr-0">
         <div className="relative z-10">
-          {/* Embedded Search Bar */}
+          {/* Header with Dark Mode Toggle */}
+          <div className="flex items-center justify-between mb-8">
+            <h1 className="text-3xl font-bold text-gray-800 dark:text-white">
+              EisLagger POS
+            </h1>
+            <div className="flex items-center gap-4">
+              <button
+                onClick={toggleDarkMode}
+                className="p-3 rounded-xl bg-white/80 hover:bg-white dark:bg-gray-700 dark:hover:bg-gray-600 backdrop-blur-sm border border-pink-200 dark:border-gray-600 transition-all duration-300 shadow-lg hover:shadow-xl"
+              >
+                {isDark ? (
+                  <Sun className="w-6 h-6 text-yellow-400" />
+                ) : (
+                  <Moon className="w-6 h-6 text-purple-600" />
+                )}
+              </button>
+              <div className="px-2 py-1 rounded text-xs bg-pink-100 text-pink-600 dark:bg-gray-600 dark:text-gray-200">
+                {isDark ? "DARK" : "LIGHT"}
+              </div>
+            </div>
+          </div>
+
+          {/* Search Bar */}
           <div className="mb-8">
             <div className="relative max-w-2xl">
               <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
@@ -236,7 +288,7 @@ export default function DessertPOSPage() {
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
                 placeholder="Search for delicious treats..."
-                className="w-full pl-14 pr-4 py-4 bg-white/80 backdrop-blur-sm border-2 border-pink-200 rounded-2xl focus:border-pink-400 focus:ring-4 focus:ring-pink-100 transition-all duration-300 text-lg placeholder-pink-400 shadow-lg"
+                className="w-full pl-14 pr-4 py-4 bg-white/80 text-gray-800 placeholder-pink-400 dark:bg-gray-700/80 dark:text-white dark:placeholder-gray-400 dark:border-gray-600 dark:focus:border-pink-400 dark:focus:ring-pink-400/20 backdrop-blur-sm border-2 border-pink-200 focus:border-pink-400 focus:ring-4 focus:ring-pink-100 rounded-2xl transition-all duration-300 text-lg shadow-lg"
               />
             </div>
           </div>
@@ -250,7 +302,7 @@ export default function DessertPOSPage() {
                 className={`flex items-center gap-2 px-5 py-3 rounded-full font-semibold transition-all duration-300 shadow-md hover:shadow-lg transform hover:scale-105 ${
                   selectedCategory === category.id
                     ? `bg-gradient-to-r ${category.color} text-white shadow-lg`
-                    : "bg-white/80 text-gray-700 hover:bg-white border border-pink-200"
+                    : "bg-white/80 text-gray-700 hover:bg-white dark:bg-gray-700/80 dark:text-gray-200 dark:hover:bg-gray-600 border border-pink-200 dark:border-gray-600"
                 }`}
               >
                 <span className="text-lg">{category.emoji}</span>
@@ -259,7 +311,7 @@ export default function DessertPOSPage() {
                   className={`px-2 py-1 rounded-full text-xs ${
                     selectedCategory === category.id
                       ? "bg-white/20"
-                      : "bg-pink-100 text-pink-600"
+                      : "bg-pink-100 text-pink-600 dark:bg-gray-600 dark:text-gray-300"
                   }`}
                 >
                   {category.id === "all"
@@ -275,10 +327,10 @@ export default function DessertPOSPage() {
             {filteredProducts.map((product) => (
               <div
                 key={product.id}
-                className="group bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg hover:shadow-2xl border border-pink-100 overflow-hidden transition-all duration-500 hover:scale-105"
+                className="group bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm rounded-2xl shadow-lg hover:shadow-2xl border border-pink-100 dark:border-gray-700 overflow-hidden transition-all duration-500 hover:scale-105"
               >
                 {/* Product Header */}
-                <div className="relative p-6 bg-gradient-to-br from-pink-50 to-purple-50">
+                <div className="relative p-6 bg-gradient-to-br from-pink-50 to-purple-50 dark:from-gray-700 dark:to-purple-800">
                   {product.isPopular && (
                     <div className="absolute top-3 left-3 bg-gradient-to-r from-yellow-400 to-orange-500 text-white px-3 py-1 rounded-full text-xs font-bold flex items-center gap-1">
                       <Sparkles className="w-3 h-3" />
@@ -287,7 +339,7 @@ export default function DessertPOSPage() {
                   )}
                   <button
                     onClick={() => toggleFavorite(product.id)}
-                    className="absolute top-3 right-3 p-2 rounded-full bg-white/80 shadow-md hover:shadow-lg transition-all duration-300"
+                    className="absolute top-3 right-3 p-2 rounded-full bg-white/80 hover:bg-white dark:bg-gray-600/80 dark:hover:bg-gray-500 shadow-md hover:shadow-lg transition-all duration-300"
                   >
                     <Heart
                       className={`w-5 h-5 transition-colors duration-300 ${
@@ -300,7 +352,7 @@ export default function DessertPOSPage() {
 
                   {/* Product Emoji/Icon */}
                   <div className="flex justify-center mb-4">
-                    <div className="w-20 h-20 bg-white rounded-full shadow-lg flex items-center justify-center text-4xl transform group-hover:scale-110 transition-transform duration-300">
+                    <div className="w-20 h-20 bg-white dark:bg-gray-600 rounded-full shadow-lg flex items-center justify-center text-4xl transform group-hover:scale-110 transition-transform duration-300">
                       {product.emoji}
                     </div>
                   </div>
@@ -308,10 +360,10 @@ export default function DessertPOSPage() {
 
                 {/* Product Info */}
                 <div className="p-6">
-                  <h3 className="font-bold text-xl text-gray-800 mb-2 group-hover:text-pink-600 transition-colors">
+                  <h3 className="font-bold text-xl mb-2 text-gray-800 dark:text-gray-100 group-hover:text-pink-600 transition-colors">
                     {product.name}
                   </h3>
-                  <p className="text-gray-600 text-sm mb-3">
+                  <p className="text-sm mb-3 text-gray-600 dark:text-gray-300">
                     {product.description}
                   </p>
 
@@ -319,11 +371,11 @@ export default function DessertPOSPage() {
                   <div className="flex items-center gap-2 mb-3">
                     <div className="flex items-center gap-1">
                       <Star className="w-4 h-4 fill-yellow-400 text-yellow-400" />
-                      <span className="font-semibold text-gray-700">
+                      <span className="font-semibold text-gray-700 dark:text-gray-200">
                         {product.rating}
                       </span>
                     </div>
-                    <span className="text-gray-500 text-sm">
+                    <span className="text-sm text-gray-500 dark:text-gray-400">
                       ({product.reviews} reviews)
                     </span>
                   </div>
@@ -335,15 +387,15 @@ export default function DessertPOSPage() {
                         product.stock === 0
                           ? "bg-red-100 text-red-700"
                           : product.stock < 5
-                          ? "bg-orange-100 text-orange-700"
-                          : "bg-green-100 text-green-700"
+                            ? "bg-orange-100 text-orange-700"
+                            : "bg-green-100 text-green-700"
                       }`}
                     >
                       {product.stock === 0
                         ? "Out of Stock"
                         : product.stock < 5
-                        ? "Low Stock"
-                        : "In Stock"}
+                          ? "Low Stock"
+                          : "In Stock"}
                     </span>
                   </div>
 
@@ -353,7 +405,7 @@ export default function DessertPOSPage() {
                       ₹{product.price}
                     </span>
                     {product.originalPrice > product.price && (
-                      <span className="text-gray-400 line-through text-lg">
+                      <span className="line-through text-lg text-gray-400 dark:text-gray-500">
                         ₹{product.originalPrice}
                       </span>
                     )}
@@ -373,13 +425,14 @@ export default function DessertPOSPage() {
             ))}
           </div>
 
+          {/* No Products Found */}
           {filteredProducts.length === 0 && (
             <div className="text-center py-16">
               <div className="text-6xl mb-4">🔍</div>
-              <h3 className="text-xl font-semibold text-gray-600 mb-2">
+              <h3 className="text-xl font-semibold mb-2 text-gray-600 dark:text-gray-300">
                 No products found
               </h3>
-              <p className="text-gray-500">
+              <p className="text-gray-500 dark:text-gray-400">
                 Try adjusting your search or category filter
               </p>
             </div>
@@ -389,7 +442,7 @@ export default function DessertPOSPage() {
 
       {/* Fixed Cart Sidebar */}
       <div className="w-96 p-6 flex-shrink-0">
-        <div className="sticky top-6 bg-white/95 backdrop-blur-md rounded-2xl shadow-xl border border-pink-200/50 overflow-hidden max-h-[calc(100vh-3rem)]">
+        <div className="sticky top-6 bg-white/95 dark:bg-gray-800/95 backdrop-blur-md rounded-2xl shadow-xl border border-pink-200/50 dark:border-gray-700/50 overflow-hidden max-h-[calc(100vh-3rem)]">
           {/* Cart Header */}
           <div className="bg-gradient-to-r from-pink-500 to-purple-600 p-6 text-white">
             <div className="flex items-center justify-between">
@@ -412,8 +465,8 @@ export default function DessertPOSPage() {
             {cart.length === 0 ? (
               <div className="p-8 text-center">
                 <div className="text-4xl mb-4">🛒</div>
-                <p className="text-gray-500">Your cart is empty</p>
-                <p className="text-sm text-gray-400 mt-2">
+                <p className="text-gray-500 dark:text-gray-400">Your cart is empty</p>
+                <p className="text-sm mt-2 text-gray-400 dark:text-gray-500">
                   Add some delicious treats!
                 </p>
               </div>
@@ -422,13 +475,13 @@ export default function DessertPOSPage() {
                 {cart.map((item) => (
                   <div
                     key={item.id}
-                    className="flex items-center gap-4 p-4 bg-pink-50 rounded-xl"
+                    className="flex items-center gap-4 p-4 bg-pink-50 dark:bg-gray-700/50 rounded-xl"
                   >
-                    <div className="w-12 h-12 bg-white rounded-full flex items-center justify-center text-xl shadow-md">
+                    <div className="w-12 h-12 bg-white dark:bg-gray-600 rounded-full flex items-center justify-center text-xl shadow-md">
                       {item.emoji}
                     </div>
                     <div className="flex-1">
-                      <h4 className="font-semibold text-gray-800">
+                      <h4 className="font-semibold text-gray-800 dark:text-gray-100">
                         {item.name}
                       </h4>
                       <p className="text-pink-600 font-bold">₹{item.price}</p>
@@ -436,22 +489,22 @@ export default function DessertPOSPage() {
                     <div className="flex items-center gap-2">
                       <button
                         onClick={() => updateQty(item.id, -1)}
-                        className="w-8 h-8 bg-white rounded-full shadow-md flex items-center justify-center hover:bg-pink-100 transition-colors"
+                        className="w-8 h-8 bg-white hover:bg-pink-100 dark:bg-gray-600 dark:hover:bg-gray-500 rounded-full shadow-md flex items-center justify-center transition-colors"
                       >
-                        <Minus className="w-4 h-4 text-gray-600" />
+                        <Minus className="w-4 h-4 text-gray-600 dark:text-gray-300" />
                       </button>
-                      <span className="font-semibold text-gray-800 min-w-[2rem] text-center">
+                      <span className="font-semibold min-w-[2rem] text-center text-gray-800 dark:text-gray-100">
                         {item.qty}
                       </span>
                       <button
                         onClick={() => updateQty(item.id, 1)}
-                        className="w-8 h-8 bg-white rounded-full shadow-md flex items-center justify-center hover:bg-pink-100 transition-colors"
+                        className="w-8 h-8 bg-white hover:bg-pink-100 dark:bg-gray-600 dark:hover:bg-gray-500 rounded-full shadow-md flex items-center justify-center transition-colors"
                       >
-                        <Plus className="w-4 h-4 text-gray-600" />
+                        <Plus className="w-4 h-4 text-gray-600 dark:text-gray-300" />
                       </button>
                       <button
                         onClick={() => removeFromCart(item.id)}
-                        className="w-8 h-8 bg-red-100 rounded-full shadow-md flex items-center justify-center hover:bg-red-200 transition-colors ml-2"
+                        className="w-8 h-8 bg-red-100 hover:bg-red-200 dark:bg-red-900 dark:hover:bg-red-800 rounded-full shadow-md flex items-center justify-center transition-colors ml-2"
                       >
                         <X className="w-4 h-4 text-red-600" />
                       </button>
@@ -464,9 +517,9 @@ export default function DessertPOSPage() {
 
           {/* Cart Footer */}
           {cart.length > 0 && (
-            <div className="p-6 border-t border-pink-100">
+            <div className="p-6 border-t border-pink-100 dark:border-gray-700">
               <div className="flex justify-between items-center mb-4">
-                <span className="text-lg font-semibold text-gray-700">
+                <span className="text-lg font-semibold text-gray-700 dark:text-gray-200">
                   Total:
                 </span>
                 <span className="text-2xl font-bold text-pink-600">

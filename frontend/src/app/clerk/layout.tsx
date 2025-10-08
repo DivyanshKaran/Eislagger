@@ -1,9 +1,9 @@
 "use client";
 
-import ClerkSidebar from "@/components/clerk/Sidebar";
-import Sidebar from "@/components/layout/sidebar";
-import { ThemeProvider } from "@/components/theme-provider";
 import { useState } from "react";
+
+import { Sidebar } from "@/components/layout";
+import { ThemeProvider } from "@/components/theme-provider";
 
 export default function ClerkLayout({
   children,
@@ -25,10 +25,15 @@ export default function ClerkLayout({
           <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-gradient-to-br from-blue-300/30 to-pink-200/30 dark:from-blue-300/20 dark:to-pink-300/20 rounded-full blur-3xl animate-pulse delay-1000"></div>
           <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-gradient-to-br from-purple-200/20 to-pink-200/20 dark:from-purple-300/10 dark:to-pink-300/10 rounded-full blur-3xl animate-pulse delay-500"></div>
         </div>
-        {/* <ClerkSidebar collapsed={collapsed} onCollapse={setCollapsed} /> */}
-        <Sidebar role="clerk" collapsible={true} />
+        <div className="fixed left-0 top-0 h-full z-50">
+          <Sidebar 
+            role="clerk" 
+            collapsed={collapsed} 
+            onCollapse={setCollapsed} 
+          />
+        </div>
         <div
-          className={`relative min-h-screen transition-all duration-150 ${
+          className={`relative min-h-screen transition-all duration-300 ${
             collapsed ? "ml-16" : "ml-64"
           }`}
         >

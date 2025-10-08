@@ -1,11 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+
 import {
   Search,
   Star,
@@ -13,13 +9,17 @@ import {
   MessageCircle,
   Edit,
   Trash2,
-  Filter,
   Calendar,
   MapPin,
   Award,
-  Heart,
   Share2,
 } from "lucide-react";
+
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
 
 // Custom styles for animations
 const customStyles = `

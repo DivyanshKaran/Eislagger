@@ -1,4 +1,3 @@
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   BarChart3,
   TrendingUp,
@@ -24,6 +23,8 @@ import {
   LineChart,
   Line,
 } from "recharts";
+
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 // Mock data for charts
 const revenueData = [
@@ -263,8 +264,8 @@ export default function ChartsSection() {
                     entry.status === "Critical"
                       ? "#ef4444"
                       : entry.status === "Low"
-                      ? "#f59e0b"
-                      : "#10b981"
+                        ? "#f59e0b"
+                        : "#10b981"
                   }
                 />
               ))}

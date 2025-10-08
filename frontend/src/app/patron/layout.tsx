@@ -1,7 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import Sidebar from "@/components/layout/sidebar";
+
+import { Sidebar } from "@/components/layout";
 import { ThemeProvider } from "@/components/theme-provider";
 
 export default function PatronLayout({
@@ -32,7 +33,6 @@ export default function PatronLayout({
               role="patron"
               collapsed={collapsed}
               onCollapse={setCollapsed}
-              collapsible={true}
             />
           </div>
           <div

@@ -1,7 +1,5 @@
 "use client";
 
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import {
   TrendingUp,
   TrendingDown,
@@ -11,12 +9,14 @@ import {
   AlertTriangle,
 } from "lucide-react";
 
-interface SummaryStat {
+import { Badge } from "@/components/ui/badge";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import type { KPIData } from "@/types";
+
+interface SummaryStat extends Pick<KPIData, "change" | "changeType"> {
   id: string;
   label: string;
   value: string;
-  change: string;
-  changeType: "increase" | "decrease" | "neutral";
   icon: React.ReactNode;
   color: string;
   bgColor: string;
@@ -125,8 +125,8 @@ export default function SummaryStats({
                         stat.changeType === "increase"
                           ? "text-emerald-600"
                           : stat.changeType === "decrease"
-                          ? "text-red-600"
-                          : "text-slate-600"
+                            ? "text-red-600"
+                            : "text-slate-600"
                       }`}
                     >
                       {stat.change}

@@ -1,24 +1,10 @@
 "use client";
 
 import { useState } from "react";
-import EnhancedKPICard, { GreenEnhancedKPICard } from "./EnhancedKPICard";
 
-interface KPIData {
-  id: number;
-  title: string;
-  value: string;
-  change: string;
-  changeType: "increase" | "decrease";
-  icon: React.ReactNode;
-  color: string;
-  bgColor: string;
-  trend: number[];
-  period: string;
-  target: string;
-  progress: number;
-  category: string;
-  priority: "high" | "medium" | "low";
-}
+import type { KPIData } from "@/types";
+
+import EnhancedKPICard, { GreenEnhancedKPICard } from "./EnhancedKPICard";
 
 interface KPIGridProps {
   kpis: KPIData[];
@@ -37,7 +23,7 @@ export default function KPIGrid({
   className = "",
   CardComponent = EnhancedKPICard,
 }: KPIGridProps) {
-  const [expandedKPI, setExpandedKPI] = useState<number | null>(null);
+  const [expandedKPI, setExpandedKPI] = useState<string | null>(null);
   const [selectedCategory, setSelectedCategory] = useState("all");
   const [selectedPriority, setSelectedPriority] = useState("all");
 

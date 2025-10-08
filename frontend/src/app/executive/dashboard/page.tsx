@@ -1,39 +1,41 @@
 "use client";
 
+import React, { useState, useEffect } from "react";
+
 import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { Input } from "@/components/ui/input";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import {
+  BarChart3,
   TrendingUp,
   DollarSign,
-  Store,
-  Factory,
-  IceCream,
-  AlertTriangle,
-  Clock,
-  XCircle,
-  CheckCircle,
-  Bell,
-  ArrowUpRight,
-  ArrowDownRight,
+  Users,
+  Building2,
+  Globe,
+  Target,
+  Award,
+  Calendar,
   Download,
-  Share2,
-  BarChart3,
-  PieChart,
-  LineChart,
-  Search,
-  User,
-  Filter,
+  RefreshCw,
+  Eye,
+  Star,
+  CheckCircle,
+  AlertTriangle,
 } from "lucide-react";
-import { useState } from "react";
+import {
+  LineChart,
+  Line,
+  AreaChart,
+  Area,
+  BarChart,
+  Bar,
+  ComposedChart,
+  XAxis,
+  YAxis,
+  Tooltip,
+  Legend,
+  ResponsiveContainer,
+  Cell,
+} from "recharts";
+
+import { Button } from "@/components/ui/button";
 
 // Add custom animations
 const customStyles = `
@@ -86,437 +88,515 @@ const customStyles = `
   }
 `;
 
+// Sample data for executive metrics
+const revenueData = [
+  { month: "Jan", revenue: 250000, profit: 45000, margin: 18 },
+  { month: "Feb", revenue: 280000, profit: 52000, margin: 18.6 },
+  { month: "Mar", revenue: 320000, profit: 61000, margin: 19.1 },
+  { month: "Apr", revenue: 290000, profit: 53000, margin: 18.3 },
+  { month: "May", revenue: 350000, profit: 68000, margin: 19.4 },
+  { month: "Jun", revenue: 380000, profit: 75000, margin: 19.7 },
+];
+
+const marketShareData = [
+  { region: "North", share: 35, growth: 8.2, competitors: 12 },
+  { region: "South", share: 28, growth: 12.5 },
+  { region: "East", share: 32, growth: 6.8 },
+  { region: "West", share: 25, growth: 15.3 },
+];
+
+const recentDecisions = [
+  { id: "DEC-001", title: "Q3 Expansion Strategy Approval", type: "Strategic", status: "Approved", date: "Today" },
+  { id: "DEC-002", title: "Supply Chain Optimization", type: "Operational", status: "Pending", date: "Yesterday" },
+  { id: "DEC-003", title: "Market Entry Analysis", type: "Strategic", status: "Review", date: "2 days ago" },
+];
+
 export default function ExecutiveDashboard() {
-  const [search, setSearch] = useState("");
+  const [selectedPeriod, setSelectedPeriod] = useState("6M");
 
-  // KPI Data
-  const kpiData = [
-    {
-      title: "Today's Sales",
-      value: "₹2,45,678",
-      change: "+12.5%",
-      changeType: "positive" as const,
-      icon: <DollarSign className="w-6 h-6" />,
-      color: "from-emerald-400 to-teal-500",
-      bgColor:
-        "from-emerald-50/80 to-teal-50/80 dark:from-emerald-950/20 dark:to-teal-950/20",
-      subtitle: "8,234 units sold",
-    },
-    {
-      title: "Weekly Growth",
-      value: "+18.3%",
-      change: "+5.2%",
-      changeType: "positive" as const,
-      icon: <TrendingUp className="w-6 h-6" />,
-      color: "from-blue-400 to-indigo-500",
-      bgColor:
-        "from-blue-50/80 to-indigo-50/80 dark:from-blue-950/20 dark:to-indigo-950/20",
-      subtitle: "vs last week",
-    },
-    {
-      title: "Top Flavor",
-      value: "Choco Fudge",
-      change: "32%",
-      changeType: "neutral" as const,
-      icon: <IceCream className="w-6 h-6" />,
-      color: "from-purple-400 to-pink-500",
-      bgColor:
-        "from-purple-50/80 to-pink-50/80 dark:from-purple-950/20 dark:to-pink-950/20",
-      subtitle: "share of sales",
-    },
-    {
-      title: "Active Factories",
-      value: "12",
-      change: "+2",
-      changeType: "positive" as const,
-      icon: <Factory className="w-6 h-6" />,
-      color: "from-orange-400 to-red-500",
-      bgColor:
-        "from-orange-50/80 to-red-50/80 dark:from-orange-950/20 dark:to-red-950/20",
-      subtitle: "out of 15 total",
-    },
-  ];
-
-  // Budget Utilization Data
-  const budgetData = [
-    { factory: "Mumbai Factory", utilization: 85, budget: "₹45L" },
-    { factory: "Delhi Factory", utilization: 72, budget: "₹38L" },
-    { factory: "Bangalore Factory", utilization: 91, budget: "₹52L" },
-    { factory: "Chennai Factory", utilization: 68, budget: "₹32L" },
-    { factory: "Kolkata Factory", utilization: 78, budget: "₹28L" },
-  ];
-
-  // Top Stores Data
-  const topStores = [
-    {
-      name: "Bangalore HQ",
-      sales: "₹82,450",
-      rating: 4.8,
-      stock: "Low",
-      stockStatus: "warning",
-      issues: false,
-    },
-    {
-      name: "Mumbai Central",
-      sales: "₹74,320",
-      rating: 4.6,
-      stock: "Medium",
-      stockStatus: "normal",
-      issues: false,
-    },
-    {
-      name: "Delhi Mall",
-      sales: "₹68,900",
-      rating: 4.7,
-      stock: "Full",
-      stockStatus: "good",
-      issues: false,
-    },
-    {
-      name: "Chennai Express",
-      sales: "₹61,200",
-      rating: 4.4,
-      stock: "Low",
-      stockStatus: "warning",
-      issues: true,
-    },
-    {
-      name: "Kolkata Hub",
-      sales: "₹58,750",
-      rating: 4.5,
-      stock: "Medium",
-      stockStatus: "normal",
-      issues: false,
-    },
-  ];
-
-  // Alerts Data
-  const alerts = [
-    {
-      id: 1,
-      type: "expiry",
-      message: "Vanilla flavor stock expiring in 3 days at Mumbai Central",
-      severity: "high",
-      time: "2 hours ago",
-      icon: <Clock className="w-4 h-4" />,
-    },
-    {
-      id: 2,
-      type: "delivery",
-      message: "Delayed delivery to Delhi Mall - ETA 2 hours",
-      severity: "medium",
-      time: "4 hours ago",
-      icon: <AlertTriangle className="w-4 h-4" />,
-    },
-    {
-      id: 3,
-      type: "inactive",
-      message: "Chennai Factory offline for maintenance",
-      severity: "low",
-      time: "6 hours ago",
-      icon: <XCircle className="w-4 h-4" />,
-    },
-    {
-      id: 4,
-      type: "success",
-      message: "All systems operational at Bangalore HQ",
-      severity: "info",
-      time: "1 day ago",
-      icon: <CheckCircle className="w-4 h-4" />,
-    },
-  ];
-
-  const getSeverityColor = (severity: string) => {
-    switch (severity) {
-      case "high":
-        return "border-red-200 bg-red-50/80 dark:bg-red-950/20 text-red-700 dark:text-red-400";
-      case "medium":
-        return "border-orange-200 bg-orange-50/80 dark:bg-orange-950/20 text-orange-700 dark:text-orange-400";
-      case "low":
-        return "border-yellow-200 bg-yellow-50/80 dark:bg-yellow-950/20 text-yellow-700 dark:text-yellow-400";
-      case "info":
-        return "border-blue-200 bg-blue-50/80 dark:bg-blue-950/20 text-blue-700 dark:text-blue-400";
-      default:
-        return "border-slate-200 bg-slate-50/80 dark:bg-slate-950/20 text-slate-700 dark:text-slate-400";
+  useEffect(() => {
+    if (typeof window !== "undefined" && !document.head.querySelector("#executive-dashboard-styles")) {
+      const style = document.createElement("style");
+      style.id = "executive-dashboard-styles";
+      style.innerHTML = customStyles;
+      document.head.appendChild(style);
     }
-  };
-
-  const getStockStatusColor = (status: string) => {
-    switch (status) {
-      case "good":
-        return "text-green-600 bg-green-100 dark:bg-green-900/20";
-      case "warning":
-        return "text-orange-600 bg-orange-100 dark:bg-orange-900/20";
-      case "normal":
-        return "text-blue-600 bg-blue-100 dark:bg-blue-900/20";
-      default:
-        return "text-gray-600 bg-gray-100 dark:bg-gray-900/20";
-    }
-  };
+  }, []);
 
   return (
-    <>
-      <style dangerouslySetInnerHTML={{ __html: customStyles }} />
-      <div className="flex flex-col h-screen">
-        {/* Stunning Glassy Top Navigation */}
-        <header className="sticky top-0 z-30 bg-white/70 dark:bg-slate-800/70 border-b border-pink-200/50 dark:border-slate-700/50 px-8 py-6 flex items-center justify-between backdrop-blur-xl shadow-lg">
-          <div className="flex items-center gap-4">
-            <div className="relative">
-              <div className="w-12 h-12 bg-gradient-to-br from-pink-400 to-purple-500 rounded-2xl flex items-center justify-center shadow-lg">
-                <span className="text-2xl">🍦</span>
-              </div>
-              <div className="absolute -top-1 -right-1 w-4 h-4 bg-gradient-to-br from-emerald-400 to-teal-500 rounded-full animate-pulse"></div>
+    <div className="relative">
+      
+      {/* Header Section */}
+      <div className="mb-8">
+        <div className="flex items-center gap-4 mb-6">
+          <div className="w-14 h-14 bg-gradient-to-br from-purple-600 to-violet-700 rounded-xl flex items-center justify-center shadow-lg">
+            <Award className="w-7 h-7 text-white" />
+          </div>
+          <div>
+            <h1 className="text-4xl font-bold text-slate-800 dark:text-white">Executive Dashboard</h1>
+            <p className="text-slate-600 dark:text-slate-400">Strategic insights and business analytics</p>
+          </div>
+        </div>
+
+        {/* Controls */}
+        <div className="flex items-center justify-between">
+          <div className="flex gap-3">
+            {["1M", "6M", "1Y", "3Y"].map((period) => (
+              <button
+                key={period}
+                onClick={() => setSelectedPeriod(period)}
+                className={`px-5 py-2 rounded-xl text-sm font-medium transition-all ${
+                  selectedPeriod === period
+                    ? "bg-gradient-to-r from-purple-600 to-violet-700 text-white shadow-lg"
+                    : "bg-white/80 dark:bg-slate-800/80 text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-700/50"
+                }`}
+              >
+                {period}
+              </button>
+            ))}
+          </div>
+          <div className="flex gap-2">
+            <button className="p-3 rounded-xl bg-white/80 dark:bg-slate-800/80 text-slate-600 dark:text-slate-400 hover:bg-purple-50 dark:hover:bg-slate-700/50 transition-all">
+              <RefreshCw className="w-5 h-5" />
+            </button>
+            <button className="p-3 rounded-xl bg-white/80 dark:bg-slate-800/80 text-slate-600 dark:text-slate-400 hover:bg-purple-50 dark:hover:bg-slate-700/50 transition-all">
+              <Download className="w-5 h-5" />
+            </button>
+          </div>
+        </div>
+      </div>
+
+      {/* Executive KPIs */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+        <div className="bg-white/80 dark:bg-slate-800/80 backdrop-blur-xl rounded-2xl p-6 shadow-lg border border-purple-200/50 dark:border-purple-800/40 hover:shadow-xl transition-all duration-300">
+          <div className="flex items-center justify-between mb-4">
+            <div className="w-12 h-12 bg-gradient-to-br from-purple-600 to-violet-700 rounded-xl flex items-center justify-center">
+              <DollarSign className="w-6 h-6 text-white" />
             </div>
-            <div>
-              <h1 className="font-bold text-2xl bg-gradient-to-r from-pink-600 to-purple-600 dark:from-pink-400 dark:to-purple-400 bg-clip-text text-transparent">
-                Dashboard
-              </h1>
-              <p className="text-sm text-slate-600 dark:text-slate-400">
-                CEO Overview - Real-time business insights
-              </p>
+            <div className="flex items-center gap-1 text-green-600">
+              <TrendingUp className="w-4 h-4" />
+              <span className="text-sm font-medium">+15.8%</span>
             </div>
           </div>
+          <div>
+            <h3 className="text-2xl font-bold text-slate-800 dark:text-white mb-1">₹3.2M</h3>
+            <p className="text-slate-600 dark:text-slate-400 text-sm">Monthly Revenue</p>
+            <p className="text-xs text-slate-500 dark:text-slate-500 mt-1">vs ₹2.8M last month</p>
+          </div>
+        </div>
 
-          <div className="flex-1 flex justify-center max-w-2xl mx-8">
-            <div className="relative w-full group">
-              <Input
-                type="text"
-                placeholder="Search dashboard, reports, analytics..."
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-                className="rounded-2xl pl-12 pr-4 py-3 bg-white/70 dark:bg-slate-800/70 shadow-lg border-0 focus:ring-2 focus:ring-pink-500/50 transition-all duration-300 group-hover:shadow-xl"
+        <div className="bg-white/80 dark:bg-slate-800/80 backdrop-blur-xl rounded-2xl p-6 shadow-lg border border-purple-200/50 dark:border-purple-800/40 hover:shadow-xl transition-all duration-300">
+          <div className="flex items-center justify-between mb-4">
+            <div className="w-12 h-12 bg-gradient-to-br from-violet-600 to-purple-700 rounded-xl flex items-center justify-center">
+              <Target className="w-6 h-6 text-white" />
+            </div>
+            <div className="flex items-center gap-1 text-green-600">
+              <TrendingUp className="w-4 h-4" />
+              <span className="text-sm font-medium">+8.4%</span>
+            </div>
+          </div>
+          <div>
+            <h3 className="text-2xl font-bold text-slate-800 dark:text-white mb-1">19.7%</h3>
+            <p className="text-slate-600 dark:text-slate-400 text-sm">Profit Margin</p>
+            <p className="text-xs text-slate-500 dark:text-slate-500 mt-1">Industry avg: 16.2%</p>
+          </div>
+        </div>
+
+        <div className="bg-white/80 dark:bg-slate-800/80 backdrop-blur-xl rounded-2xl p-6 shadow-lg border border-purple-200/50 dark:border-purple-800/40 hover:shadow-xl transition-all duration-300">
+          <div className="flex items-center justify-between mb-4">
+            <div className="w-12 h-12 bg-gradient-to-br from-indigo-600 to-purple-700 rounded-xl flex items-center justify-center">
+              <Building2 className="w-6 h-6 text-white" />
+            </div>
+            <div className="flex items-center gap-1 text-green-600">
+              <TrendingUp className="w-4 h-4" />
+              <span className="text-sm font-medium">+12.1%</span>
+            </div>
+          </div>
+          <div>
+            <h3 className="text-2xl font-bold text-slate-800 dark:text-white mb-1">127</h3>
+            <p className="text-slate-600 dark:text-slate-400 text-sm">Active Stores</p>
+            <p className="text-xs text-slate-500 dark:text-slate-500 mt-1">42 new this quarter</p>
+          </div>
+        </div>
+
+        <div className="bg-white/80 dark:bg-slate-800/80 backdrop-blur-xl rounded-2xl p-6 shadow-lg border border-purple-200/50 dark:border-purple-800/40 hover:shadow-xl transition-all duration-300">
+          <div className="flex items-center justify-between mb-4">
+            <div className="w-12 h-12 bg-gradient-to-br from-emerald-600 to-violet-700 rounded-xl flex items-center justify-center">
+              <Globe className="w-6 h-6 text-white" />
+            </div>
+            <div className="flex items-center gap-1 text-green-600">
+              <TrendingUp className="w-4 h-4" />
+              <span className="text-sm font-medium">+6.3%</span>
+            </div>
+          </div>
+          <div>
+            <h3 className="text-2xl font-bold text-slate-800 dark:text-white mb-1">47.2%</h3>
+            <p className="text-slate-600 dark:text-slate-400 text-sm">Market Share</p>
+            <p className="text-xs text-slate-500 dark:text-slate-500 mt-1">Leading position</p>
+          </div>
+        </div>
+      </div>
+
+      {/* Enhanced Charts Row */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
+        
+        {/* Revenue & Profit Chart */}
+        <div className="bg-white/80 dark:bg-slate-800/80 backdrop-blur-xl rounded-2xl p-6 shadow-lg border border-purple-200/50 dark:border-purple-800/40">
+          <div className="flex items-center justify-between mb-6">
+            <h3 className="text-xl font-semibold text-slate-800 dark:text-white">Revenue & Profit Trends</h3>
+            <div className="flex items-center gap-4 text-sm">
+              <div className="flex items-center gap-2">
+                <div className="w-3 h-3 bg-purple-500 rounded-full"></div>
+                <span className="text-slate-600 dark:text-slate-400">Revenue</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <div className="w-3 h-3 bg-emerald-500 rounded-full"></div>
+                <span className="text-slate-600 dark:text-slate-400">Profit</span>
+              </div>
+            </div>
+          </div>
+          <ResponsiveContainer width="100%" height={300}>
+            <ComposedChart data={revenueData}>
+              <defs>
+                <linearGradient id="revenueGradient" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="5%" stopColor="#8b5cf6" stopOpacity={0.3}/>
+                  <stop offset="95%" stopColor="#8b5cf6" stopOpacity={0}/>
+                </linearGradient>
+              </defs>
+              <XAxis 
+                dataKey="month" 
+                axisLine={false} 
+                tickLine={false} 
+                tick={{ fill: '#64748b', fontSize: 12 }} 
               />
-              <Search className="absolute left-4 top-3.5 w-5 h-5 text-slate-400 group-hover:text-slate-600 transition-colors" />
+              <YAxis 
+                axisLine={false} 
+                tickLine={false} 
+                tick={{ fill: '#64748b', fontSize: 12 }} 
+              />
+              <Tooltip 
+                contentStyle={{ 
+                  backgroundColor: '#f8fafc', 
+                  border: 'none', 
+                  borderRadius: '12px',
+                  boxShadow: '0 4px 20px rgba(0, 0, 0, 0.1)'
+                }}
+              />
+              <Area
+                type="monotone"
+                dataKey="revenue"
+                stroke="#8b5cf6"
+                fill="url(#revenueGradient)"
+                strokeWidth={2}
+              />
+              <Line
+                type="monotone"
+                dataKey="profit"
+                stroke="#10b981"
+                strokeWidth={3}
+                dot={{ fill: '#10b981', strokeWidth: 2 }}
+              />
+            </ComposedChart>
+          </ResponsiveContainer>
+        </div>
+
+        {/* Market Share Analysis */}
+        <div className="bg-white/80 dark:bg-slate-800/80 backdrop-blur-xl rounded-2xl p-6 shadow-lg border border-purple-200/50 dark:border-purple-800/40">
+          <div className="flex items-center justify-between mb-6">
+            <h3 className="text-xl font-semibold text-slate-800 dark:text-white">Regional Market Share</h3>
+            <div className="flex items-center gap-2 text-slate-600 dark:text-slate-400">
+              <Globe className="w-4 h-4" />
+              <span className="text-sm">Q2 2024</span>
+            </div>
+          </div>
+          <ResponsiveContainer width="100%" height={300}>
+            <BarChart data={marketShareData}>
+              <XAxis 
+                dataKey="region" 
+                axisLine={false} 
+                tickLine={false} 
+                tick={{ fill: '#64748b', fontSize: 12 }} 
+              />
+              <YAxis 
+                axisLine={false} 
+                tickLine={false} 
+                tick={{ fill: '#64748b', fontSize: 12 }} 
+              />
+              <Tooltip 
+                contentStyle={{ 
+                  backgroundColor: '#f8fafc', 
+                  border: 'none', 
+                  borderRadius: '12px',
+                  boxShadow: '0 4px 20px rgba(0, 0, 0, 0.1)'
+                }}
+              />
+              <Bar 
+                dataKey="share" 
+                fill="#8b5cf6" 
+                radius={[6, 6, 0, 0]}
+              />
+            </BarChart>
+          </ResponsiveContainer>
+          <div className="mt-4 grid grid-cols-2 gap-3">
+            {marketShareData.slice(0, 2).map((region, index) => (
+              <div key={region.region} className="bg-purple-50/50 dark:bg-slate-700/50 rounded-lg p-3">
+                <div className="flex justify-between items-center">
+                  <span className="text-sm font-medium text-slate-800 dark:text-white">{region.region} Region</span>
+                  <span className="text-sm font-bold text-purple-600 dark:text-purple-400">{region.share}%</span>
+                </div>
+                <div className="text-xs text-slate-600 dark:text-slate-400">Growth: +{region.growth}%</div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      {/* Bottom Row */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
+        
+        {/* Strategic Decisions */}
+        <div className="bg-white/80 dark:bg-slate-800/80 backdrop-blur-xl rounded-2xl p-6 shadow-lg border border-purple-200/50 dark:border-purple-800/40">
+          <div className="flex items-center justify-between mb-6">
+            <h3 className="text-xl font-semibold text-slate-800 dark:text-white">Recent Strategic Decisions</h3>
+            <button className="flex items-center gap-2 text-sm text-purple-600 dark:text-purple-400 hover:text-purple-700 dark:hover:text-purple-300">
+              <Eye className="w-4 h-4" />
+              View All
+            </button>
+          </div>
+          <div className="space-y-4">
+            {recentDecisions.map((decision) => (
+              <div key={decision.id} className="flex items-center justify-between p-4 bg-purple-50/50 dark:bg-slate-700/50 rounded-xl">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 bg-gradient-to-br from-purple-600 to-violet-700 rounded-lg flex items-center justify-center">
+                    <span className="text-white font-bold text-xs">{decision.type.charAt(0)}</span>
+                  </div>
+                  <div>
+                    <h4 className="font-medium text-slate-800 dark:text-white">{decision.title}</h4>
+                    <p className="text-sm text-slate-600 dark:text-slate-400">{decision.date}</p>
+                  </div>
+                </div>
+                <div className="text-right">
+                  <span className={`text-xs px-3 py-1 rounded-full font-medium ${
+                    decision.status === 'Approved' ? 'bg-green-100 text-green-700 dark:bg-green-900/20 dark:text-green-400' :
+                    decision.status === 'Pending' ? 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/20 dark:text-yellow-400' :
+                    'bg-blue-100 text-blue-700 dark:bg-blue-900/20 dark:text-blue-400'
+                  }`}>
+                    {decision.status}
+                  </span>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Performance Metrics */}
+        <div className="bg-white/80 dark:bg-slate-800/80 backdrop-blur-xl rounded-2xl p-6 shadow-lg border border-purple-200/50 dark:border-purple-800/40">
+          <h3 className="text-xl font-semibold text-slate-800 dark:text-white mb-6">Performance Metrics</h3>
+
+          {/* Circular Progress Indicators */}
+          <div className="grid grid-cols-2 gap-4 mb-6">
+            <div className="text-center">
+              <div className="relative w-20 h-20 mx-auto mb-2">
+                <svg className="w-20 h-20 transform -rotate-90">
+                  <circle
+                    cx="40"
+                    cy="40"
+                    r="32"
+                    stroke="currentColor"
+                    strokeWidth="6"
+                    fill="none"
+                    className="text-purple-200 dark:text-purple-800"
+                  />
+                  <circle
+                    cx="40"
+                    cy="40"
+                    r="32"
+                    stroke="currentColor"
+                    strokeWidth="6"
+                    fill="none"
+                    strokeDasharray="201"
+                    strokeDashoffset="60"
+                    strokeLinecap="round"
+                    onChange={() => {}}
+                    className="text-purple-600 dark:text-purple-400 transition-all duration-1000 ease-in-out"
+                  />
+                </svg>
+                <div className="absolute inset-0 flex items-center justify-center">
+                  <span className="text-lg font-bold text-slate-800 dark:text-white">70%</span>
+                </div>
+              </div>
+              <p className="text-sm text-slate-600 dark:text-slate-400">Market Growth</p>
+            </div>
+
+            <div className="text-center">
+              <div className="relative w-20 h-20 mx-auto mb-2">
+                <svg className="w-20 h-20 transform -rotate-90">
+                  <circle
+                    cx="40"
+                    cy="40"
+                    r="32"
+                    stroke="currentColor"
+                    strokeWidth="6"
+                    fill="none"
+                    className="text-purple-200 dark:text-purple-800"
+                  />
+                  <circle
+                    cx="40"
+                    cy="40"
+                    r="32"
+                    stroke="currentColor"
+                    strokeWidth="6"
+                    fill="none"
+                    strokeDasharray="201"
+                    strokeDashoffset="80"
+                    strokeLinecap="round"
+                    className="text-emerald-600 dark:text-emerald-400 transition-all duration-1000 ease-in-out"
+                  />
+                </svg>
+                <div className="absolute inset-0 flex items-center justify-center">
+                  <span className="text-lg font-bold text-slate-800 dark:text-white">60%</span>
+                </div>
+              </div>
+              <p className="text-sm text-slate-600 dark:text-slate-400">Customer Satisfaction</p>
             </div>
           </div>
 
-          <div className="flex items-center gap-4">
-            <Button
-              variant="ghost"
-              size="icon"
-              className="relative hover:bg-pink-100 dark:hover:bg-slate-800 rounded-xl transition-all duration-300"
-            >
-              <Bell className="w-5 h-5" />
-              <div className="absolute -top-1 -right-1 w-3 h-3 bg-red-500 rounded-full animate-pulse"></div>
-            </Button>
-            <Avatar className="ml-2 ring-2 ring-pink-200 dark:ring-slate-700 hover:ring-pink-400 transition-all duration-300">
-              <AvatarFallback className="bg-gradient-to-br from-pink-500 to-purple-600 text-white">
-                <User className="w-5 h-5" />
-              </AvatarFallback>
-            </Avatar>
-          </div>
-        </header>
-
-        {/* Main Content Area - Scrollable */}
-        <div className="flex-1 overflow-y-auto">
-          <div className="p-8 md:p-12 flex flex-col gap-10">
-            {/* Action Buttons */}
-            <div className="flex items-center justify-end gap-3">
-              <Button
-                variant="outline"
-                size="sm"
-                className="rounded-xl border-pink-200 hover:bg-pink-50 dark:border-slate-600 dark:hover:bg-slate-700"
-              >
-                <Download className="mr-2 h-4 w-4" />
-                Export
-              </Button>
-              <Button
-                variant="outline"
-                size="sm"
-                className="rounded-xl border-pink-200 hover:bg-pink-50 dark:border-slate-600 dark:hover:bg-slate-700"
-              >
-                <Share2 className="mr-2 h-4 w-4" />
-                Share
-              </Button>
-            </div>
-
-            {/* KPI Cards */}
-            <div className="space-y-6">
-              <div className="flex items-center gap-3">
-                <div className="w-1 h-8 bg-gradient-to-b from-pink-500 to-purple-600 rounded-full"></div>
-                <h2 className="text-2xl font-bold text-slate-800 dark:text-white">
-                  Key Performance Indicators
-                </h2>
-              </div>
-              <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
-                {kpiData.map((kpi, index) => (
-                  <Card
-                    key={index}
-                    className={`rounded-2xl bg-white/80 dark:bg-slate-800/80 shadow-xl hover:shadow-2xl transition-all duration-500 backdrop-blur-sm border border-pink-200/50 dark:border-slate-700/50 hover:scale-105 group ${
-                      kpi.bgColor ? `bg-gradient-to-br ${kpi.bgColor}` : ""
-                    }`}
-                    style={{ animationDelay: `${index * 100}ms` }}
-                  >
-                    <CardContent className="p-6">
-                      <div className="flex items-center justify-between">
-                        <div className="flex-1 min-w-0">
-                          <p className="text-sm font-medium text-slate-600 dark:text-slate-400 truncate">
-                            {kpi.title}
-                          </p>
-                          <p className="text-2xl font-bold text-slate-800 dark:text-white mt-2 truncate">
-                            {kpi.value}
-                          </p>
-                          <p className="text-sm text-slate-600 dark:text-slate-400 mt-1 truncate">
-                            {kpi.subtitle}
-                          </p>
-                          <div className="flex items-center gap-1 mt-3">
-                            {kpi.changeType === "positive" ? (
-                              <ArrowUpRight className="w-4 h-4 text-green-500" />
-                            ) : kpi.changeType === "negative" ? (
-                              <ArrowDownRight className="w-4 h-4 text-red-500" />
-                            ) : null}
-                            <span
-                              className={`text-sm font-medium ${
-                                kpi.changeType === "positive"
-                                  ? "text-green-500"
-                                  : kpi.changeType === "negative"
-                                  ? "text-red-500"
-                                  : "text-slate-600 dark:text-slate-400"
-                              }`}
-                            >
-                              {kpi.change}
-                            </span>
-                          </div>
-                        </div>
-                        <div
-                          className={`p-3 rounded-xl shadow-lg bg-gradient-to-br ${kpi.color} text-white group-hover:scale-110 transition-transform duration-300 ml-4 flex-shrink-0`}
-                        >
-                          {kpi.icon}
-                        </div>
-                      </div>
-                    </CardContent>
-                  </Card>
-                ))}
-              </div>
-            </div>
-
-            {/* Budget Utilization and Top Stores */}
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-              {/* Budget Utilization */}
-              <div className="space-y-6">
-                <div className="flex items-center gap-3">
-                  <div className="w-1 h-8 bg-gradient-to-b from-emerald-500 to-teal-600 rounded-full"></div>
-                  <h2 className="text-2xl font-bold text-slate-800 dark:text-white">
-                    Budget Utilization
-                  </h2>
+          {/* Progress Bars */}
+          <div className="space-y-6">
+            <div className="flex justify-between items-center">
+              <span className="text-slate-600 dark:text-slate-400">Operational Efficiency</span>
+              <div className="flex items-center gap-2">
+                <div className="flex items-center gap-1 text-green-600">
+                  <TrendingUp className="w-3 h-3" />
+                  <span className="text-xs font-medium">87%</span>
                 </div>
-                <Card className="rounded-2xl bg-white/80 dark:bg-slate-800/80 shadow-xl border border-pink-200/50 dark:border-slate-700/50 backdrop-blur-sm">
-                  <CardContent className="p-6">
-                    <div className="space-y-4">
-                      {budgetData.map((item, index) => (
-                        <div
-                          key={index}
-                          className="flex items-center justify-between"
-                        >
-                          <div className="flex-1">
-                            <p className="text-sm font-medium text-slate-800 dark:text-white">
-                              {item.factory}
-                            </p>
-                            <p className="text-xs text-slate-600 dark:text-slate-400">
-                              Budget: {item.budget}
-                            </p>
-                          </div>
-                          <div className="flex items-center gap-3">
-                            <div className="w-24 bg-slate-200 dark:bg-slate-700 rounded-full h-2">
-                              <div
-                                className="bg-gradient-to-r from-emerald-400 to-teal-500 h-2 rounded-full transition-all duration-300"
-                                style={{ width: `${item.utilization}%` }}
-                              ></div>
-                            </div>
-                            <span className="text-sm font-medium text-slate-800 dark:text-white min-w-[3rem]">
-                              {item.utilization}%
-                            </span>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  </CardContent>
-                </Card>
-              </div>
-
-              {/* Top Stores */}
-              <div className="space-y-6">
-                <div className="flex items-center gap-3">
-                  <div className="w-1 h-8 bg-gradient-to-b from-blue-500 to-indigo-600 rounded-full"></div>
-                  <h2 className="text-2xl font-bold text-slate-800 dark:text-white">
-                    Top Performing Stores
-                  </h2>
-                </div>
-                <Card className="rounded-2xl bg-white/80 dark:bg-slate-800/80 shadow-xl border border-pink-200/50 dark:border-slate-700/50 backdrop-blur-sm">
-                  <CardContent className="p-6">
-                    <div className="space-y-4">
-                      {topStores.map((store, index) => (
-                        <div
-                          key={index}
-                          className="flex items-center justify-between p-3 rounded-xl bg-slate-50/50 dark:bg-slate-700/50"
-                        >
-                          <div className="flex-1">
-                            <p className="text-sm font-medium text-slate-800 dark:text-white">
-                              {store.name}
-                            </p>
-                            <p className="text-xs text-slate-600 dark:text-slate-400">
-                              Sales: {store.sales} • Rating: {store.rating}⭐
-                            </p>
-                          </div>
-                          <div className="flex items-center gap-2">
-                            <Badge
-                              className={`text-xs ${getStockStatusColor(
-                                store.stockStatus
-                              )}`}
-                            >
-                              {store.stock}
-                            </Badge>
-                            {store.issues && (
-                              <AlertTriangle className="w-4 h-4 text-red-500" />
-                            )}
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  </CardContent>
-                </Card>
               </div>
             </div>
-
-            {/* Alerts Section */}
-            <div className="space-y-6">
-              <div className="flex items-center gap-3">
-                <div className="w-1 h-8 bg-gradient-to-b from-orange-500 to-red-600 rounded-full"></div>
-                <h2 className="text-2xl font-bold text-slate-800 dark:text-white">
-                  Recent Alerts
-                </h2>
+            <div className="w-full bg-slate-200 dark:bg-slate-700 rounded-full h-2">
+              <div className="bg-gradient-to-r from-purple-500 to-violet-600 h-2 rounded-full" style={{width: '87%'}}></div>
+            </div>
+            
+            <div className="flex justify-between items-center">
+              <span className="text-slate-600 dark:text-slate-400">Revenue Growth</span>
+              <div className="flex items-center gap-2">
+                <div className="flex items-center gap-1 text-green-600">
+                  <TrendingUp className="w-3 h-3" />
+                  <span className="text-xs font-medium">92%</span>
+                </div>
               </div>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {alerts.map((alert, index) => (
-                  <Card
-                    key={alert.id}
-                    className={`rounded-2xl bg-white/80 dark:bg-slate-800/80 shadow-xl border backdrop-blur-sm transition-all duration-300 hover:scale-105 ${getSeverityColor(
-                      alert.severity
-                    )}`}
-                    style={{ animationDelay: `${index * 100}ms` }}
-                  >
-                    <CardContent className="p-4">
-                      <div className="flex items-start gap-3">
-                        <div className="p-2 rounded-lg bg-slate-100 dark:bg-slate-700">
-                          {alert.icon}
-                        </div>
-                        <div className="flex-1">
-                          <p className="text-sm font-medium text-slate-800 dark:text-white">
-                            {alert.message}
-                          </p>
-                          <p className="text-xs text-slate-600 dark:text-slate-400 mt-1">
-                            {alert.time}
-                          </p>
-                        </div>
-                      </div>
-                    </CardContent>
-                  </Card>
-                ))}
+            </div>
+            <div className="w-full bg-slate-200 dark:bg-slate-700 rounded-full h-2">
+              <div className="bg-gradient-to-r from-emerald-500 to-violet-600 h-2 rounded-full" style={{width: '92%'}}></div>
+            </div>
+            
+            <div className="flex justify-between items-center">
+              <span className="text-slate-600 dark:text-slate-400">Market Expansion</span>
+              <div className="flex items-center gap-2">
+                <div className="flex items-center gap-1 text-green-600">
+                  <TrendingUp className="w-3 h-3" />
+                  <span className="text-xs font-medium">76%</span>
+                </div>
               </div>
+            </div>
+            <div className="w-full bg-slate-200 dark:bg-slate-700 rounded-full h-2">
+              <div className="bg-gradient-to-r from-violet-500 to-purple-600 h-2 rounded-full" style={{width: '76%'}}></div>
             </div>
           </div>
         </div>
       </div>
-    </>
+
+      {/* Additional Visual Components */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        
+        {/* Customer Insights */}
+        <div className="bg-white/80 dark:bg-slate-800/80 backdrop-blur-xl rounded-2xl p-6 shadow-lg border border-purple-200/50 dark:border-purple-800/40">
+          <h3 className="text-xl font-semibold text-slate-800 dark:text-white mb-6">Customer Insights</h3>
+          <div className="space-y-4">
+            <div className="flex items-center justify-between p-3 bg-gradient-to-r from-purple-50 to-violet-50 dark:from-purple-900/20 dark:to-violet-900/20 rounded-lg">
+              <div className="flex items-center gap-3">
+                <div className="w-8 h-8 bg-gradient-to-br from-purple-500 to-violet-600 rounded-lg flex items-center justify-center">
+                  <Users className="w-4 h-4 text-white" />
+                </div>
+                <div>
+                  <p className="text-sm font-medium text-slate-800 dark:text-white">New Customers</p>
+                  <p className="text-xs text-slate-600 dark:text-slate-400">This Month</p>
+                </div>
+              </div>
+              <span className="font-bold text-purple-600 dark:text-purple-400">2,847</span>
+            </div>
+            
+            <div className="flex items-center justify-between p-3 bg-gradient-to-r from-emerald-50 to-teal-50 dark:from-emerald-900/20 dark:to-teal-900/20 rounded-lg">
+              <div className="flex items-center gap-3">
+                <div className="w-8 h-8 bg-gradient-to-br from-emerald-500 to-teal-600 rounded-lg flex items-center justify-center">
+                  <Star className="w-4 h-4 text-white" />
+                </div>
+                <div>
+                  <p className="text-sm font-medium text-slate-800 dark:text-white">Satisfaction Rate</p>
+                  <p className="text-xs text-slate-600 dark:text-slate-400">Average Rating</p>
+                </div>
+              </div>
+              <span className="font-bold text-emerald-600 dark:text-emerald-400">4.8/5</span>
+            </div>
+          </div>
+        </div>
+
+        {/* Risk Analysis */}
+        <div className="bg-white/80 dark:bg-slate-800/80 backdrop-blur-xl rounded-2xl p-6 shadow-lg border border-purple-200/50 dark:border-purple-800/40">
+          <h3 className="text-xl font-semibold text-slate-800 dark:text-white mb-6">Risk Assessment</h3>
+          <div className="space-y-4">
+            <div className="text-center p-4 bg-gradient-to-br from-green-50 to-emerald-50 dark:from-green-900/20 dark:to-emerald-900/20 rounded-xl">
+              <div className="w-12 h-12 bg-gradient-to-br from-green-500 to-emerald-600 rounded-full flex items-center justify-center mx-auto mb-3">
+                <CheckCircle className="w-6 h-6 text-white" />
+              </div>
+              <h4 className="font-semibold text-green-800 dark:text-green-400 mb-1">Low Risk</h4>
+              <p className="text-sm text-green-700 dark:text-green-300">Operations Status</p>
+            </div>
+            
+            <div className="text-center p-4 bg-gradient-to-br from-yellow-50 to-orange-50 dark:from-yellow-900/20 dark:to-orange-900/20 rounded-xl">
+              <div className="w-12 h-12 bg-gradient-to-br from-yellow-500 to-orange-600 rounded-full flex items-center justify-center mx-auto mb-3">
+                <AlertTriangle className="w-6 h-6 text-white" />
+              </div>
+              <h4 className="font-semibold text-yellow-800 dark:text-yellow-400 mb-1">Medium Risk</h4>
+              <p className="text-sm text-yellow-700 dark:text-yellow-300">Supply Chain</p>
+            </div>
+          </div>
+        </div>
+
+        {/* Quick Actions */}
+        <div className="bg-white/80 dark:bg-slate-800/80 backdrop-blur-xl rounded-2xl p-6 shadow-lg border border-purple-200/50 dark:border-purple-800/40">
+          <h3 className="text-xl font-semibold text-slate-800 dark:text-white mb-6">Quick Actions</h3>
+          <div className="grid grid-cols-2 gap-3">
+            <Button className="h-auto p-4 bg-gradient-to-br from-purple-600 to-violet-700 hover:from-purple-700 hover:to-violet-800 text-white">
+              <div className="text-center">
+                <Calendar className="w-5 h-5 mx-auto mb-1" />
+                <span className="text-xs">Schedule Meeting</span>
+              </div>
+            </Button>
+            
+            <Button className="h-auto p-4 bg-gradient-to-br from-emerald-600 to-teal-700 hover:from-emerald-700 hover:to-teal-800 text-white">
+              <div className="text-center">
+                <Download className="w-5 h-5 mx-auto mb-1" />
+                <span className="text-xs">Generate Report</span>
+              </div>
+            </Button>
+            
+            <Button className="h-auto p-4 bg-gradient-to-br from-blue-600 to-indigo-700 hover:from-blue-700 hover:to-indigo-800 text-white">
+              <div className="text-center">
+                <Target className="w-5 h-5 mx-auto mb-1" />
+                <span className="text-xs">Set Goals</span>
+              </div>
+            </Button>
+            
+            <Button className="h-auto p-4 bg-gradient-to-br from-orange-600 to-red-700 hover:from-orange-700 hover:to-red-800 text-white">
+              <div className="text-center">
+                <TrendingUp className="w-5 h-5 mx-auto mb-1" />
+                <span className="text-xs">Analyze Trends</span>
+              </div>
+            </Button>
+          </div>
+        </div>
+      </div>
+
+    </div>
   );
 }

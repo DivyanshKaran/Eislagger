@@ -1,57 +1,65 @@
 import type { Request, Response, NextFunction } from "express";
-import axios from "axios";
+import jwt from "jsonwebtoken";
+import dotenv from "dotenv";
+dotenv.config();
+
+const JWT_SECRET = process.env.JWT_SECRET || "your-super-secret-key-that-is-long";
+
+interface UserPayload {
+  id: string;
+  role: string;
+}
 
 declare global {
   namespace Express {
     interface Request {
-      user?: object;
+      user?: UserPayload | undefined;
     }
   }
 }
 
-const USER_SERVICE_URL =
-  process.env.USER_SERVICE_URL || "http://localhost:3002";
-
-export async function isAuthenticated(
+export const isAuthenticated = (
   req: Request,
   res: Response,
   next: NextFunction
-) {
+) => {
   const authHeader = req.headers.authorization;
+
   if (!authHeader || !authHeader.startsWith("Bearer ")) {
     return res.status(401).json({
-      error: "Unauthorized",
-      message: "A valid Bearer token is required for authentication",
+      success: false,
+      error: {
+        code: "UNAUTHORIZED",
+        message: "Authentication required: No token provided"
+      }
     });
   }
 
+  const token = authHeader.split(" ")[1];
+
   try {
-    const response = await axios.post(
-      `${USER_SERVICE_URL}/api/v1/auth/verify`,
-      {},
-      {
-        headers: {
-          Authorization: authHeader,
-        },
-      }
-    );
-    // console.log(response);
-    if (response.status === 200 && response.data.user.id) {
-      console.log(response.data);
-      req.user = response.data;
-      next();
-    } else {
-      console.error("Authentication Error: ", response.data);
+    const user = jwt.verify(token, JWT_SECRET) as UserPayload;
+    
+    if (!user) {
       return res.status(401).json({
-        error: "Forbidden",
-        message: "Your Authentication token is invalid or has expired",
+        success: false,
+        error: {
+          code: "FORBIDDEN",
+          message: "Authentication failed: Invalid or expired token",
+        },
+        timestamp: new Date().toISOString()
       });
     }
+
+    req.user = user;
+    next();
   } catch (error) {
-    console.error("Authentication Error: ", error);
     return res.status(401).json({
-      error: "Forbidden",
-      message: "Your Authentication token is invalid or has expired",
+      success: false,
+      error: {
+        code: "UNAUTHORIZED",
+        message: "Authentication failed: Invalid or expired token"
+      }
     });
   }
-}
+};

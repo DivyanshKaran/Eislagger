@@ -1,0 +1,790 @@
+"use client";
+
+import React, { useState } from "react";
+import {
+  ArrowRight,
+  AlertTriangle,
+  CheckCircle,
+  Package,
+  Plus,
+  Search,
+  TrendingDown,
+  TrendingUp,
+  Edit,
+  Trash2,
+  Filter,
+  Download,
+  Upload,
+  RefreshCw,
+} from "lucide-react";
+import {
+  LineChart,
+  Line,
+  XAxis,
+  YAxis,
+  Tooltip,
+  ResponsiveContainer,
+  BarChart,
+  Bar,
+  PieChart,
+  Pie,
+  Cell,
+} from "recharts";
+
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Badge } from "@/components/ui/badge";
+import { Card } from "@/components/ui/card";
+
+// Professional pastel blue theme styles
+const customStyles = `
+  @keyframes slideInUp {
+    from {
+      opacity: 0;
+      transform: translateY(20px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+  
+  @keyframes fadeInScale {
+    from {
+      opacity: 0;
+      transform: scale(0.95);
+    }
+    to {
+      opacity: 1;
+      transform: scale(1);
+    }
+  }
+  
+  .animate-slide-in-up {
+    animation: slideInUp 0.6s ease-out forwards;
+  }
+  
+  .animate-fade-in-scale {
+    animation: fadeInScale 0.5s ease-out forwards;
+  }
+  
+  .professional-card {
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(147, 197, 253, 0.2);
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  }
+  
+  .professional-card:hover {
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+    transform: translateY(-2px);
+    transition: all 0.3s ease;
+  }
+  
+  .dark .professional-card {
+    background: rgba(30, 41, 59, 0.95);
+    border: 1px solid rgba(59, 130, 246, 0.3);
+  }
+`;
+
+// Stock Product Interface
+interface StockProduct {
+  id: number;
+  name: string;
+  category: string;
+  currentStock: number;
+  minStock: number;
+  maxStock: number;
+  unit: string;
+  unitPrice: number;
+  lastUpdated: string;
+  supplier: string;
+  status: "in_stock" | "low_stock" | "out_of_stock" | "overstock";
+}
+
+export default function InventoryStockPage() {
+  const [searchTerm, setSearchTerm] = useState("");
+  const [showAddStockForm, setShowAddStockForm] = useState(false);
+  const [filterStatus, setFilterStatus] = useState<string>("all");
+  
+  // Sample stock products data
+  const [stockProducts] = useState<StockProduct[]>([
+    {
+      id: 1,
+      name: "Vanilla Ice Cream Base",
+      category: "Base Ingredients",
+      currentStock: 250,
+      minStock: 100,
+      maxStock: 500,
+      unit: "Liters",
+      unitPrice: 15.50,
+      lastUpdated: "2 hours ago",
+      supplier: "Dairy Supplies Co.",
+      status: "in_stock"
+    },
+    {
+      id: 2,
+      name: "Chocolate Syrup",
+      category: "Flavorings",
+      currentStock: 45,
+      minStock: 50,
+      maxStock: 200,
+      unit: "Liters",
+      unitPrice: 8.75,
+      lastUpdated: "4 hours ago",
+      supplier: "ChocoMaster Inc.",
+      status: "low_stock"
+    },
+    {
+      id: 3,
+      name: "Packaging Material",
+      category: "Packaging",
+      currentStock: 0,
+      minStock: 20,
+      maxStock: 100,
+      unit: "Boxes",
+      unitPrice: 12.00,
+      lastUpdated: "1 day ago",
+      supplier: "Box & Wrap Ltd.",
+      status: "out_of_stock"
+    },
+    {
+      id: 4,
+      name: "Strawberry Flavoring",
+      category: "Flavorings",
+      currentStock: 65,
+      minStock: 30,
+      maxStock: 150,
+      unit: "Liters",
+      unitPrice: 22.50,
+      lastUpdated: "6 hours ago",
+      supplier: "Fruit Flavors Co.",
+      status: "in_stock"
+    },
+    {
+      id: 5,
+      name: "Sugar",
+      category: "Base Ingredients",
+      currentStock: 180,
+      minStock: 50,
+      maxStock: 300,
+      unit: "KG",
+      unitPrice: 3.25,
+      lastUpdated: "1 hour ago",
+      supplier: "Sweet Supplies",
+      status: "in_stock"
+    },
+    {
+      id: 6,
+      name: "Egg Yolks",
+      category: "Base Ingredients",
+      currentStock: 600,
+      minStock: 100,
+      maxStock: 400,
+      unit: "Units",
+      unitPrice: 0.45,
+      lastUpdated: "3 hours ago",
+      supplier: "Fresh Farm Eggs",
+      status: "overstock"
+    },
+  ]);
+
+  // Helper functions
+  const calculateTotalValue = () => {
+    return stockProducts.reduce((total, product) => total + (product.currentStock * product.unitPrice), 0);
+  };
+
+  const getProductsByStatus = (status: string) => {
+    if (status === "all") return stockProducts;
+    return stockProducts.filter(product => product.status === status);
+  };
+
+  const filteredProducts = stockProducts.filter(product => {
+    const matchesSearch = product.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         product.category.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesFilter = filterStatus === "all" || product.status === filterStatus;
+    return matchesSearch && matchesFilter;
+  });
+
+  // Inventory KPIs (calculated from actual data)
+  const inventoryMetrics = [
+    {
+      title: "Total Stock Value",
+      value: `$${calculateTotalValue().toLocaleString()}`,
+      change: "+8.3%",
+      changeType: "positive" as const,
+      icon: <TrendingUp className="w-5 h-5" />,
+      color: "from-blue-500 to-blue-600",
+      subtitle: "Current inventory value",
+    },
+    {
+      title: "Active Products",
+      value: stockProducts.length.toString(),
+      change: "+3",
+      changeType: "positive" as const,
+      icon: <Package className="w-5 h-5" />,
+      color: "from-sky-500 to-sky-600",
+      subtitle: "Total tracked products",
+    },
+    {
+      title: "Low Stock Items",
+      value: getProductsByStatus("low_stock").length.toString(),
+      change: "-2",
+      changeType: "positive" as const,
+      icon: <AlertTriangle className="w-5 h-5" />,
+      color: "from-orange-500 to-orange-600",
+      subtitle: "Need replenishment",
+    },
+    {
+      title: "Out of Stock",
+      value: getProductsByStatus("out_of_stock").length.toString(),
+      change: "-1",
+      changeType: "negative" as const,
+      icon: <AlertTriangle className="w-5 h-5" />,
+      color: "from-red-500 to-red-600",
+      subtitle: "Critical stock level",
+    },
+  ];
+
+  // Inventory trends data
+  const inventoryTrends = [
+    { month: "Jan", stock: 14200, consumption: 13800 },
+    { month: "Feb", stock: 13800, consumption: 14500 },
+    { month: "Mar", stock: 14500, consumption: 14200 },
+    { month: "Apr", stock: 15100, consumption: 14800 },
+    { month: "May", stock: 14800, consumption: 15500 },
+    { month: "Jun", stock: 15500, consumption: 15200 },
+  ];
+
+  // Recent stock movements
+  const stockMovements = [
+    {
+      id: 1,
+      item: "Vanilla Ice Cream Base",
+      action: "Stock In",
+      quantity: "500L",
+      timestamp: "2 hours ago",
+      status: "completed",
+    },
+    {
+      id: 2,
+      item: "Chocolate Syrup",
+      action: "Stock Out",
+      quantity: "200L",
+      timestamp: "4 hours ago",
+      status: "completed",
+    },
+    {
+      id: 3,
+      item: "Strawberry Flavoring",
+      action: "Stock In",
+      quantity: "150L",
+      timestamp: "6 hours ago",
+      status: "pending",
+    },
+    {
+      id: 4,
+      item: "Packaging Material",
+      action: "Alert",
+      quantity: "Low Stock",
+      timestamp: "8 hours ago",
+      status: "alert",
+    },
+  ];
+
+  const getChangeIcon = (changeType: string) => {
+    return changeType === "positive" ? (
+      <TrendingUp className="w-4 h-4 text-green-600" />
+    ) : (
+      <TrendingDown className="w-4 h-4 text-red-600" />
+    );
+  };
+
+  const getStatusColor = (status: string) => {
+    switch (status) {
+      case "completed":
+        return "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300";
+      case "pending":
+        return "bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300";
+      case "alert":
+        return "bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300";
+      case "in_stock":
+        return "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300";
+      case "low_stock":
+        return "bg-orange-100 text-orange-800 dark:bg-orange-900/30 dark:text-orange-300";
+      case "out_of_stock":
+        return "bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300";
+      case "overstock":
+        return "bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-300";
+      default:
+        return "bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300";
+    }
+  };
+
+  const formatStockStatus = (status: string) => {
+    switch (status) {
+      case "in_stock": return "In Stock";
+      case "low_stock": return "Low Stock";
+      case "out_of_stock": return "Out of Stock";
+      case "overstock": return "Overstock";
+      default: return status;
+    }
+  };
+
+  return (
+    <div className="relative">
+      <style dangerouslySetInnerHTML={{ __html: customStyles }} />
+
+      <div className="relative z-10 p-6">
+        {/* Professional Header */}
+        <div className="mb-8 animate-slide-in-up">
+          <div className="flex items-center justify-between">
+            <div>
+              <h1 className="text-4xl font-bold text-slate-800 dark:text-white mb-2">
+                Inventory Management
+              </h1>
+              <p className="text-lg text-slate-600 dark:text-slate-300">
+                Track stock levels, monitor consumption, and manage inventory efficiently
+              </p>
+            </div>
+            <div className="flex items-center gap-4 flex-wrap">
+              <div className="relative">
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400 w-5 h-5" />
+                <Input
+                  placeholder="Search inventory..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="pl-12 w-64 bg-white/80 dark:bg-slate-800/80 border-slate-300 dark:border-slate-600 text-slate-900 dark:text-white placeholder-slate-500 dark:placeholder-slate-400"
+                />
+              </div>
+              <select
+                value={filterStatus}
+                onChange={(e) => setFilterStatus(e.target.value)}
+                className="px-3 py-2 rounded-lg bg-white/80 dark:bg-slate-800/80 border border-slate-300 dark:border-slate-600 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+              >
+                <option value="all">All Status</option>
+                <option value="in_stock">In Stock</option>
+                <option value="low_stock">Low Stock</option>
+                <option value="out_of_stock">Out of Stock</option>
+                <option value="overstock">Overstock</option>
+              </select>
+              <div className="flex items-center gap-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="bg-white/80 dark:bg-slate-800/80 border-slate-300 dark:border-slate-600 hover:bg-blue-50 dark:hover:bg-slate-700"
+                >
+                  <RefreshCw className="w-4 h-4 mr-2" />
+                  Refresh
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="bg-white/80 dark:bg-slate-800/80 border-slate-300 dark:border-slate-600 hover:bg-blue-50 dark:hover:bg-slate-700"
+                >
+                  <Download className="w-4 h-4 mr-2" />
+                  Export
+                </Button>
+                <Button
+                  onClick={() => setShowAddStockForm(!showAddStockForm)}
+                  className="bg-blue-600 hover:bg-blue-700 text-white"
+                >
+                  Add Stock Item
+                  <Plus className="w-4 h-4 ml-2" />
+                </Button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Inventory KPIs */}
+        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6 mb-8">
+          {inventoryMetrics.map((metric, index) => (
+            <div
+              key={index}
+              className="professional-card p-6 animate-fade-in-scale"
+              style={{ animationDelay: `${index * 0.1}s` }}
+            >
+              <div className="flex items-center justify-between mb-4">
+                <div
+                  className={`p-4 bg-gradient-to-r ${metric.color} rounded-xl text-white shadow-lg`}
+                >
+                  {metric.icon}
+                </div>
+                <div className="flex items-center gap-2">
+                  {getChangeIcon(metric.changeType)}
+                  <span
+                    className={`text-sm font-bold ${
+                      metric.changeType === "positive"
+                        ? "text-green-600"
+                        : "text-red-600"
+                    }`}
+                  >
+                    {metric.change}
+                  </span>
+                </div>
+              </div>
+              <div>
+                <h3 className="text-sm font-medium text-slate-600 dark:text-slate-400 mb-2">
+                  {metric.title}
+                </h3>
+                <p className="text-3xl font-bold text-slate-900 dark:text-white mb-2">
+                  {metric.value}
+                </p>
+                <p className="text-xs text-slate-500 dark:text-slate-400">
+                  {metric.subtitle}
+                </p>
+              </div>
+            </div>
+          ))}
+        </div>
+
+        {/* Charts Section */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
+          {/* Inventory Trends */}
+          <div className="professional-card p-8 animate-fade-in-scale">
+            <h2 className="text-2xl font-bold text-slate-800 dark:text-white mb-6">
+              Stock Level Trends
+            </h2>
+            <ResponsiveContainer width="100%" height={300}>
+              <BarChart
+                data={inventoryTrends}
+                margin={{ top: 20, right: 30, left: 20, bottom: 5 }}
+              >
+                <XAxis
+                  dataKey="month"
+                  tick={{ fill: "#64748b", fontSize: 12 }}
+                  axisLine={false}
+                  tickLine={false}
+                />
+                <YAxis
+                  tick={{ fill: "#64748b", fontSize: 12 }}
+                  axisLine={false}
+                  tickLine={false}
+                />
+                <Tooltip
+                  contentStyle={{
+                    background: "#f8fafc",
+                    borderRadius: 8,
+                    border: "none",
+                  }}
+                  labelStyle={{ color: "#475569" }}
+                />
+                <Bar
+                  dataKey="stock"
+                  fill="#3b82f6"
+                  radius={[4, 4, 0, 0]}
+                  opacity={0.8}
+                />
+                <Bar
+                  dataKey="consumption"
+                  fill="#06b6d4"
+                  radius={[4, 4, 0, 0]}
+                  opacity={0.8}
+                />
+              </BarChart>
+            </ResponsiveContainer>
+          </div>
+
+          {/* Stock Movement Chart */}
+          <div className="professional-card p-8 animate-fade-in-scale">
+            <h2 className="text-2xl font-bold text-slate-800 dark:text-white mb-6">
+              Recent Movements
+            </h2>
+            <div className="space-y-4">
+              {stockMovements.map((movement, index) => (
+                <div
+                  key={movement.id}
+                  className="p-4 bg-slate-50 dark:bg-slate-800/50 rounded-xl border border-slate-200 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-700/50 transition-all duration-300"
+                >
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-4">
+                      <div className="w-10 h-10 bg-gradient-to-r from-blue-500 to-sky-600 rounded-lg flex items-center justify-center shadow-sm">
+                        <Package className="w-5 h-5 text-white" />
+                      </div>
+                      <div>
+                        <h4 className="font-semibold text-slate-900 dark:text-white">
+                          {movement.item}
+                        </h4>
+                        <p className="text-sm text-slate-600 dark:text-slate-300">
+                          {movement.action} - {movement.quantity}
+                        </p>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-4">
+                      <Badge
+                        className={`${getStatusColor(
+                          movement.status
+                        )} font-medium`}
+                      >
+                        {movement.status}
+                      </Badge>
+                      <span className="text-sm text-slate-500 dark:text-slate-400">
+                        {movement.timestamp}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+
+        {/* Stock Management Table */}
+        <div className="professional-card p-8 animate-fade-in-scale mb-8">
+          <div className="flex items-center justify-between mb-6">
+            <h2 className="text-2xl font-bold text-slate-800 dark:text-white">
+              Stock Management
+            </h2>
+            <div className="text-sm text-slate-600 dark:text-slate-300">
+              Showing {filteredProducts.length} of {stockProducts.length} items
+            </div>
+          </div>
+          
+          <div className="overflow-x-auto">
+            <table className="w-full">
+              <thead>
+                <tr className="border-b border-slate-200 dark:border-slate-700">
+                  <th className="text-left py-3 px-4 font-semibold text-slate-700 dark:text-slate-300">Product</th>
+                  <th className="text-left py-3 px-4 font-semibold text-slate-700 dark:text-slate-300">Category</th>
+                  <th className="text-left py-3 px-4 font-semibold text-slate-700 dark:text-slate-300">Current Stock</th>
+                  <th className="text-left py-3 px-4 font-semibold text-slate-700 dark:text-slate-300">Min/Max</th>
+                  <th className="text-left py-3 px-4 font-semibold text-slate-700 dark:text-slate-300">Unit Price</th>
+                  <th className="text-left py-3 px-4 font-semibold text-slate-700 dark:text-slate-300">Status</th>
+                  <th className="text-left py-3 px-4 font-semibold text-slate-700 dark:text-slate-300">Supplier</th>
+                  <th className="text-left py-3 px-4 font-semibold text-slate-700 dark:text-slate-300">Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                {filteredProducts.map((product) => (
+                  <tr 
+                    key={product.id}
+                    className="border-b border-slate-100 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors"
+                  >
+                    <td className="py-4 px-4">
+                      <div className="flex items-center gap-3">
+                        <div className="w-10 h-10 bg-gradient-to-r from-blue-500 to-sky-600 rounded-lg flex items-center justify-center">
+                          <Package className="w-5 h-5 text-white" />
+                        </div>
+                        <div>
+                          <div className="font-semibold text-slate-900 dark:text-white">
+                            {product.name}
+                          </div>
+                          <div className="text-sm text-slate-500 dark:text-slate-400">
+                            Updated {product.lastUpdated}
+                          </div>
+                        </div>
+                      </div>
+                    </td>
+                    <td className="py-4 px-4 text-slate-700 dark:text-slate-300">
+                      {product.category}
+                    </td>
+                    <td className="py-4 px-4">
+                      <span className="text-slate-900 dark:text-white font-semibold">
+                        {product.currentStock}
+                      </span>
+                      <span className="text-slate-500 dark:text-slate-400 ml-1">
+                        {product.unit}
+                      </span>
+                    </td>
+                    <td className="py-4 px-4 text-sm text-slate-600 dark:text-slate-400">
+                      <div>{product.minStock} - {product.maxStock}</div>
+                      <div className="text-xs text-slate-500 dark:text-slate-500">
+                        {product.unit}
+                      </div>
+                    </td>
+                    <td className="py-4 px-4 text-slate-700 dark:text-slate-300 font-semibold">
+                      ${product.unitPrice.toFixed(2)}
+                    </td>
+                    <td className="py-4 px-4">
+                      <Badge className={`${getStatusColor(product.status)} font-medium`}>
+                        {formatStockStatus(product.status)}
+                      </Badge>
+                    </td>
+                    <td className="py-4 px-4 text-slate-700 dark:text-slate-300">
+                      {product.supplier}
+                    </td>
+                    <td className="py-4 px-4">
+                      <div className="flex items-center gap-2">
+                        <Button size="sm" variant="outline">
+                          <Edit className="w-4 h-4" />
+                        </Button>
+                        <Button size="sm" variant="outline">
+                          <Upload className="w-4 h-4" />
+                        </Button>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        {/* Inventory Analysis Chart */}
+        <div className="professional-card p-8 animate-fade-in-scale">
+          <h2 className="text-2xl font-bold text-slate-800 dark:text-white mb-6">
+            Inventory Turnover Analysis
+          </h2>
+          <ResponsiveContainer width="100%" height={300}>
+            <LineChart
+              data={[
+                { month: "Jan", turnover: 3.2, stock_value: 14200 },
+                { month: "Feb", turnover: 3.8, stock_value: 13800 },
+                { month: "Mar", turnover: 4.1, stock_value: 14500 },
+                { month: "Apr", turnover: 3.9, stock_value: 15100 },
+                { month: "May", turnover: 4.3, stock_value: 14800 },
+                { month: "Jun", turnover: 4.2, stock_value: 15500 },
+              ]}
+              margin={{ top: 20, right: 30, left: 20, bottom: 5 }}
+            >
+              <XAxis
+                dataKey="month"
+                tick={{ fill: "#64748b", fontSize: 12 }}
+                axisLine={false}
+                tickLine={false}
+              />
+              <YAxis
+                tick={{ fill: "#64748b", fontSize: 12 }}
+                axisLine={false}
+                tickLine={false}
+              />
+              <Tooltip
+                contentStyle={{
+                  background: "#f8fafc",
+                  borderRadius: 8,
+                  border: "none",
+                }}
+                labelStyle={{ color: "#475569" }}
+              />
+              <Line
+                type="monotone"
+                dataKey="turnover"
+                stroke="#06b6d4"
+                strokeWidth={3}
+                dot={{ fill: "#06b6d4", strokeWidth: 2, r: 4 }}
+              />
+            </LineChart>
+          </ResponsiveContainer>
+        {/* Add Stock Form Modal */}
+        {showAddStockForm && (
+          <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+            <div className="bg-white dark:bg-slate-800 rounded-2xl p-8 w-full max-w-2xl max-h-90vh overflow-y-auto">
+              <div className="flex items-center justify-between mb-6">
+                <h3 className="text-2xl font-bold text-slate-800 dark:text-white">
+                  Add New Stock Item
+                </h3>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setShowAddStockForm(false)}
+                  className="text-slate-500 hover:text-slate-700"
+                >
+                  <Trash2 className="w-4 h-4" />
+                </Button>
+              </div>
+              
+              <form className="space-y-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+                      Product Name
+                    </label>
+                    <Input
+                      placeholder="Enter product name"
+                      className="bg-white/80 dark:bg-slate-700/80"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+                      Category
+                    </label>
+                    <select className="w-full px-3 py-2 rounded-lg bg-white/80 dark:bg-slate-700/80 border border-slate-300 dark:border-slate-600 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500">
+                      <option value="base">Base Ingredients</option>
+                      <option value="flavor">Flavorings</option>
+                      <option value="packaging">Packaging</option>
+                      <option value="other">Other</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+                      Current Stock
+                    </label>
+                    <Input
+                      type="number"
+                      placeholder="0"
+                      className="bg-white/80 dark:bg-slate-700/80"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+                      Unit
+                    </label>
+                    <select className="w-full px-3 py-2 rounded-lg bg-white/80 dark:bg-slate-700/80 border border-slate-300 dark:border-slate-600 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500">
+                      <option value="liters">Liters</option>
+                      <option value="kg">KG</option>
+                      <option value="boxes">Boxes</option>
+                      <option value="units">Units</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+                      Min Stock Level
+                    </label>
+                    <Input
+                      type="number"
+                      placeholder="0"
+                      className="bg-white/80 dark:bg-slate-700/80"
+                    </div>
+                  <div>
+                    <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+                      Max Stock Level
+                    </label>
+                    <Input
+                      type="number"
+                      placeholder="0"
+                      className="bg-white/80 dark:bg-slate-700/80"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+                      Unit Price ($)
+                    </label>
+                    <Input
+                      type="number"
+                      step="0.01"
+                      placeholder="0.00"
+                      className="bg-white/80 dark:bg-slate-700/80"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+                      Supplier
+                    </label>
+                    <Input
+                      placeholder="Enter supplier name"
+                      className="bg-white/80 dark:bg-slate-700/80"
+                    />
+                  </div>
+                </div>
+                
+                <div className="flex items-center justify-end gap-4 pt-4">
+                  <button
+                    type="button"
+                    onClick={() => setShowAddStockForm(false)}
+                    className="px-6 py-2 bg-slate-200 hover:bg-slate-300 dark:bg-slate-700 dark:hover:bg-slate-600 text-slate-700 dark:text-slate-300 rounded-lg transition-colors"
+                  >
+                    Cancel
+                  </button>
+                  <Button className="bg-blue-600 hover:bg-blue-700 text-white">
+                    Add Stock Item
+                  </Button>
+                </div>
+              </form>
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}

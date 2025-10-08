@@ -1,17 +1,18 @@
 "use client";
 
 import * as React from "react";
-import { ThemeProvider as NextThemesProvider } from "next-themes";
-import { type ThemeProviderProps } from "next-themes/dist/types";
 
-export function ThemeProvider({ children, ...props }: ThemeProviderProps) {
-  return <NextThemesProvider {...props}>{children}</NextThemesProvider>;
-}
+import { Moon, Sun } from "lucide-react";
+import { ThemeProvider as NextThemesProvider, useTheme } from "next-themes";
+// ThemeProviderProps is available from next-themes directly
 
 // Theme Toggle Component
-import { Moon, Sun } from "lucide-react";
-import { useTheme } from "next-themes";
+
 import { Button } from "@/components/ui/button";
+
+export function ThemeProvider({ children, ...props }: React.ComponentProps<typeof NextThemesProvider>) {
+  return <NextThemesProvider {...props}>{children}</NextThemesProvider>;
+}
 
 export function ThemeToggle() {
   const { theme, setTheme } = useTheme();

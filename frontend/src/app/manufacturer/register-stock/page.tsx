@@ -1,24 +1,26 @@
 "use client";
 
 import { useState } from "react";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Textarea } from "@/components/ui/textarea";
+
 import {
-  Plus,
-  Package,
-  DollarSign,
+  ArrowRight,
   CheckCircle,
   Clock,
-  TrendingUp,
-  TrendingDown,
-  Search,
-  Filter,
+  DollarSign,
   Download,
-  ArrowRight,
+  Filter,
+  Package,
+  Plus,
+  Search,
+  TrendingDown,
+  TrendingUp,
 } from "lucide-react";
+
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
 
 // Professional pastel blue theme styles
 const customStyles = `
@@ -106,7 +108,7 @@ export default function RegisterStockPage() {
   });
 
   const handleInputChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
   ) => {
     const { name, value } = e.target;
     setFormData((prev) => ({
@@ -457,7 +459,7 @@ export default function RegisterStockPage() {
                           </h4>
                           <Badge
                             className={`${getStatusColor(
-                              item.status
+                              item.status,
                             )} font-medium`}
                           >
                             {item.status === "registered" ? (

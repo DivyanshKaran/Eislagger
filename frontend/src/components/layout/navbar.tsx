@@ -1,15 +1,9 @@
 "use client";
 
+import React from "react";
+
 import Link from "next/link";
-import { ThemeToggle } from "@/components/theme-provider";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import {
-  DropdownMenu,
-  DropdownMenuTrigger,
-  DropdownMenuContent,
-  DropdownMenuItem,
-} from "@/components/ui/dropdown-menu";
+
 import {
   Users,
   Factory,
@@ -19,7 +13,16 @@ import {
   User,
   LogOut,
 } from "lucide-react";
-import React from "react";
+
+import { ThemeToggle } from "@/components/theme-provider";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import {
+  DropdownMenu,
+  DropdownMenuTrigger,
+  DropdownMenuContent,
+  DropdownMenuItem,
+} from "@/components/ui/dropdown-menu";
 
 const ROLE_META = {
   executive: {

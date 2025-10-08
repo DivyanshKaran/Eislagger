@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+
 import {
   Mail as MailIcon,
   Send,
@@ -19,10 +20,10 @@ import {
   Eye,
   EyeOff,
 } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
+
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -31,6 +32,7 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
 } from "@/components/ui/dropdown-menu";
+import { Input } from "@/components/ui/input";
 
 // Custom styles for animations
 const customStyles = `
@@ -289,7 +291,7 @@ export default function ClerkEmailPage() {
                         </span>
                         <Badge
                           className={`text-xs ${getPriorityColor(
-                            email.priority
+                            email.priority,
                           )}`}
                         >
                           {email.priority}
@@ -342,7 +344,7 @@ export default function ClerkEmailPage() {
                           </span>
                           <Badge
                             className={`text-xs ${getPriorityColor(
-                              selectedEmail.priority
+                              selectedEmail.priority,
                             )}`}
                           >
                             {selectedEmail.priority}
@@ -420,7 +422,7 @@ export default function ClerkEmailPage() {
                                     <Download className="w-4 h-4" />
                                   </Button>
                                 </div>
-                              )
+                              ),
                             )}
                           </div>
                         </div>

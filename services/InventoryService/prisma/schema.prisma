@@ -1,12 +1,10 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
+// Prisma schema for the Inventory Service
+// This schema handles factories, stock items, flavors, invoices, and suppliers
 
-// 1. Define the generator for the Prisma Client
 generator client {
   provider = "prisma-client-js"
 }
 
-// 2. Define the datasource (your PostgreSQL database)
 datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
@@ -14,64 +12,244 @@ datasource db {
 
 // --- INVENTORY SERVICE MODELS ---
 
+// Represents ice cream factories/manufacturing facilities
 model Factory {
-  id        String      @id @default(uuid())
-  name      String      @unique
-  location  String
-  budget    Decimal     @db.Decimal(12, 2) // For handling money precisely
-
-  stockItems StockItem[] // A factory has many stock items
+  id            String   @id @default(uuid())
+  name          String
+  location      String
+  address       String
+  managerId     String?  // Manager's user ID from Auth service
+  
+  // Factory details
+  capacity      Float    // Production capacity (liters per day)
+  budget        Decimal  @db.Decimal(12, 2) @default(0) // Allocated budget
+  status        FactoryStatus @default(Active)
+  
+  // Production metrics
+  totalProduced Decimal  @db.Decimal(12, 2) @default(0) // Total production
+  efficiencyRating Float? // Efficiency rating (0-100)
+  
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  
+  // Relations
+  stockItems    StockItem[]
+  invoices      Invoice[]
+  
+  @@map("factories")
 }
 
-model Flavor {
-  id          String      @id @default(uuid())
-  name        String      @unique
-  description String
-  dietaryTags String[]
-
-  stockItems  StockItem[] // A flavor can be in many stock items
-}
-
+// Represents individual stock items produced at factories
 model StockItem {
-  id              String   @id @default(uuid())
-  batchId         String   @unique
-  quantity        Float    // e.g., in Liters
-  unit            String   // "Liters", "Kg", etc.
-  productionCost  Decimal  @db.Decimal(10, 2)
-  expiryDate      DateTime
+  id            String   @id @default(uuid())
+  factoryId     String
+  factory       Factory  @relation(fields: [factoryId], references: [id], onDelete: Cascade)
+  
+  // Flavor information
+  flavorId      String
+  flavor        Flavor   @relation(fields: [flavorId], references: [id])
+  
+  // Production details
+  batchNumber   String   // Production batch identifier
+  quantity      Float    // Production quantity (liters)
+  cost          Decimal  @db.Decimal(10, 2) // Production cost per liter
+  
+  // Expiry management
+  productionDate DateTime @default(now())
+  expiryDate    DateTime
+  isExpired     Boolean  @default(false)
+  
+  // Quality control
+  qualityGrade  QualityGrade @default(A)
+  approvalStatus ApprovalStatus @default(Pending)
+  
+  // Status tracking
+  status        StockStatus @default(Produced)
+  notes         String?
+  
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  
+  // Relations
+  invoices      InvoiceItem[]
+  
+  @@unique([factoryId, flavorId, batchNumber])
+  @@map("stock_items")
+}
 
+// Represents ice cream flavors/catalog
+model Flavor {
+  id              String   @id @default(uuid())
+  name            String   @unique
+  description     String?
+  longDescription String?
+  category        FlavorCategory
+  
+  // Flavor details
+  baseFlavor      String
+  ingredients     String[]
+  allergens       String[]
+  tags            String[]
+  
+  // Nutritional information
+  caloriesPer100g Float?
+  fatPer100g      Float?
+  sugarPer100g    Float?
+  
+  // Pricing and production
+  basePrice       Decimal  @db.Decimal(10, 2)
+  productionCost  Decimal  @db.Decimal(10, 2)
+  
+  // Media
+  imageUrl        String?
+  images          String[]
+  
+  // Status
+  isActive        Boolean  @default(true)
+  manufacturerId  String?
+  
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  
+  // Relations
+  stockItems      StockItem[]
+  
+  @@map("flavors")
+}
+
+// Represents invoices for purchase orders from sales service
+model Invoice {
+  id              String   @id @default(uuid())
+  invoiceNumber   String   @unique // Human-readable invoice number
+  
+  // Related entities
   factoryId       String
   factory         Factory  @relation(fields: [factoryId], references: [id])
-
-  flavorId        String
-  flavor          Flavor   @relation(fields: [flavorId], references: [id])
-}
-
-model Invoice {
-  id              String       @id @default(uuid())
-  purchaseOrderId String       // From the Sales Service
-  shopId          String       // The ID of the shop being invoiced
-  totalAmount     Decimal      @db.Decimal(12, 2)
-  status          InvoiceStatus @default(Pending)
-  createdAt       DateTime     @default(now())
+  shopId          String?  // Shop that placed the order
   
+  // Financial details
+  subtotal        Decimal  @db.Decimal(12, 2)
+  taxRate         Decimal  @db.Decimal(5, 4) @default(0.08) // Tax rate
+  taxAmount       Decimal  @db.Decimal(12, 2)
+  shippingCost    Decimal  @db.Decimal(10, 2) @default(0)
+  discountAmount  Decimal  @db.Decimal(12, 2) @default(0)
+  totalAmount     Decimal  @db.Decimal(12, 2)
+  
+  // Status
+  status          InvoiceStatus @default(Pending)
+  dueDate         DateTime?
+  paymentDate     DateTime?
+  
+  // Additional information
+  notes           String?
+  poReference     String?  // Purchase order reference
+  
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  
+  // Relations
   items           InvoiceItem[]
+  
+  @@map("invoices")
 }
 
+// Items within invoices
 model InvoiceItem {
-  id          String   @id @default(uuid())
-  flavorName  String
-  quantity    Float
-  unitPrice   Decimal  @db.Decimal(10, 2)
-  totalPrice  Decimal  @db.Decimal(12, 2)
+  id              String   @id @default(uuid())
+  invoiceId       String
+  invoice         Invoice  @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
+  
+  // Stock item reference
+  stockItemId     String
+  stockItem       StockItem @relation(fields: [stockItemId], references: [id])
+  
+  // Item details
+  flavorId        String
+  quantity        Float    // Quantity in liters
+  unitPrice       Decimal  @db.Decimal(10, 2) // Price per liter
+  totalPrice      Decimal  @db.Decimal(12, 2) // quantity * unitPrice
+  
+  createdAt       DateTime @default(now())
+  
+  @@map("invoice_items")
+}
 
-  invoiceId   String
-  invoice     Invoice  @relation(fields: [invoiceId], references: [id])
+// Represents suppliers of raw materials
+model Supplier {
+  id              String   @id @default(uuid())
+  name            String
+  companyName     String?
+  contactPerson   String?
+  email           String
+  phone           String?
+  address         String
+  
+  // Supplier details
+  specialties     String[] // Array of specialties ["Dairy", "Chocolate", "Fruits"]
+  rating          Float?   // Supplier rating (1-5)
+  
+  // Business information
+  taxId           String?  // Tax identification number
+  paymentTerms    String?  // "Net 30", "COD", etc.
+  
+  // Status
+  isActive        Boolean  @default(true)
+  lastOrderDate   DateTime?
+  
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  
+  @@map("suppliers")
+}
+
+// --- ENUMS ---
+
+enum FactoryStatus {
+  Active
+  Maintenance
+  Inactive
+  Closed
+}
+
+enum StockStatus {
+  Produced
+  QualityControl
+  Approved
+  Shipped
+  Delivered
+  Rejected
+  Expired
+}
+
+enum QualityGrade {
+  A
+  B
+  C
+  F
+}
+
+enum ApprovalStatus {
+  Pending
+  Approved
+  Rejected
+  Hold
+}
+
+enum FlavorCategory {
+  Classic
+  Chocolate
+  International
+  Premium
+  Seasonal
+  SugarFree
+  Vegan
 }
 
 enum InvoiceStatus {
+  Draft
   Pending
+  Sent
   Paid
   Overdue
+  Cancelled
 }
-

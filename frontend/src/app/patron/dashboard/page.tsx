@@ -1,44 +1,44 @@
 "use client";
 
-import { useState } from "react";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import React, { useState, useEffect } from "react";
 import {
-  Search,
-  Bell,
-  User,
-  TrendingUp,
-  TrendingDown,
+  ShoppingBag,
   Heart,
   Star,
-  ShoppingBag,
-  MapPin,
-  ArrowRight,
-  Award,
+  Store,
+  TrendingUp,
+  Package,
+  Truck,
+  Gift,
   Calendar,
-  DollarSign,
-  Users,
+  Award,
+  MapPin,
   Clock,
+  Users,
+  BarChart3,
+  PieChart,
+  Star as StarIcon,
+  Download,
+  RefreshCw,
+  Eye,
 } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
 import {
   LineChart,
   Line,
-  AreaChart,
-  Area,
   BarChart,
   Bar,
-  PieChart,
+  PieChart as RechartsPie,
   Pie,
   Cell,
+  ResponsiveContainer,
   XAxis,
   YAxis,
   CartesianGrid,
   Tooltip,
   Legend,
-  ResponsiveContainer,
 } from "recharts";
 
 // Custom styles for animations
@@ -49,8 +49,9 @@ const customStyles = `
   }
   
   @keyframes pulse-glow {
-    0%, 100% { opacity: 0.5; transform: scale(1); }
-    50% { opacity: 0.8; transform: scale(1.05); }
+    0% { opacity: 0.6; transform: scale(1); }
+    50% { opacity: 1; transform: scale(1.05); }
+    100% { opacity: 0.6; transform: scale(1); }
   }
   
   @keyframes slideInUp {
@@ -75,619 +76,369 @@ const customStyles = `
     }
   }
   
-  .animate-float {
-    animation: float 3s ease-in-out infinite;
+  @keyframes wiggle {
+    0%, 7% { transform: rotate(0deg); }
+    15% { transform: rotate(-15deg); }
+    20% { transform: rotate(10deg); }
+    25% { transform: rotate(-10deg); }
+    30% { transform: rotate(10deg); }
+    35% { transform: rotate(-10deg); }
+    40%, 100% { transform: rotate(0deg); }
   }
   
-  .animate-pulse-glow {
-    animation: pulse-glow 2s ease-in-out infinite;
-  }
-  
-  .animate-slide-in-up {
-    animation: slideInUp 0.6s ease-out forwards;
-  }
-  
-  .animate-fade-in-scale {
-    animation: fadeInScale 0.5s ease-out forwards;
-  }
+  .animate-float { animation: float 3s ease-in-out infinite; }
+  .animate-pulse-glow { animation: pulse-glow 2s ease-in-out infinite; }
+  .animate-slide-in-up { animation: slideInUp 0.6s ease-out forwards; }
+  .animate-fade-in-scale { animation: fadeInScale 0.5s ease-out forwards; }
+  .animate-wiggle { animation: wiggle 1s ease-in-out; }
 `;
 
-// Mock data for charts
-const orderTrendData = [
-  { month: "Jan", orders: 12, spending: 180 },
-  { month: "Feb", orders: 15, spending: 220 },
-  { month: "Mar", orders: 18, spending: 280 },
-  { month: "Apr", orders: 14, spending: 210 },
-  { month: "May", orders: 22, spending: 320 },
-  { month: "Jun", orders: 25, spending: 380 },
-  { month: "Jul", orders: 28, spending: 420 },
-  { month: "Aug", orders: 32, spending: 480 },
-  { month: "Sep", orders: 29, spending: 440 },
-  { month: "Oct", orders: 35, spending: 520 },
-  { month: "Nov", orders: 38, spending: 570 },
-  { month: "Dec", orders: 42, spending: 630 },
-];
-
-const flavorPreferencesData = [
-  { name: "Mango Tango", value: 25, color: "#f97316" },
-  { name: "Chocolate Dream", value: 20, color: "#7c2d12" },
-  { name: "Vanilla Bean", value: 18, color: "#fef3c7" },
-  { name: "Strawberry Delight", value: 15, color: "#fda4af" },
-  { name: "Espresso Shot", value: 12, color: "#92400e" },
-  { name: "Others", value: 10, color: "#fbbf24" },
-];
-
-const weeklyActivityData = [
-  { day: "Mon", orders: 8, visits: 12 },
-  { day: "Tue", orders: 12, visits: 18 },
-  { day: "Wed", orders: 15, visits: 22 },
-  { day: "Thu", orders: 18, visits: 25 },
-  { day: "Fri", orders: 22, visits: 30 },
-  { day: "Sat", orders: 28, visits: 35 },
-  { day: "Sun", orders: 20, visits: 28 },
-];
-
-const storePerformanceData = [
-  { store: "Berlin Central", orders: 45, rating: 4.8, distance: "0.8km" },
-  { store: "Mumbai Downtown", orders: 38, rating: 4.6, distance: "1.2km" },
-  { store: "Pune HQ", orders: 32, rating: 4.7, distance: "2.1km" },
-  { store: "Hamburg Harbor", orders: 28, rating: 4.5, distance: "3.5km" },
-  { store: "Bangalore Tech", orders: 35, rating: 4.9, distance: "4.2km" },
-];
-
-// Mock data for customer dashboard
-const recentOrders = [
-  {
-    id: 1,
-    flavor: "Mango Tango",
-    store: "EisLager Berlin Central",
-    status: "delivered",
-    date: "2024-01-15",
-    amount: "€8.50",
-    rating: 5,
-  },
-  {
-    id: 2,
-    flavor: "Chocolate Dream",
-    store: "EisLager Mumbai Downtown",
-    status: "in-transit",
-    date: "2024-01-14",
-    amount: "₹120.00",
-    rating: null,
-  },
-  {
-    id: 3,
-    flavor: "Vanilla Bean",
-    store: "EisLager Pune HQ",
-    status: "preparing",
-    date: "2024-01-13",
-    amount: "₹95.00",
-    rating: null,
-  },
+// Sample data
+const orderTrends = [
+  { name: "Jan", orders: 12, amount: 1200 },
+  { name: "Feb", orders: 18, amount: 1800 },
+  { name: "Mar", orders: 15, amount: 1500 },
+  { name: "Apr", orders: 25, amount: 2500 },
+  { name: "May", orders: 22, amount: 2200 },
+  { name: "Jun", orders: 30, amount: 3000 },
+  { name: "Jul", orders: 28, amount: 2800 },
 ];
 
 const favoriteFlavors = [
-  {
-    name: "Mango Tango",
-    emoji: "🥭",
-    rating: 4.9,
-    orders: 12,
-    lastOrdered: "2 days ago",
-  },
-  {
-    name: "Chocolate Dream",
-    emoji: "🍫",
-    rating: 4.8,
-    orders: 8,
-    lastOrdered: "1 week ago",
-  },
-  {
-    name: "Strawberry Delight",
-    emoji: "🍓",
-    rating: 4.7,
-    orders: 6,
-    lastOrdered: "3 days ago",
-  },
+  { name: "Vanilla", value: 35, color: "#8b5cf6" },
+  { name: "Chocolate", value: 25, color: "#ec4899" },
+  { name: "Strawberry", value: 20, color: "#f59e0b" },
+  { name: "Mint Chip", value: 15, color: "#10b981" },
+  { name: "Cookies & Cream", value: 5, color: "#ef4444" },
 ];
 
-const nearbyStores = [
-  {
-    name: "EisLager Berlin Central",
-    distance: "0.8 km",
-    rating: 4.8,
-    status: "open",
-    specialties: ["Artisan Ice Cream", "Gelato"],
-  },
-  {
-    name: "EisLager Mumbai Downtown",
-    distance: "1.2 km",
-    rating: 4.6,
-    status: "open",
-    specialties: ["Kulfi", "Falooda"],
-  },
-  {
-    name: "EisLager Pune HQ",
-    distance: "2.1 km",
-    rating: 4.7,
-    status: "open",
-    specialties: ["Gelato", "Smoothies"],
-  },
+const storePerformance = [
+  { name: "Downtown Store", ratings: 4.8, orders: 145 },
+  { name: "Mall Location", ratings: 4.6, orders: 132 },
+  { name: "Airport Store", ratings: 4.4, orders: 89 },
+  { name: "Beach Location", ratings: 4.9, orders: 167 },
 ];
 
-const customerStats = [
+const recentOrders = [
   {
-    title: "Total Orders",
-    value: "47",
-    change: "+12",
-    changeType: "increase",
-    icon: <ShoppingBag className="w-6 h-6" />,
-    color: "from-orange-400 to-pink-500",
-    bgColor:
-      "from-orange-50/80 to-pink-50/80 dark:from-orange-950/20 dark:to-pink-950/20",
+    id: "#1234",
+    flavor: "Triple Chocolate Delight",
+    store: "Downtown Store",
+    date: "2024-01-15",
+    status: "delivered",
+    amount: "₹299",
+    rating: 5,
   },
   {
-    title: "Favorites",
-    value: "8",
-    change: "+2",
-    changeType: "increase",
-    icon: <Heart className="w-6 h-6" />,
-    color: "from-pink-400 to-rose-500",
-    bgColor:
-      "from-pink-50/80 to-rose-50/80 dark:from-pink-950/20 dark:to-rose-950/20",
+    id: "#1235",
+    flavor: "Strawberry Swirl",
+    store: "Mall Location",
+    date: "2024-01-14",
+    status: "ready",
+    amount: "₹199",
+    rating: 0,
   },
   {
-    title: "Reviews",
-    value: "23",
-    change: "+5",
-    changeType: "increase",
-    icon: <Star className="w-6 h-6" />,
-    color: "from-yellow-400 to-orange-500",
-    bgColor:
-      "from-yellow-50/80 to-orange-50/80 dark:from-yellow-950/20 dark:to-orange-950/20",
-  },
-  {
-    title: "Loyalty Points",
-    value: "1,247",
-    change: "+89",
-    changeType: "increase",
-    icon: <Award className="w-6 h-6" />,
-    color: "from-purple-400 to-pink-500",
-    bgColor:
-      "from-purple-50/80 to-pink-50/80 dark:from-purple-950/20 dark:to-pink-950/20",
+    id: "#1236",
+    flavor: "Vanilla Paradise",
+    store: "Beach Location",
+    date: "2024-01-13",
+    status: "completed",
+    amount: "₹149",
+    rating: 5,
   },
 ];
 
 export default function PatronDashboardPage() {
-  const [search, setSearch] = useState("");
+  const [timeRange, setTimeRange] = useState("30d");
+
+  useEffect(() => {
+    if (typeof window !== "undefined" && !document.head.querySelector("#patron-dashboard-styles")) {
+      const style = document.createElement("style");
+      style.id = "patron-dashboard-styles";
+      style.innerHTML = customStyles;
+      document.head.appendChild(style);
+    }
+  }, []);
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case "delivered":
-        return "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300";
-      case "in-transit":
-        return "bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300";
-      case "preparing":
-        return "bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300";
-      default:
-        return "bg-gray-100 text-gray-800 dark:bg-gray-900/30 dark:text-gray-300";
+      case "delivered": return "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400";
+      case "ready": return "bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400";
+      case "completed": return "bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400";
+      default: return "bg-gray-100 text-gray-700 dark:bg-gray-900/30 dark:text-gray-400";
     }
   };
 
-  const getChangeIcon = (changeType: string) => {
-    return changeType === "increase" ? (
-      <TrendingUp className="w-4 h-4 text-green-600" />
-    ) : (
-      <TrendingDown className="w-4 h-4 text-red-600" />
-    );
-  };
-
   return (
-    <div className="min-h-screen bg-gradient-to-br from-orange-50 via-pink-50 to-rose-50 dark:from-orange-950/20 dark:via-pink-950/20 dark:to-rose-950/20">
+    <div className="relative">
       <style dangerouslySetInnerHTML={{ __html: customStyles }} />
-
-      {/* Animated Background Elements */}
-      <div className="fixed inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute top-20 left-10 w-32 h-32 bg-gradient-to-r from-orange-200/30 to-pink-200/30 rounded-full blur-3xl animate-float"></div>
-        <div className="absolute top-40 right-20 w-24 h-24 bg-gradient-to-r from-pink-200/30 to-rose-200/30 rounded-full blur-2xl animate-pulse-glow"></div>
-        <div
-          className="absolute bottom-20 left-1/4 w-40 h-40 bg-gradient-to-r from-orange-200/20 to-yellow-200/20 rounded-full blur-3xl animate-float"
-          style={{ animationDelay: "1s" }}
-        ></div>
-      </div>
-
-      <div className="relative z-10 container mx-auto px-4 py-8">
-        {/* Header */}
+      
+      <div className="relative z-10 p-6">
+        
+        {/* Header Section */}
         <div className="mb-8 animate-slide-in-up">
-          <div className="flex items-center justify-between">
+          <div className="flex items-center justify-between mb-4">
             <div>
-              <h1 className="text-4xl font-bold text-gray-900 dark:text-white mb-2">
-                Welcome back, Ice Cream Lover! 🍦
+              <h1 className="text-4xl font-bold text-slate-800 dark:text-white mb-2">
+                Welcome Back, Ice Cream Lover! 🍦
               </h1>
-              <p className="text-lg text-gray-600 dark:text-gray-300">
-                Here's what's happening with your ice cream adventures
+              <p className="text-lg text-slate-600 dark:text-slate-300">
+                Discover your sweet journey and favorite flavors
               </p>
             </div>
-            <div className="flex items-center space-x-4">
-              <div className="relative">
-                <Bell className="w-6 h-6 text-gray-600 dark:text-gray-300" />
-                <div className="absolute -top-1 -right-1 w-3 h-3 bg-red-500 rounded-full"></div>
-              </div>
-              <Avatar className="w-10 h-10 bg-gradient-to-br from-orange-100 to-pink-100 dark:from-orange-900/30 dark:to-pink-900/30">
-                <AvatarFallback className="text-lg">🍦</AvatarFallback>
-              </Avatar>
+            <div className="flex gap-3">
+              <Button variant="outline" className="bg-white/80 dark:bg-slate-800/80 border-purple-200 dark:border-purple-800">
+                <RefreshCw className="w-4 h-4 mr-2" />
+                Refresh
+              </Button>
+              <Button className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white">
+                <ShoppingBag className="w-4 h-4 mr-2" />
+                Start Shopping
+              </Button>
             </div>
+          </div>
+
+          {/* Time Range Selector */}
+          <div className="flex gap-2 bg-white/80 dark:bg-slate-800/80 backdrop-blur-xl rounded-xl p-2 border border-purple-200/50 dark:border-purple-800/40">
+            {["7d", "30d", "90d", "1y"].map((range) => (
+              <button
+                key={range}
+                onClick={() => setTimeRange(range)}
+                className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
+                  timeRange === range
+                    ? "bg-purple-600 text-white"
+                    : "text-slate-600 dark:text-slate-400 hover:bg-purple-50 dark:hover:bg-slate-700"
+                }`}
+              >
+                {range}
+              </button>
+            ))}
           </div>
         </div>
 
         {/* KPI Cards */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-          {customerStats.map((stat, index) => (
-            <Card
-              key={stat.title}
-              className="group bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm border-orange-200 dark:border-orange-700 hover:border-orange-400 dark:hover:border-orange-500 transition-all duration-300 hover:shadow-lg hover:shadow-orange-100 dark:hover:shadow-orange-900/20 animate-fade-in-scale"
-              style={{ animationDelay: `${index * 0.1}s` }}
-            >
-              <CardContent className="p-6">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm font-medium text-gray-600 dark:text-gray-300">
-                      {stat.title}
-                    </p>
-                    <p className="text-3xl font-bold text-gray-900 dark:text-white mt-2">
-                      {stat.value}
-                    </p>
-                    <div className="flex items-center mt-2">
-                      {getChangeIcon(stat.changeType)}
-                      <span className="text-sm font-medium text-gray-600 dark:text-gray-300 ml-1">
-                        {stat.change} this month
-                      </span>
-                    </div>
-                  </div>
-                  <div
-                    className={`w-12 h-12 bg-gradient-to-r ${stat.color} rounded-xl flex items-center justify-center shadow-lg`}
-                  >
-                    {stat.icon}
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          ))}
+          <div className="bg-white/80 dark:bg-slate-800/80 backdrop-blur-xl rounded-2xl p-6 shadow-lg border border-purple-200/50 dark:border-purple-800/40 animate-fade-in-scale">
+            <div className="flex items-center justify-between mb-4">
+              <div className="w-12 h-12 bg-gradient-to-br from-purple-500 to-violet-600 rounded-xl flex items-center justify-center">
+                <ShoppingBag className="w-6 h-6 text-white" />
+              </div>
+              <div className="flex items-center gap-1 text-emerald-600">
+                <TrendingUp className="w-4 h-4" />
+                <span className="text-sm font-medium">+12%</span>
+              </div>
+            </div>
+            <div>
+              <h3 className="text-2xl font-bold text-slate-800 dark:text-white mb-1">47</h3>
+              <p className="text-slate-600 dark:text-slate-400 text-sm">Total Orders</p>
+              <p className="text-xs text-slate-500 dark:text-slate-500 mt-1">This {timeRange}</p>
+            </div>
+          </div>
+
+          <div className="bg-white/80 dark:bg-slate-800/80 backdrop-blur-xl rounded-2xl p-6 shadow-lg border border-purple-200/50 dark:border-purple-800/40 animate-fade-in-scale">
+            <div className="flex items-center justify-between mb-4">
+              <div className="w-12 h-12 bg-gradient-to-br from-pink-500 to-rose-600 rounded-xl flex items-center justify-center">
+                <Heart className="w-6 h-6 text-white" />
+              </div>
+              <div className="flex items-center gap-1 text-pink-600">
+                <Star className="w-4 h-4" />
+                <span className="text-sm font-medium">15</span>
+              </div>
+            </div>
+            <div>
+              <h3 className="text-2xl font-bold text-slate-800 dark:text-white mb-1">8</h3>
+              <p className="text-slate-600 dark:text-slate-400 text-sm">Favorite Flavors</p>
+              <p className="text-xs text-slate-500 dark:text-slate-500 mt-1">In your collection</p>
+            </div>
+          </div>
+
+          <div className="bg-white/80 dark:bg-slate-800/80 backdrop-blur-xl rounded-2xl p-6 shadow-lg border border-purple-200/50 dark:border-purple-800/40 animate-fade-in-scale">
+            <div className="flex items-center justify-between mb-4">
+              <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-xl flex items-center justify-center">
+                <Store className="w-6 h-6 text-white" />
+              </div>
+              <div className="flex items-center gap-1 text-blue-600">
+                <MapPin className="w-4 h-4" />
+                <span className="text-sm font-medium">4</span>
+              </div>
+            </div>
+            <div>
+              <h3 className="text-2xl font-bold text-slate-800 dark:text-white mb-1">₹2,847</h3>
+              <p className="text-slate-600 dark:text-slate-400 text-sm">Total Spent</p>
+              <p className="text-xs text-slate-500 dark:text-slate-500 mt-1">This {timeRange}</p>
+            </div>
+          </div>
+
+          <div className="bg-white/80 dark:bg-slate-800/80 backdrop-blur-xl rounded-2xl p-6 shadow-lg border border-purple-200/50 dark:border-purple-800/40 animate-fade-in-scale">
+            <div className="flex items-center justify-between mb-4">
+              <div className="w-12 h-12 bg-gradient-to-br from-emerald-500 to-teal-600 rounded-xl flex items-center justify-center">
+                <Award className="w-6 h-6 text-white" />
+              </div>
+              <div className="flex items-center gap-1 text-emerald-600">
+                <StarIcon className="w-4 h-4" />
+                <span className="text-sm font-medium">4.8</span>
+              </div>
+            </div>
+            <div>
+              <h3 className="text-2xl font-bold text-slate-800 dark:text-white mb-1">42</h3>
+              <p className="text-slate-600 dark:text-slate-400 text-sm">Reviews Written</p>
+              <p className="text-xs text-slate-500 dark:text-slate-500 mt-1">Helpful feedback</p>
+            </div>
+          </div>
         </div>
 
-        {/* Charts Section */}
+        {/* Charts Row */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
           {/* Order Trends Chart */}
-          <Card className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm border-orange-200 dark:border-orange-700 animate-fade-in-scale">
-            <CardHeader>
-              <CardTitle className="text-gray-900 dark:text-white">
-                Order Trends
-              </CardTitle>
-              <p className="text-sm text-gray-600 dark:text-gray-300">
-                Your ice cream ordering patterns over time
-              </p>
-            </CardHeader>
-            <CardContent>
-              <ResponsiveContainer width="100%" height={300}>
-                <AreaChart data={orderTrendData}>
-                  <defs>
-                    <linearGradient
-                      id="orderGradient"
-                      x1="0"
-                      y1="0"
-                      x2="0"
-                      y2="1"
-                    >
-                      <stop offset="5%" stopColor="#f97316" stopOpacity={0.3} />
-                      <stop
-                        offset="95%"
-                        stopColor="#f97316"
-                        stopOpacity={0.1}
-                      />
-                    </linearGradient>
-                  </defs>
-                  <CartesianGrid strokeDasharray="3 3" stroke="#f3f4f6" />
-                  <XAxis dataKey="month" stroke="#6b7280" />
-                  <YAxis stroke="#6b7280" />
-                  <Tooltip
+          <div className="bg-white/80 dark:bg-slate-800/80 backdrop-blur-xl rounded-2xl p-6 shadow-lg border border-purple-200/50 dark:border-purple-800/40">
+            <div className="flex items-center justify-between mb-6">
+              <div>
+                <h3 className="text-xl font-semibold text-slate-800 dark:text-white">Order Trends</h3>
+                <p className="text-sm text-slate-600 dark:text-slate-400">Your ordering pattern</p>
+              </div>
+              <div className="flex items-center gap-2">
+                <Button variant="outline" size="sm" className="border-purple-200 dark:border-purple-800">
+                  <Eye className="w-4 h-4 mr-1" />
+                  View All
+                </Button>
+              </div>
+            </div>
+            <div className="h-64">
+              <ResponsiveContainer width="100%" height="100%">
+                <LineChart data={orderTrends}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
+                  <XAxis dataKey="name" stroke="#64748b" />
+                  <YAxis stroke="#64748b" />
+                  <Tooltip 
                     contentStyle={{
-                      backgroundColor: "rgba(255, 255, 255, 0.9)",
-                      border: "1px solid #f3f4f6",
-                      borderRadius: "8px",
-                    }}
-                  />
-                  <Area
-                    type="monotone"
-                    dataKey="orders"
-                    stroke="#f97316"
-                    fill="url(#orderGradient)"
-                    strokeWidth={2}
-                  />
-                </AreaChart>
-              </ResponsiveContainer>
-            </CardContent>
-          </Card>
-
-          {/* Flavor Preferences Chart */}
-          <Card className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm border-orange-200 dark:border-orange-700 animate-fade-in-scale">
-            <CardHeader>
-              <CardTitle className="text-gray-900 dark:text-white">
-                Flavor Preferences
-              </CardTitle>
-              <p className="text-sm text-gray-600 dark:text-gray-300">
-                Your favorite ice cream flavors
-              </p>
-            </CardHeader>
-            <CardContent>
-              <ResponsiveContainer width="100%" height={300}>
-                <PieChart>
-                  <Pie
-                    data={flavorPreferencesData}
-                    cx="50%"
-                    cy="50%"
-                    innerRadius={60}
-                    outerRadius={100}
-                    paddingAngle={5}
-                    dataKey="value"
-                  >
-                    {flavorPreferencesData.map((entry, index) => (
-                      <Cell key={`cell-${index}`} fill={entry.color} />
-                    ))}
-                  </Pie>
-                  <Tooltip
-                    contentStyle={{
-                      backgroundColor: "rgba(255, 255, 255, 0.9)",
-                      border: "1px solid #f3f4f6",
-                      borderRadius: "8px",
+                      backgroundColor: 'rgba(30, 41, 59, 0.95)',
+                      border: '1px solid rgb(147, 51, 234)',
+                      borderRadius: '8px',
+                      color: 'white'
                     }}
                   />
                   <Legend />
-                </PieChart>
+                  <Line 
+                    type="monotone" 
+                    dataKey="orders" 
+                    stroke="#8b5cf6" 
+                    strokeWidth={3}
+                    dot={{ fill: '#8b5cf6', strokeWidth: 2, r: 4 }}
+                    activeDot={{ r: 6, fill: '#8b5cf6' }}
+                  />
+                  <Line 
+                    type="monotone" 
+                    dataKey="amount" 
+                    stroke="#ec4899" 
+                    strokeWidth={3}
+                    dot={{ fill: '#ec4899', strokeWidth: 2, r: 4 }}
+                    activeDot={{ r: 6, fill: '#ec4899' }}
+                  />
+                </LineChart>
               </ResponsiveContainer>
-            </CardContent>
-          </Card>
+            </div>
+          </div>
+
+          {/* Favorite Flavors Chart */}
+          <div className="bg-white/80 dark:bg-slate-800/80 backdrop-blur-xl rounded-2xl p-6 shadow-lg border border-purple-200/50 dark:border-purple-800/40">
+            <div className="flex items-center justify-between mb-6">
+              <div>
+                <h3 className="text-xl font-semibold text-slate-800 dark:text-white">Favorite Flavors</h3>
+                <p className="text-sm text-slate-600 dark:text-slate-400">Your taste preferences</p>
+              </div>
+              <div className="flex items-center gap-2">
+                <Button variant="outline" size="sm" className="border-purple-200 dark:border-purple-800">
+                  <Download className="w-4 h-4 mr-1" />
+                  Export
+                </Button>
+              </div>
+            </div>
+            <div className="h-64">
+              <ResponsiveContainer width="100%" height="100%">
+                <RechartsPie>
+                  <Pie
+                    data={favoriteFlavors}
+                    cx="50%"
+                    cy="50%"
+                    labelLine={false}
+                    label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
+                    outerRadius={80}
+                    fill="#8884d8"
+                    dataKey="value"
+                  >
+                    {favoriteFlavors.map((entry, index) => (
+                      <Cell key={`cell-${index}`} fill={entry.color} />
+                    ))}
+                  </Pie>
+                  <Tooltip />
+                </RechartsPie>
+              </ResponsiveContainer>
+            </div>
+          </div>
         </div>
 
-        {/* Weekly Activity Chart */}
-        <Card className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm border-orange-200 dark:border-orange-700 mb-8 animate-fade-in-scale">
-          <CardHeader>
-            <CardTitle className="text-gray-900 dark:text-white">
-              Weekly Activity
-            </CardTitle>
-            <p className="text-sm text-gray-600 dark:text-gray-300">
-              Your activity patterns throughout the week
-            </p>
-          </CardHeader>
-          <CardContent>
-            <ResponsiveContainer width="100%" height={300}>
-              <BarChart data={weeklyActivityData}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#f3f4f6" />
-                <XAxis dataKey="day" stroke="#6b7280" />
-                <YAxis stroke="#6b7280" />
-                <Tooltip
-                  contentStyle={{
-                    backgroundColor: "rgba(255, 255, 255, 0.9)",
-                    border: "1px solid #f3f4f6",
-                    borderRadius: "8px",
-                  }}
-                />
-                <Legend />
-                <Bar dataKey="orders" fill="#f97316" radius={[4, 4, 0, 0]} />
-                <Bar dataKey="visits" fill="#ec4899" radius={[4, 4, 0, 0]} />
-              </BarChart>
-            </ResponsiveContainer>
-          </CardContent>
-        </Card>
-
-        {/* Store Performance */}
-        <Card className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm border-orange-200 dark:border-orange-700 mb-8 animate-fade-in-scale">
-          <CardHeader>
-            <CardTitle className="text-gray-900 dark:text-white">
-              Store Performance
-            </CardTitle>
-            <p className="text-sm text-gray-600 dark:text-gray-300">
-              Your favorite stores and their performance
-            </p>
-          </CardHeader>
-          <CardContent>
+        {/* Bottom Section */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          {/* Store Performance */}
+          <div className="bg-white/80 dark:bg-slate-800/80 backdrop-blur-xl rounded-2xl p-6 shadow-lg border border-purple-200/50 dark:border-purple-800/40">
+            <h3 className="text-xl font-semibold text-slate-800 dark:text-white mb-6">Store Performance</h3>
             <div className="space-y-4">
-              {storePerformanceData.map((store, index) => (
-                <div
-                  key={store.store}
-                  className="flex items-center justify-between p-4 bg-gradient-to-r from-orange-50/50 to-pink-50/50 dark:from-orange-950/20 dark:to-pink-950/20 rounded-lg"
-                >
-                  <div className="flex items-center space-x-4">
-                    <div className="w-10 h-10 bg-gradient-to-br from-orange-100 to-pink-100 dark:from-orange-900/30 dark:to-pink-900/30 rounded-lg flex items-center justify-center">
-                      <span className="text-lg">🏪</span>
+              {storePerformance.map((store, index) => (
+                <div key={index} className="flex items-center justify-between p-3 bg-purple-50/50 dark:bg-slate-700/50 rounded-lg">
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 bg-gradient-to-br from-purple-500 to-violet-600 rounded-lg flex items-center justify-center">
+                      <Store className="w-5 h-5 text-white" />
                     </div>
                     <div>
-                      <h4 className="font-semibold text-gray-900 dark:text-white">
-                        {store.store}
-                      </h4>
-                      <p className="text-sm text-gray-600 dark:text-gray-300">
-                        {store.distance}
-                      </p>
-                    </div>
-                  </div>
-                  <div className="flex items-center space-x-4">
-                    <div className="text-center">
-                      <p className="text-sm text-gray-600 dark:text-gray-300">
-                        Orders
-                      </p>
-                      <p className="font-semibold text-gray-900 dark:text-white">
-                        {store.orders}
-                      </p>
-                    </div>
-                    <div className="text-center">
-                      <p className="text-sm text-gray-600 dark:text-gray-300">
-                        Rating
-                      </p>
-                      <div className="flex items-center">
-                        <Star className="w-4 h-4 text-yellow-400 fill-current" />
-                        <span className="font-semibold text-gray-900 dark:text-white ml-1">
-                          {store.rating}
-                        </span>
+                      <h4 className="font-medium text-slate-800 dark:text-white">{store.name}</h4>
+                      <div className="flex items-center gap-1">
+                        <StarIcon className="w-4 h-4 text-yellow-400 fill-current" />
+                        <span className="text-sm text-slate-600 dark:text-slate-400">{store.ratings}</span>
                       </div>
                     </div>
+                  </div>
+                  <Badge className="bg-purple-100 text-purple-700 dark:bg-purple-900/20 dark:text-purple-400">
+                    {store.orders} orders
+                  </Badge>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Recent Orders */}
+          <div className="bg-white/80 dark:bg-slate-800/80 backdrop-blur-xl rounded-2xl p-6 shadow-lg border border-purple-200/50 dark:border-purple-800/40">
+            <h3 className="text-xl font-semibold text-slate-800 dark:text-white mb-6">Recent Orders</h3>
+            <div className="space-y-4">
+              {recentOrders.map((order) => (
+                <div key={order.id} className="flex items-center justify-between p-3 bg-purple-50/50 dark:bg-slate-700/50 rounded-lg">
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 bg-gradient-to-br from-pink-500 to-rose-600 rounded-lg flex items-center justify-center">
+                      <Gift className="w-5 h-5 text-white" />
+                    </div>
+                    <div>
+                      <h4 className="font-medium text-slate-800 dark:text-white">{order.flavor}</h4>
+                      <p className="text-sm text-slate-600 dark:text-slate-400">{order.store}</p>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Badge className={getStatusColor(order.status)}>
+                      {order.status.toUpperCase()}
+                    </Badge>
+                    <span className="text-sm font-medium text-slate-800 dark:text-white">{order.amount}</span>
+                    {order.rating > 0 && (
+                      <div className="flex items-center gap-1">
+                        <StarIcon className="w-4 h-4 text-yellow-400 fill-current" />
+                        <span className="text-sm text-slate-600 dark:text-slate-400">{order.rating}</span>
+                      </div>
+                    )}
                   </div>
                 </div>
               ))}
             </div>
-          </CardContent>
-        </Card>
-
-        {/* Recent Activity Section */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          {/* Recent Orders */}
-          <Card className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm border-orange-200 dark:border-orange-700 animate-fade-in-scale">
-            <CardHeader>
-              <CardTitle className="text-gray-900 dark:text-white">
-                Recent Orders
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              {recentOrders.map((order) => (
-                <div
-                  key={order.id}
-                  className="flex items-center justify-between p-3 bg-gradient-to-r from-orange-50/50 to-pink-50/50 dark:from-orange-950/20 dark:to-pink-950/20 rounded-lg"
-                >
-                  <div className="flex items-center space-x-3">
-                    <div className="w-8 h-8 bg-gradient-to-br from-orange-100 to-pink-100 dark:from-orange-900/30 dark:to-pink-900/30 rounded-lg flex items-center justify-center">
-                      <span className="text-sm">🍦</span>
-                    </div>
-                    <div>
-                      <p className="font-medium text-gray-900 dark:text-white">
-                        {order.flavor}
-                      </p>
-                      <p className="text-sm text-gray-600 dark:text-gray-300">
-                        {order.store}
-                      </p>
-                    </div>
-                  </div>
-                  <div className="text-right">
-                    <Badge className={getStatusColor(order.status)}>
-                      {order.status}
-                    </Badge>
-                    <p className="text-sm font-semibold text-gray-900 dark:text-white mt-1">
-                      {order.amount}
-                    </p>
-                  </div>
-                </div>
-              ))}
-              <Button
-                variant="outline"
-                className="w-full bg-gradient-to-r from-orange-50 to-pink-50 dark:from-orange-950/20 dark:to-pink-950/20 border-orange-200 dark:border-orange-700 hover:bg-orange-100 dark:hover:bg-orange-950/30"
-              >
-                View All Orders
-                <ArrowRight className="w-4 h-4 ml-2" />
-              </Button>
-            </CardContent>
-          </Card>
-
-          {/* Favorite Flavors */}
-          <Card className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm border-orange-200 dark:border-orange-700 animate-fade-in-scale">
-            <CardHeader>
-              <CardTitle className="text-gray-900 dark:text-white">
-                Favorite Flavors
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              {favoriteFlavors.map((flavor) => (
-                <div
-                  key={flavor.name}
-                  className="flex items-center justify-between p-3 bg-gradient-to-r from-orange-50/50 to-pink-50/50 dark:from-orange-950/20 dark:to-pink-950/20 rounded-lg"
-                >
-                  <div className="flex items-center space-x-3">
-                    <span className="text-2xl">{flavor.emoji}</span>
-                    <div>
-                      <p className="font-medium text-gray-900 dark:text-white">
-                        {flavor.name}
-                      </p>
-                      <div className="flex items-center">
-                        <Star className="w-4 h-4 text-yellow-400 fill-current" />
-                        <span className="text-sm text-gray-600 dark:text-gray-300 ml-1">
-                          {flavor.rating}
-                        </span>
-                      </div>
-                    </div>
-                  </div>
-                  <div className="text-right">
-                    <p className="text-sm text-gray-600 dark:text-gray-300">
-                      {flavor.orders} orders
-                    </p>
-                    <p className="text-xs text-gray-500 dark:text-gray-400">
-                      {flavor.lastOrdered}
-                    </p>
-                  </div>
-                </div>
-              ))}
-              <Button
-                variant="outline"
-                className="w-full bg-gradient-to-r from-orange-50 to-pink-50 dark:from-orange-950/20 dark:to-pink-950/20 border-orange-200 dark:border-orange-700 hover:bg-orange-100 dark:hover:bg-orange-950/30"
-              >
-                Browse Flavors
-                <ArrowRight className="w-4 h-4 ml-2" />
-              </Button>
-            </CardContent>
-          </Card>
-
-          {/* Nearby Stores */}
-          <Card className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm border-orange-200 dark:border-orange-700 animate-fade-in-scale">
-            <CardHeader>
-              <CardTitle className="text-gray-900 dark:text-white">
-                Nearby Stores
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              {nearbyStores.map((store) => (
-                <div
-                  key={store.name}
-                  className="p-3 bg-gradient-to-r from-orange-50/50 to-pink-50/50 dark:from-orange-950/20 dark:to-pink-950/20 rounded-lg"
-                >
-                  <div className="flex items-center justify-between mb-2">
-                    <h4 className="font-medium text-gray-900 dark:text-white">
-                      {store.name}
-                    </h4>
-                    <Badge className="bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300">
-                      {store.status}
-                    </Badge>
-                  </div>
-                  <div className="flex items-center justify-between text-sm">
-                    <div className="flex items-center space-x-2">
-                      <MapPin className="w-4 h-4 text-gray-400" />
-                      <span className="text-gray-600 dark:text-gray-300">
-                        {store.distance}
-                      </span>
-                    </div>
-                    <div className="flex items-center">
-                      <Star className="w-4 h-4 text-yellow-400 fill-current" />
-                      <span className="text-gray-600 dark:text-gray-300 ml-1">
-                        {store.rating}
-                      </span>
-                    </div>
-                  </div>
-                  <div className="flex flex-wrap gap-1 mt-2">
-                    {store.specialties.map((specialty, idx) => (
-                      <Badge
-                        key={idx}
-                        variant="outline"
-                        className="text-xs bg-orange-50 dark:bg-orange-950/20 border-orange-200 dark:border-orange-700 text-orange-700 dark:text-orange-300"
-                      >
-                        {specialty}
-                      </Badge>
-                    ))}
-                  </div>
-                </div>
-              ))}
-              <Button
-                variant="outline"
-                className="w-full bg-gradient-to-r from-orange-50 to-pink-50 dark:from-orange-950/20 dark:to-pink-950/20 border-orange-200 dark:border-orange-700 hover:bg-orange-100 dark:hover:bg-orange-950/30"
-              >
-                View All Stores
-                <ArrowRight className="w-4 h-4 ml-2" />
-              </Button>
-            </CardContent>
-          </Card>
+          </div>
         </div>
+
       </div>
     </div>
   );

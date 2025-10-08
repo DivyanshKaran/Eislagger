@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+
 import {
   Search,
   Star,
@@ -14,10 +15,11 @@ import {
   CheckCircle,
   XCircle,
 } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
+
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 
 // Custom styles for animations
 const customStyles = `
@@ -213,7 +215,7 @@ export default function ManufacturerEmailPage() {
                         </span>
                         <Badge
                           className={`ml-2 text-xs ${getPriorityColor(
-                            email.priority
+                            email.priority,
                           )}`}
                         >
                           {getPriorityIcon(email.priority)} {email.priority}
@@ -296,7 +298,7 @@ export default function ManufacturerEmailPage() {
                       <span>•</span>
                       <Badge
                         className={`text-xs ${getPriorityColor(
-                          selectedEmail.priority
+                          selectedEmail.priority,
                         )}`}
                       >
                         {getPriorityIcon(selectedEmail.priority)}

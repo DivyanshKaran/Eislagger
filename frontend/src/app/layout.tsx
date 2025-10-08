@@ -1,6 +1,11 @@
-import type { Metadata } from "next";
-import "./globals.css";
+import { ErrorBoundary } from "@/components/error/ErrorBoundary";
 import { ThemeProvider } from "@/components/theme-provider";
+import { AuthProvider } from "@/lib/auth-context";
+import { QueryProvider } from "@/providers/QueryProvider";
+
+import type { Metadata } from "next";
+
+import "./globals.css";
 
 export const metadata: Metadata = {
   title: "EisLager Pro - Ice Cream Management Platform",
@@ -61,11 +66,17 @@ export default function RootLayout({
         <link rel="manifest" href="/manifest.json" />
       </head>
       <body className="min-h-screen bg-background font-sans antialiased">
-        <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
-          <div className="relative flex min-h-screen flex-col">
-            <div className="flex-1">{children}</div>
-          </div>
-        </ThemeProvider>
+        <ErrorBoundary>
+          <QueryProvider>
+            <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
+              <AuthProvider>
+                <div className="relative flex min-h-screen flex-col">
+                  <div className="flex-1">{children}</div>
+                </div>
+              </AuthProvider>
+            </ThemeProvider>
+          </QueryProvider>
+        </ErrorBoundary>
       </body>
     </html>
   );

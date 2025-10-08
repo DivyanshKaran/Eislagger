@@ -1,16 +1,10 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
+// Prisma schema for the Sales Service
+// This schema handles shops, transactions, orders, and customer feedback
 
-// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
-// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
-
-// 1. Define the generator for the Prisma Client
 generator client {
   provider = "prisma-client-js"
 }
 
-// 2. Define the datasource (your PostgreSQL database)
-// This should point to the dedicated database for the Sales Service.
 datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
@@ -23,31 +17,64 @@ model Shop {
   id        String      @id @default(uuid())
   name      String
   location  String
+  address   String?
+  phone     String?
+  email     String?
+  managerId String?     // Manager's user ID from Auth service
   
-  stock     ShopStock[]
-  transactions PosTransaction[]
+  // Shop details
+  hours     Json?       // {"monday": {"open": "09:00", "close": "21:00"}, ...}
+  services  String[]    // ["dine-in", "takeout", "delivery"]
+  capacity  Int?        // Maximum capacity
+  status    ShopStatus  @default(Active)
+  
+  createdAt DateTime    @default(now())
+  updatedAt DateTime    @updatedAt
+  
+  // Relations
+  stock         ShopStock[]
+  transactions  PosTransaction[]
   purchaseOrders PurchaseOrder[]
-  feedback  Feedback[]
+  reviews       Review[]
+  
+  @@map("shops")
 }
 
 // Represents the stock of a specific flavor at a specific shop
 model ShopStock {
   id          String   @id @default(uuid())
   shopId      String
-  shop        Shop     @relation(fields: [shopId], references: [id])
-
-  // --- Foreign Keys from other services ---
-  // We do NOT have a Flavor model. We trust the ID from the Inventory Service.
+  shop        Shop     @relation(fields: [shopId], references: [id], onDelete: Cascade)
+  
+  // Flavor information (cached from Inventory Service)
   flavorId    String
-  
-  // Denormalized data for performance and independence
   flavorName  String
-  pricePerUnit Decimal @db.Decimal(10, 2) // Retail price (e.g., per scoop)
+  flavorDescription String?
+  category    String   // "Classic", "Chocolate", "International", "Premium", "Seasonal"
   
-  quantity    Float    // The current stock level (e.g., in scoops or tubs)
-  unit        String   // "Scoops", "Tubs", etc.
+  // Pricing and stock
+  pricePerUnit Decimal @db.Decimal(10, 2) // Retail price per scoop/tub
+  costPerUnit  Decimal @db.Decimal(10, 2) // Cost price
   
-  @@unique([shopId, flavorId]) // A shop can only have one stock entry per flavor
+  quantity    Float    // Current stock level
+  minQuantity Float    // Minimum stock level for alerts
+  maxQuantity Float    // Maximum stock level
+  unit        String   // "scoops", "tubs", "liters", "gallons"
+  
+  // Stock status
+  isAvailable Boolean  @default(true)
+  allergies   String[]  // ["dairy", "nuts", "eggs"]
+  expirationDate DateTime?
+  
+  // Relations
+  transactionItems TransactionItem[]
+  purchaseOrderItems PurchaseOrderItem[]
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  @@unique([shopId, flavorId])
+  @@map("shop_stock")
 }
 
 // Represents a single transaction at the Point of Sale
@@ -56,86 +83,185 @@ model PosTransaction {
   shopId      String
   shop        Shop     @relation(fields: [shopId], references: [id])
   
-  // --- Foreign Keys from other services ---
-  // From the Clerk's JWT
-  clerkId     String   
-  // Optional: From the Patron's JWT if they are a registered user
-  patronId    String?  
+  // Transaction details
+  transactionNumber String // Human-readable transaction number
   
+  // User information (from JWT tokens)
+  clerkId     String   // Clerk who processed the transaction
+  patronId    String?  // Customer ID if registered user
+  
+  // Payment information
+  subtotal    Decimal  @db.Decimal(12, 2)
+  taxAmount   Decimal  @db.Decimal(12, 2) @default(0)
+  discountAmount Decimal @db.Decimal(12, 2) @default(0)
   totalAmount Decimal  @db.Decimal(12, 2)
-  createdAt   DateTime @default(now())
-
+  
+  // Payment method and status
+  paymentMethod String // "cash", "card", "digital_wallet"
+  paymentStatus PaymentStatus @default(Completed)
+  
+  // Customer information (for non-registered users)
+  customerName String?
+  customerEmail String?
+  customerPhone String?
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  // Relations
   items       TransactionItem[]
+  
+  @@map("pos_transactions")
 }
 
 // An item within a POS transaction
 model TransactionItem {
   id            String   @id @default(uuid())
   transactionId String
-  transaction   PosTransaction @relation(fields: [transactionId], references: [id])
+  transaction   PosTransaction @relation(fields: [transactionId], references: [id], onDelete: Cascade)
   
+  // Stock information
+  stockId       String
+  stock         ShopStock @relation(fields: [stockId], references: [id])
+  
+  // Item details
   flavorId      String
   flavorName    String
-  quantity      Int
-  unitPrice     Decimal  @db.Decimal(10, 2) // Price at the time of sale
+  quantity      Int      // Number of scoops/tubs sold
+  unitPrice     Decimal  @db.Decimal(10, 2) // Price at time of sale
+  totalPrice    Decimal  @db.Decimal(10, 2) // quantity * unitPrice
+  
+  // Customizations
+  customizations String[] // ["extra_chocolate", "no_whip"]
+  
+  createdAt DateTime @default(now())
+  
+  @@map("transaction_items")
 }
 
-// A purchase order sent from a shop to a factory
+// A purchase order sent from a shop to request inventory
 model PurchaseOrder {
   id        String      @id @default(uuid())
   shopId    String
   shop      Shop        @relation(fields: [shopId], references: [id])
-  clerkId   String      // The clerk who created the order
+  clerkId   String      // Clerk who created the order
   
+  // Order details
+  orderNumber String    // Human-readable order number
   status    PurchaseOrderStatus @default(Pending)
-  createdAt DateTime    @default(now())
+  priority  Priority   @default(Normal)
   
-  // --- Denormalized data from the Logistics Service ---
-  // These fields are populated by listening to Kafka events.
-  shipmentId            String?   @unique // The ID from the Logistics Service
-  shipmentStatus        ShipmentStatus? @default(Pending)   // e.g., "In Transit", "Delivered"
-  estimatedDeliveryDate DateTime?
-
-  items     PurchaseOrderItem[]
+  // Calculated totals
+  subtotal    Decimal  @db.Decimal(12, 2) @default(0)
+  shippingAmount Decimal @db.Decimal(12, 2) @default(0)
+  totalAmount Decimal  @db.Decimal(12, 2) @default(0)
+  
+  // Note and tracking
+  notes      String?
+  trackingNumber String?
+  
+  createdAt DateTime    @default(now())
+  updatedAt DateTime    @updatedAt
+  fulfilledAt DateTime?
+  
+  // Relations
+  items      PurchaseOrderItem[]
+  
+  @@map("purchase_orders")
 }
 
 // An item within a purchase order
 model PurchaseOrderItem {
   id              String   @id @default(uuid())
   purchaseOrderId String
-  purchaseOrder   PurchaseOrder @relation(fields: [purchaseOrderId], references: [id])
+  purchaseOrder   PurchaseOrder @relation(fields: [purchaseOrderId], references: [id], onDelete: Cascade)
   
+  // Stock information
+  stockId         String
+  stock           ShopStock @relation(fields: [stockId], references: [id])
+  
+  // Item details
   flavorId        String
   flavorName      String
-  quantity        Float
-  unit            String   // e.g., "Liters"
+  quantity        Float    // Amount to order
+  unit            String   // "liters", "gallons", "tubs"
+  unitCost        Decimal  @db.Decimal(10, 2) // Cost per unit
+  totalCost       Decimal  @db.Decimal(12, 2) // quantity * unitCost
+  
+  createdAt DateTime @default(now())
+  
+  @@map("purchase_order_items")
 }
 
-// Feedback submitted by a patron for a specific shop
-model Feedback {
+// Customer reviews and feedback for shops
+model Review {
   id        String   @id @default(uuid())
-  shopId    String
+  shopId      String
   shop      Shop     @relation(fields: [shopId], references: [id])
   
-  patronId  String?
-  rating    Int      // e.g., 1 to 5
+  // Review details
+  patronId  String?  // Customer ID if registered
+  customerName String? // Name if anonymous
+  customerEmail String? // Email if anonymous
+  
+  rating    Int      // 1 to 5 stars
+  
+  // Review content
+  title     String?
   comment   String?
+  
+  // Review categories
+  service   Int?     // 1 to 5 for service quality
+  quality   Int?     // 1 to 5 for product quality
+  cleanliness Int?   // 1 to 5 for shop cleanliness
+  
+  // Response from manager
+  managerResponse String?
+  managerResponseDate DateTime?
+  
+  // Helpful votes
+  helpfulVotes Int @default(0)
+  
+  // Verification
+  isVerified Boolean @default(false)
+  
   createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  @@map("reviews")
 }
 
 // --- ENUMS ---
+
+enum ShopStatus {
+  Active
+  Inactive
+  Maintenance
+  Closed
+}
+
+enum PaymentStatus {
+  Pending
+  Processing
+  Completed
+  Failed
+  Refunded
+}
+
 enum PurchaseOrderStatus {
   Pending
-  Accepted // The order has been accepted and a shipment has been created.
-  Rejected
-  Fulfilled
-}
-
-enum ShipmentStatus {
-  Pending
-  InTransit
+  Submitted
+  Approved
+  Processing
+  Shipped
   Delivered
+  Cancelled
+  Rejected
 }
 
-
-
+enum Priority {
+  Low
+  Normal
+  High
+  Urgent
+}

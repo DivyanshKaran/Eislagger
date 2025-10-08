@@ -22,11 +22,13 @@ datasource db {
 
 // Model for core user authentication data
 model User {
+
   id            String      @id @default(uuid())
   email         String      @unique
   passwordHash  String
   role          Role        @default(Patron) // Using the Role enum for type safety
   createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
 
   // Relation to UserProfile
   profile       UserProfile? // A user might have a profile
@@ -34,10 +36,12 @@ model User {
 
 // Model for additional user profile information
 model UserProfile {
-  userId      String  @id
-  fullName    String?
+  userId      String    @id
+  name    String?
   avatarUrl   String?
   phoneNumber String?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
 
   // One-to-one relation back to the User model
   user        User    @relation(fields: [userId], references: [id], onDelete: Cascade)

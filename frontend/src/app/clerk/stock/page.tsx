@@ -1,5 +1,6 @@
 "use client";
 import { useState } from "react";
+
 import {
   Gauge,
   Package,
@@ -139,7 +140,7 @@ const initialInventory = [
 
 const expiring = initialInventory.filter(
   (item) =>
-    new Date(item.expiry) < new Date(Date.now() + 7 * 24 * 60 * 60 * 1000)
+    new Date(item.expiry) < new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
 );
 
 function getStatusBadge(status: string) {
@@ -188,7 +189,7 @@ export default function ClerkStockPage() {
   const filteredInventory = inventory.filter(
     (item) =>
       item.name.toLowerCase().includes(search.toLowerCase()) ||
-      item.sku.toLowerCase().includes(search.toLowerCase())
+      item.sku.toLowerCase().includes(search.toLowerCase()),
   );
 
   return (
@@ -204,10 +205,10 @@ export default function ClerkStockPage() {
           <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-gradient-to-br from-blue-300/30 to-pink-200/30 dark:from-blue-300/20 dark:to-pink-300/20 rounded-full blur-3xl animate-float delay-1000"></div>
           <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-gradient-to-br from-purple-200/20 to-pink-200/20 dark:from-purple-300/10 dark:to-pink-300/10 rounded-full blur-3xl animate-float delay-500"></div>
         </div>
-        <div className="relative flex flex-col h-screen z-10">
-          <main className="flex-1 flex flex-col p-8 max-w-5xl mx-auto gap-12 overflow-y-auto scrollbar-none">
+        <div className="relative z-10">
+          <main className="p-8 max-w-5xl mx-auto space-y-12">
             {/* KPIs Row */}
-            <div className="w-full grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 2xl:grid-cols-8 gap-6 gap-y-6 mb-4">
+            <div className="w-full grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 2xl:grid-cols-8 gap-6 gap-y-6">
               {kpis.map((kpi, i) => (
                 <div
                   key={i}
@@ -277,7 +278,7 @@ export default function ClerkStockPage() {
               </ResponsiveContainer>
             </div>
             {/* Search Bar */}
-            <div className="w-full max-w-xs mb-4">
+            <div className="w-full max-w-xs">
               <div className="relative">
                 <input
                   value={search}

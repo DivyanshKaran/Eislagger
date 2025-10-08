@@ -1,0 +1,323 @@
+// Prisma schema for the Admin Service
+// This schema handles administrative functions, monitoring, audit logs, and system configuration
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// --- ADMIN SERVICE MODELS ---
+
+// User management and analytics (extends Auth service data)
+model UserSnapshot {
+  id              String   @id @default(uuid())
+  userId          String   // Reference to user in Auth service
+  
+  // User details snapshot
+  name            String
+  email           String
+  role            String
+  
+  // Status and metrics
+  isActive        Boolean
+  lastLoginAt     DateTime?
+  totalLogins     Int      @default(0)
+  totalOrders     Int      @default(0)
+  totalRevenue    Decimal  @db.Decimal(12, 2) @default(0)
+  
+  // Snapshot metadata
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  
+  @@map("user_snapshots")
+  @@index([userId])
+}
+
+// Audit logs for platform-wide activities
+model AuditLog {
+  id              String   @id @default(uuid())
+  
+  // Actor information
+  userId          String?  // User who performed the action
+  userRole        String?  // User's role at time of action
+  sessionId       String?  // Session identifier
+  
+  // Action details
+  action          String   // Action performed (CREATE, UPDATE, DELETE, LOGIN, etc.)
+  resource        String   // Resource affected (USER, ORDER, FLASH, etc.)
+  resourceId      String?  // ID of the specific resource
+  
+  // Request context
+  ipAddress       String?
+  userAgent       String?
+  endpoint        String?  // API endpoint accessed
+  
+  // Changes tracking
+  oldValues       Json?    // Previous values (for updates)
+  newValues       Json?    // New values (for creates/updates)
+  
+  // Metadata
+  status          AuditStatus @default(SUCCESS)
+  message         String?
+  tags            String[] // Tags for categorization
+  
+  createdAt       DateTime @default(now())
+  
+  @@map("audit_logs")
+  @@index([userId])
+  @@index([action])
+  @@index([resource])
+  @@index([createdAt])
+}
+
+// System metadata and configuration
+model SystemConfig {
+  id              String   @id @default(uuid())
+  
+  // Configuration details
+  key             String   @unique
+  value           Json
+  description     String?
+  
+  // Metadata
+  category        ConfigCategory @default(GENERAL)
+  isSensitive     Boolean  @default(false)
+  isEditable      Boolean  @default(true)
+  
+  // Version tracking
+  version         Int      @default(1)
+  updatedBy       String?  // User ID who made the change
+  
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  
+  @@map("system_config")
+}
+
+// System broadcasts and announcements
+model SystemBroadcast {
+  id              String   @id @default(uuid())
+  
+  // Content
+  title           String
+  message         String
+  type            BroadcastType @default(INFO)
+  
+  // Targeting
+  targetRoles     String[] // Roles that can see this broadcast
+  targetUsers     String[] // Specific user IDs
+  
+  // Scheduling
+  scheduledAt     DateTime?
+  expiresAt       DateTime?
+  
+  // Status
+  status          BroadcastStatus @default(DRAFT)
+  isActive        Boolean  @default(true)
+  
+  // Analytics
+  views           Int      @default(0)
+  acknowledgments Int      @default(0)
+  
+  // Metadata
+  createdBy       String   // Admin user ID
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  
+  @@map("system_broadcasts")
+  @@index([status])
+  @@index([scheduledAt])
+}
+
+// System metrics and performance data
+model SystemMetric {
+  id              String   @id @default(uuid())
+  
+  // Metric details
+  service         SystemService // Which service the metric is from
+  metric          String   // Metric name (CPU_USAGE, MEMORY_USAGE, etc.)
+  value           Float    // Metric value
+  
+  // Context
+  timestamp       DateTime @default(now())
+  
+  // Metadata
+  tags            Json?    // Additional context as JSON
+  
+  @@map("system_metrics")
+  @@index([service])
+  @@index([metric])
+  @@index([timestamp])
+}
+
+// Maintenance window scheduling
+model MaintenanceWindow {
+  id              String   @id @default(uuid())
+  
+  // Schedule details
+  title           String
+  description     String?
+  
+  // Timing
+  scheduledStart  DateTime
+  scheduledEnd    DateTime
+  actualStart     DateTime?
+  actualEnd       DateTime?
+  
+  // Status
+  status          MaintenanceStatus @default(SCHEDULED)
+  
+  // Impact
+  affectedServices String[] // Services that will be affected
+  
+  // Notifications
+  notifyUsers     Boolean  @default(true)
+  advanceNotice   Int      @default(24) // Hours before window
+  
+  // Metadata
+  createdBy       String   // Admin user ID
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  
+  @@map("maintenance_windows")
+  @@index([scheduledStart])
+  @@index([status])
+}
+
+// Security events and alerts
+model SecurityEvent {
+  id              String   @id @default(uuid())
+  
+  // Event details
+  eventType       SecurityEventType
+  severity        SecuritySeverity @default(MEDIUM)
+  
+  // Actor information
+  userId          String?  // User involved (if any)
+  ipAddress       String?
+  userAgent       String?
+  
+  // Event context
+  description     String
+  endpoint        String?
+  
+  // Status
+  status          SecurityEventStatus @default(OPEN)
+  resolvedAt      DateTime?
+  resolvedBy      String?  // Admin user ID who resolved
+  
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  
+  @@map("security_events")
+  @@index([eventType])
+  @@index([severity])
+  @@index([status])
+}
+
+// Theme configuration for the platform
+model ThemeConfig {
+  id              String   @id @default(uuid())
+  
+  // Theme details
+  name            String   @unique
+  displayName     String
+  description     String?
+  
+  // Theme properties
+  colors          Json     // Color palette configuration
+  fonts           Json     // Font configuration
+  layout          Json     // Layout configuration
+  
+  // Status
+  isDefault       Boolean  @default(false)
+  isActive        Boolean  @default(true)
+  
+  // Metadata
+  createdBy       String   // User ID who created the theme
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  
+  @@map("theme_configs")
+}
+
+// --- ENUMS ---
+
+enum AuditStatus {
+  SUCCESS
+  FAILURE
+  WARNING
+}
+
+enum ConfigCategory {
+  GENERAL
+  SECURITY
+  PERFORMANCE
+  FEATURE_FLAGS
+  INTEGRATION
+  UI_THEMES
+}
+
+enum BroadcastType {
+  INFO
+  WARNING
+  MAINTENANCE
+  ANNOUNCEMENT
+  PROMOTION
+}
+
+enum BroadcastStatus {
+  DRAFT
+  SCHEDULED
+  ACTIVE
+  EXPIRED
+  CANCELLED
+}
+
+enum SystemService {
+  AUTH_SERVICE
+  SALES_SERVICE
+  INVENTORY_SERVICE
+  ADMIN_SERVICE
+  COMMUNICATIONS_SERVICE
+  ANALYTICS_SERVICE
+  FILE_UPLOAD_SERVICE
+}
+
+enum MaintenanceStatus {
+  SCHEDULED
+  IN_PROGRESS
+  COMPLETED
+  CANCELLED
+  FAILED
+}
+
+enum SecurityEventType {
+  FAILED_LOGIN
+  SUSPICIOUS_ACTIVITY
+  BRUTE_FORCE_ATTEMPT
+  UNAUTHORIZED_ACCESS
+  DATA_BREACH
+  SYSTEM_INTRUSION
+  MALWARE_DETECTION
+}
+
+enum SecuritySeverity {
+  LOW
+  MEDIUM
+  HIGH
+  CRITICAL
+}
+
+enum SecurityEventStatus {
+  OPEN
+  INVESTIGATING
+  RESOLVED
+  FALSE_POSITIVE
+  ESCALATED
+}
+

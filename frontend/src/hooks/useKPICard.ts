@@ -1,10 +1,11 @@
-import { useState, useCallback } from 'react';
-import { KPIData } from './useDashboardData';
+import { useState, useCallback } from "react";
+
+import type { KPIData } from "@/types";
 
 export interface UseKPICardProps {
   kpi: KPIData;
-  onExpand?: (id: number) => void;
-  onCollapse?: (id: number) => void;
+  onExpand?: (id: string) => void;
+  onCollapse?: (id: string) => void;
 }
 
 export function useKPICard({ kpi, onExpand, onCollapse }: UseKPICardProps) {
@@ -12,15 +13,15 @@ export function useKPICard({ kpi, onExpand, onCollapse }: UseKPICardProps) {
   const [isLoading, setIsLoading] = useState(false);
 
   const handleToggleExpanded = useCallback(() => {
-    setIsExpanded(prev => {
+    setIsExpanded((prev) => {
       const newExpanded = !prev;
-      
+
       if (newExpanded) {
         onExpand?.(kpi.id);
       } else {
         onCollapse?.(kpi.id);
       }
-      
+
       return newExpanded;
     });
   }, [kpi.id, onExpand, onCollapse]);
@@ -29,10 +30,10 @@ export function useKPICard({ kpi, onExpand, onCollapse }: UseKPICardProps) {
     setIsLoading(true);
     try {
       // Simulate API call for refreshing KPI data
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      await new Promise((resolve) => setTimeout(resolve, 1000));
       // In real implementation, this would call a service to refresh the specific KPI
     } catch (error) {
-      console.error('Failed to refresh KPI:', error);
+      console.error("Failed to refresh KPI:", error);
     } finally {
       setIsLoading(false);
     }
@@ -54,13 +55,13 @@ export function useKPICard({ kpi, onExpand, onCollapse }: UseKPICardProps) {
     };
 
     const blob = new Blob([JSON.stringify(reportData, null, 2)], {
-      type: 'application/json',
+      type: "application/json",
     });
-    
+
     const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
+    const a = document.createElement("a");
     a.href = url;
-    a.download = `${kpi.title.toLowerCase().replace(/\s+/g, '_')}_report.json`;
+    a.download = `${kpi.title.toLowerCase().replace(/\s+/g, "_")}_report.json`;
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);
@@ -68,21 +69,21 @@ export function useKPICard({ kpi, onExpand, onCollapse }: UseKPICardProps) {
   }, [kpi]);
 
   const getProgressColor = useCallback((progress: number) => {
-    if (progress >= 90) return 'text-green-600';
-    if (progress >= 70) return 'text-yellow-600';
-    return 'text-red-600';
+    if (progress >= 90) return "text-green-600";
+    if (progress >= 70) return "text-yellow-600";
+    return "text-red-600";
   }, []);
 
   const getPriorityColor = useCallback((priority: string) => {
     switch (priority) {
-      case 'high':
-        return 'bg-red-100 text-red-800';
-      case 'medium':
-        return 'bg-yellow-100 text-yellow-800';
-      case 'low':
-        return 'bg-green-100 text-green-800';
+      case "high":
+        return "bg-red-100 text-red-800";
+      case "medium":
+        return "bg-yellow-100 text-yellow-800";
+      case "low":
+        return "bg-green-100 text-green-800";
       default:
-        return 'bg-gray-100 text-gray-800';
+        return "bg-gray-100 text-gray-800";
     }
   }, []);
 

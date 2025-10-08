@@ -1,412 +1,332 @@
 "use client";
 
-import { ClerkKPICard } from "@/components/clerk/KPICard";
+import { useState } from "react";
+import { useAuth } from "@/lib/auth-context";
+import { useStore, useStoreInventory } from "@/hooks/useStores";
+import { useOrders } from "@/hooks/useOrders";
+import type { Store as StoreType } from "@/types/models";
+
 import {
   DollarSign,
   Store,
-  Gauge,
-  CheckCircle,
-  Plus,
+  Package,
+  TrendingUp,
   ShoppingCart,
-  X,
+  AlertTriangle,
+  CheckCircle,
+  Clock,
+  Users,
+  Zap,
 } from "lucide-react";
-import {
-  LineChart,
-  Line,
-  XAxis,
-  YAxis,
-  Tooltip,
-  ResponsiveContainer,
-  BarChart,
-  Bar,
-} from "recharts";
+
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Skeleton } from "@/components/ui/skeleton";
 
 export default function ClerkDashboard() {
-  // KPIs
+  const { user } = useAuth();
+  
+  // Mock shop ID for demonstration - in real app this would come from user's shop assignment
+  const currentShopId = "1";
+
+  // Use the new hooks for data fetching
+  const { data: shop, isLoading: shopLoading, error: shopError } = useStore(currentShopId);
+  const { data: inventory = [], isLoading: inventoryLoading } = useStoreInventory(currentShopId);
+  const { data: recentOrders = [], isLoading: ordersLoading } = useOrders({ 
+    page: 1,
+    limit: 10,
+    // Add shop filter when backend supports it
+  });
+
+  const isLoading = shopLoading || inventoryLoading || ordersLoading;
+  const error = shopError;
+
+  if (isLoading) {
+    return (
+      <div className="space-y-6">
+        <div className="flex justify-between items-center">
+          <Skeleton className="h-8 w-64" />
+          <Skeleton className="h-10 w-32" />
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+          {[...Array(4)].map((_, i) => (
+            <Skeleton key={i} className="h-32" />
+          ))}
+        </div>
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          {[...Array(4)].map((_, i) => (
+            <Skeleton key={i} className="h-64" />
+          ))}
+        </div>
+      </div>
+    );
+  }
+
+  if (error || !shop) {
+    return (
+      <Alert>
+        <AlertTriangle className="h-4 w-4" />
+        <AlertDescription>
+          {error?.message || "Failed to load dashboard data"}
+        </AlertDescription>
+      </Alert>
+    );
+  }
+
+  // Calculate KPIs
+  const todaySales = recentOrders.reduce((sum, order) => sum + order.total, 0);
+  const avgTransactionValue = recentOrders.length > 0 
+    ? todaySales / recentOrders.length 
+    : 0;
+  const lowStockItems = inventory.filter(item => item.stock < item.minQuantity).length;
+  const outOfStockItems = inventory.filter(item => item.quantity <= 0).length;
+
   const kpis = [
     {
-      title: "Sales Per Hour",
-      value: "₹2,300",
-      change: "+8%",
-      changeType: "increase" as const,
-      icon: <Gauge className="w-6 h-6" />,
-      subtitle: "Today",
-    },
-    {
-      title: "Avg. Transaction Value",
-      value: "₹480",
-      change: "+3%",
+      title: "Today's Sales",
+      value: `$${todaySales.toFixed(2)}`,
+      change: "+12%",
       changeType: "increase" as const,
       icon: <DollarSign className="w-6 h-6" />,
-      subtitle: "ATV",
+      subtitle: "This shift",
     },
     {
-      title: "Items Per Transaction",
-      value: "3.2",
-      change: "+0.4",
+      title: "Avg Transaction",
+      value: `$${avgTransactionValue.toFixed(2)}`,
+      change: "+5%",
       changeType: "increase" as const,
-      icon: <Store className="w-6 h-6" />,
-      subtitle: "IPT",
+      icon: <TrendingUp className="w-6 h-6" />,
+      subtitle: "ATV increased",
     },
     {
-      title: "Conversion Rate",
-      value: "41%",
-      change: "+2%",
-      changeType: "increase" as const,
-      icon: <CheckCircle className="w-6 h-6" />,
-      subtitle: "Customer Conversion",
-    },
-    {
-      title: "Upsell Rate",
-      value: "18%",
-      change: "+1%",
-      changeType: "increase" as const,
-      icon: <Plus className="w-6 h-6" />,
-      subtitle: "Add-on Sales",
-    },
-    {
-      title: "Total Transactions",
-      value: "57",
-      change: "+5",
+      title: "Items Sold",
+      value: recentOrders.reduce((sum, order) => 
+        sum + order.items.reduce((itemsSum, item) => itemsSum + item.quantity, 0), 0).toString(),
+      change: "+8%",
       changeType: "increase" as const,
       icon: <ShoppingCart className="w-6 h-6" />,
       subtitle: "Today",
     },
     {
-      title: "Refund Rate",
-      value: "1.2%",
-      change: "-0.2%",
-      changeType: "decrease" as const,
-      icon: <X className="w-6 h-6" />,
-      subtitle: "Today",
-    },
-    {
-      title: "Customer Satisfaction",
-      value: "94%",
-      change: "+4%",
-      changeType: "increase" as const,
-      icon: <CheckCircle className="w-6 h-6" />,
-      subtitle: "Surveyed",
+      title: "Low Stock",
+      value: lowStockItems.toString(),
+      change: lowStockItems > 0 ? "needs attention" : "all good",
+      changeType: lowStockItems > 0 ? "decrease" as const : "increase" as const,
+      icon: <Package className="w-6 h-6" />,
+      subtitle: "inventory alert",
     },
   ];
 
-  // Weekly sales line chart
-  const weeklySales = [
-    { day: "Mon", sales: 12000 },
-    { day: "Tue", sales: 15000 },
-    { day: "Wed", sales: 18000 },
-    { day: "Thu", sales: 17000 },
-    { day: "Fri", sales: 21000 },
-    { day: "Sat", sales: 24000 },
-    { day: "Sun", sales: 20000 },
-  ];
-  // Top flavor bar chart
-  const topFlavors = [
-    { name: "Choco Burst", sales: 32 },
-    { name: "Mango Swirl", sales: 28 },
-    { name: "Vanilla Dream", sales: 20 },
-    { name: "Raspberry Delight", sales: 12 },
-    { name: "Others", sales: 8 },
-  ];
-  // Today's sales trends (hourly)
-  const todaysTrends = [
-    { hour: "10 AM", sales: 1200 },
-    { hour: "11 AM", sales: 1800 },
-    { hour: "12 PM", sales: 2400 },
-    { hour: "1 PM", sales: 2100 },
-    { hour: "2 PM", sales: 1600 },
-    { hour: "3 PM", sales: 1900 },
-    { hour: "4 PM", sales: 2200 },
-    { hour: "5 PM", sales: 2800 },
-    { hour: "6 PM", sales: 3200 },
-    { hour: "7 PM", sales: 2600 },
-  ];
-  // Daily sales for this month (for line chart)
-  const dailySalesMonth = [
-    { day: 1, sales: 12000 },
-    { day: 2, sales: 15000 },
-    { day: 3, sales: 18000 },
-    { day: 4, sales: 17000 },
-    { day: 5, sales: 21000 },
-    { day: 6, sales: 24000 },
-    { day: 7, sales: 20000 },
-    { day: 8, sales: 22000 },
-    { day: 9, sales: 19500 },
-    { day: 10, sales: 25000 },
-    { day: 11, sales: 23000 },
-    { day: 12, sales: 21000 },
-    { day: 13, sales: 26000 },
-    { day: 14, sales: 27000 },
-    { day: 15, sales: 22500 },
-    { day: 16, sales: 24000 },
-    { day: 17, sales: 25500 },
-    { day: 18, sales: 26500 },
-    { day: 19, sales: 27500 },
-    { day: 20, sales: 28500 },
-    { day: 21, sales: 29500 },
-    { day: 22, sales: 30500 },
-    { day: 23, sales: 31500 },
-    { day: 24, sales: 32500 },
-    { day: 25, sales: 33500 },
-    { day: 26, sales: 34500 },
-    { day: 27, sales: 35500 },
-    { day: 28, sales: 36500 },
-    { day: 29, sales: 37500 },
-    { day: 30, sales: 38500 },
-  ];
-  // Weekly trends bar graph data
-  const weeklyTrends = [
-    { day: "Mon", sales: 12000 },
-    { day: "Tue", sales: 15000 },
-    { day: "Wed", sales: 18000 },
-    { day: "Thu", sales: 17000 },
-    { day: "Fri", sales: 21000 },
-    { day: "Sat", sales: 24000 },
-    { day: "Sun", sales: 20000 },
-  ];
-  // Flavor sales heatmap data (flavors x days)
-  const flavorNames = ["Choco", "Mango", "Vanilla", "Strawberry", "Hazelnut"];
-  const days = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
-  const flavorHeatmap = [
-    [12, 15, 18, 17, 21, 24, 20], // Choco
-    [9, 11, 14, 13, 16, 19, 15], // Mango
-    [7, 8, 10, 9, 12, 13, 11], // Vanilla
-    [5, 6, 8, 7, 9, 10, 8], // Strawberry
-    [3, 4, 5, 4, 6, 7, 5], // Hazelnut
-  ];
   return (
-    <div className="flex flex-col gap-8">
-      {/* KPIs Row */}
-      <div className="w-full max-w-7xl mx-auto grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 2xl:grid-cols-8 gap-6 gap-y-6 mb-4">
-        {kpis.map((kpi, i) => (
-          <ClerkKPICard key={i} {...kpi} />
+    <div className="space-y-6">
+      {/* Header */}
+      <div className="flex justify-between items-center">
+        <div>
+          <h1 className="text-3xl font-bold text-gradient">
+            {shop.name} Dashboard
+          </h1>
+          <p className="text-muted-foreground">
+            Welcome back, {user?.name}! Here's your shop overview for today.
+          </p>
+        </div>
+        <div className="flex gap-2">
+          <Button variant="outline">
+
+            
+            <Clock className="w-4 h-4 mr-2" />
+            Shifts Management
+          </Button>
+          <Button>
+            <ShoppingCart className="w-4 h-4 mr-2" />
+            Process Sale
+          </Button>
+        </div>
+      </div>
+
+      {/* Alert Cards */}
+      {(lowStockItems > 0 || outOfStockItems > 0) && (
+        <Alert>
+          <AlertTriangle className="h-4 w-4" />
+          <AlertDescription>
+            <strong>Inventory Alert:</strong> {lowStockItems} items are running low, 
+            {outOfStockItems > 0 && ` ${outOfStockItems} items are out of stock`}. 
+            Consider placing a purchase order.
+          </AlertDescription>
+        </Alert>
+      )}
+
+      {/* KPIs */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        {kpis.map((kpi, index) => (
+          <Card key={kpi.title} className="hover:shadow-lg transition-shadow">
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">
+                {kpi.title}
+              </CardTitle>
+              {kpi.icon}
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">{kpi.value}</div>
+              <p className="text-xs text-muted-foreground">
+                <span className={`${
+                  kpi.changeType === "increase" ? "text-green-600" : "text-red-600"
+                }`}>
+                  {kpi.change}
+                </span>{" "}
+                {kpi.subtitle}
+              </p>
+            </CardContent>
+          </Card>
         ))}
       </div>
-      {/* Daily Sales This Month Line Chart (replaces Total Sales Today card) */}
-      <div className="w-full max-w-7xl mx-auto mb-4">
-        <div className="rounded-2xl bg-gradient-to-br from-pink-100/80 to-purple-100/80 dark:from-pink-900/30 dark:to-purple-900/30 shadow-xl border border-pink-200/60 dark:border-pink-800/40 backdrop-blur-xl p-8 flex flex-col items-center justify-center animate-fade-in-scale">
-          <h2 className="text-lg font-bold text-pink-900 dark:text-pink-100 mb-1">
-            Daily Sales This Month
-          </h2>
-          <ResponsiveContainer width="100%" height={220}>
-            <LineChart
-              data={dailySalesMonth}
-              margin={{ top: 10, right: 20, left: 0, bottom: 0 }}
-            >
-              <XAxis
-                dataKey="day"
-                tick={{ fill: "#ec4899", fontSize: 12 }}
-                axisLine={false}
-                tickLine={false}
-              />
-              <YAxis
-                tick={{ fill: "#a78bfa", fontSize: 12 }}
-                axisLine={false}
-                tickLine={false}
-              />
-              <Tooltip
-                contentStyle={{
-                  background: "#fdf2f8",
-                  borderRadius: 8,
-                  border: "none",
-                }}
-                labelStyle={{ color: "#ec4899" }}
-              />
-              <Line
-                type="monotone"
-                dataKey="sales"
-                stroke="#ec4899"
-                strokeWidth={3}
-                dot={false}
-                isAnimationActive
-              />
-            </LineChart>
-          </ResponsiveContainer>
-        </div>
-      </div>
-      {/* Charts Section */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 auto-rows-fr">
-        {/* Weekly Trends Bar Graph */}
-        <div className="rounded-2xl bg-gradient-to-br from-pink-100/80 to-purple-100/80 dark:from-pink-900/30 dark:to-purple-900/30 shadow-xl border border-pink-200/60 dark:border-pink-800/40 backdrop-blur-xl p-8 flex flex-col gap-4 animate-fade-in-scale">
-          <h2 className="text-xl font-bold text-pink-900 dark:text-pink-100 mb-2">
-            Weekly Sales Trends
-          </h2>
-          <ResponsiveContainer width="100%" height={220}>
-            <BarChart
-              data={weeklyTrends}
-              margin={{ top: 10, right: 20, left: 0, bottom: 0 }}
-            >
-              <XAxis
-                dataKey="day"
-                tick={{ fill: "#ec4899", fontSize: 12 }}
-                axisLine={false}
-                tickLine={false}
-              />
-              <YAxis
-                tick={{ fill: "#a78bfa", fontSize: 12 }}
-                axisLine={false}
-                tickLine={false}
-              />
-              <Tooltip
-                contentStyle={{
-                  background: "#fdf2f8",
-                  borderRadius: 8,
-                  border: "none",
-                }}
-                labelStyle={{ color: "#ec4899" }}
-              />
-              <Bar
-                dataKey="sales"
-                fill="#ec4899"
-                radius={[8, 8, 0, 0]}
-                isAnimationActive
-              />
-            </BarChart>
-          </ResponsiveContainer>
-        </div>
-        {/* Flavor Sales Heatmap */}
-        <div className="rounded-2xl bg-gradient-to-br from-blue-100/80 to-pink-100/80 dark:from-blue-900/30 dark:to-pink-900/30 shadow-xl border border-blue-200/60 dark:border-blue-800/40 backdrop-blur-xl p-8 flex flex-col gap-6 animate-fade-in-scale">
-          <h2 className="text-xl font-bold text-blue-900 dark:text-blue-100 mb-2">
-            Flavor Sales Heatmap
-          </h2>
-          <div className="overflow-x-auto">
-            <table className="min-w-full border-separate border-spacing-2">
-              <thead>
-                <tr>
-                  <th className="text-left text-xs text-pink-700 dark:text-pink-200"></th>
-                  {days.map((day) => (
-                    <th
-                      key={day}
-                      className="text-xs text-pink-700 dark:text-pink-200 px-2 py-1"
-                    >
-                      {day}
-                    </th>
+
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        {/* Shop Information */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Store className="w-5 h-5" />
+              Shop Information
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div>
+              <h3 className="font-semibold">{shop.name}</h3>
+              <p className="text-sm text-muted-foreground">{shop.address.city}, {shop.address.state}</p>
+            </div>
+            
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <p className="text-sm font-medium">Revenue</p>
+                <p className="text-2xl font-bold text-green-600">
+                  $0
+                </p>
+              </div>
+              <div>
+                <p className="text-sm font-medium">Transactions</p>
+                <p className="text-2xl font-bold">
+                  0
+                </p>
+              </div>
+              <div>
+                <p className="text-sm font-medium">Rating</p>
+                <div className="flex items-center gap-2">
+                  <span className="text-2xl font-bold">0.0</span>
+                  <span className="text-sm text-muted-foreground">
+                    (0 reviews)
+                  </span>
+                </div>
+              </div>
+              <div>
+                <p className="text-sm font-medium">Services</p>
+                <div className="flex gap-1">
+                  {shop.services.map((service: string) => (
+                    <Badge key={service} variant="secondary">
+                      {service}
+                    </Badge>
                   ))}
-                </tr>
-              </thead>
-              <tbody>
-                {flavorNames.map((flavor, i) => (
-                  <tr key={flavor}>
-                    <td className="text-sm font-semibold text-pink-900 dark:text-pink-100 pr-2">
-                      {flavor}
-                    </td>
-                    {flavorHeatmap[i].map((val, j) => {
-                      // Color intensity based on value
-                      const intensity = Math.min(1, val / 25);
-                      const bg = `rgba(236, 72, 153, ${0.2 + intensity * 0.7})`;
-                      return (
-                        <td
-                          key={j}
-                          className="rounded-lg w-8 h-8 text-center align-middle"
-                          style={{ background: bg }}
-                        >
-                          <span className="text-xs font-bold text-pink-900 dark:text-pink-100">
-                            {val}
-                          </span>
-                        </td>
-                      );
-                    })}
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </div>
-        {/* Top Flavor Horizontal Bar Chart */}
-        <div className="rounded-2xl bg-gradient-to-br from-pink-100/80 to-purple-100/80 dark:from-pink-900/30 dark:to-purple-900/30 shadow-xl border border-pink-200/60 dark:border-pink-800/40 backdrop-blur-xl p-8 flex flex-col gap-4 animate-fade-in-scale">
-          <h2 className="text-xl font-bold text-pink-900 dark:text-pink-100 mb-2">
-            Top Performing Flavors
-          </h2>
-          <ResponsiveContainer width="100%" height={220}>
-            <BarChart
-              data={topFlavors}
-              layout="vertical"
-              margin={{ top: 10, right: 20, left: 0, bottom: 0 }}
-            >
-              <XAxis
-                type="number"
-                tick={{ fill: "#ec4899", fontSize: 12 }}
-                axisLine={false}
-                tickLine={false}
-              />
-              <YAxis
-                dataKey="name"
-                type="category"
-                tick={{ fill: "#a78bfa", fontSize: 12 }}
-                axisLine={false}
-                tickLine={false}
-                width={120}
-              />
-              <Tooltip
-                contentStyle={{
-                  background: "#fdf2f8",
-                  borderRadius: 8,
-                  border: "none",
-                }}
-                labelStyle={{ color: "#ec4899" }}
-              />
-              <Bar
-                dataKey="sales"
-                fill="#ec4899"
-                radius={[8, 8, 8, 8]}
-                isAnimationActive
-              />
-            </BarChart>
-          </ResponsiveContainer>
-        </div>
-        {/* Top Flavors List */}
-        <div className="rounded-2xl bg-gradient-to-br from-purple-100/80 to-blue-100/80 dark:from-purple-900/30 dark:to-blue-900/30 shadow-xl border border-purple-200/60 dark:border-purple-800/40 backdrop-blur-xl p-8 flex flex-col gap-4 animate-fade-in-scale">
-          <h2 className="text-xl font-bold text-purple-900 dark:text-purple-100 mb-2">
-            Top Flavors List
-          </h2>
-          <ul className="space-y-3">
-            {topFlavors.map((flavor, idx) => (
-              <li key={flavor.name} className="flex items-center gap-4">
-                <span className="text-2xl font-bold text-pink-500">
-                  #{idx + 1}
-                </span>
-                <span className="font-semibold text-pink-900 dark:text-pink-100 flex-1">
-                  {flavor.name}
-                </span>
-                <span className="text-lg font-bold text-purple-700 dark:text-purple-200">
-                  {flavor.sales} sales
-                </span>
-              </li>
-            ))}
-          </ul>
-        </div>
-        {/* Flavor Leaderboard Card */}
-        <div className="rounded-2xl bg-gradient-to-br from-pink-100/80 to-blue-100/80 dark:from-pink-900/30 dark:to-blue-900/30 shadow-xl border border-pink-200/60 dark:border-pink-800/40 backdrop-blur-xl p-8 flex flex-col gap-6 animate-fade-in-scale col-span-1 lg:col-span-2">
-          <h2 className="text-xl font-bold text-pink-900 dark:text-pink-100 mb-2">
-            Flavor Leaderboard
-          </h2>
-          <ul className="space-y-4">
-            {topFlavors.slice(0, 5).map((flavor, idx) => {
-              const percent = Math.round(
-                (flavor.sales / topFlavors[0].sales) * 100
-              );
-              const emojis = ["🍫", "🥭", "🌿", "🍓", "🍦"];
-              return (
-                <li key={flavor.name} className="flex items-center gap-4">
-                  <span className="text-2xl">{emojis[idx] || "🍦"}</span>
-                  <span className="font-semibold text-pink-900 dark:text-pink-100 flex-1">
-                    {flavor.name}
-                  </span>
-                  <div className="flex-1 h-3 bg-pink-100 dark:bg-pink-900/30 rounded-full overflow-hidden">
-                    <div
-                      className="h-3 bg-gradient-to-r from-pink-400 to-purple-500 rounded-full transition-all duration-500"
-                      style={{ width: `${percent}%` }}
-                    ></div>
+                </div>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Recent Transactions */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <ShoppingCart className="w-5 h-5" />
+              Recent Transactions
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-4">
+              {recentOrders.slice(0, 5).map((transaction) => (
+                <div key={transaction.id} className="flex items-center justify-between p-3 border rounded-lg">
+                  <div>
+                    <p className="font-medium">#{transaction.id}</p>
+                    <p className="text-sm text-muted-foreground">
+                      {transaction.items.length} item(s) • 
+                      {new Date(transaction.createdAt).toLocaleTimeString()}
+                    </p>
                   </div>
-                  <span className="text-lg font-bold text-purple-700 dark:text-purple-200 ml-2">
-                    {flavor.sales}
-                  </span>
-                </li>
-              );
-            })}
-          </ul>
-        </div>
+                  <div className="text-right">
+                    <p className="font-bold">${transaction.total.toFixed(2)}</p>
+                    <Badge variant={
+                      transaction.status === "delivered" ? "default" : "secondary"
+                    }>
+                      {transaction.status}
+                    </Badge>
+                  </div>
+                </div>
+              ))}
+              {recentOrders.length === 0 && (
+                <p className="text-muted-foreground text-center py-8">
+                  No transactions yet today
+                </p>
+              )}
+            </div>
+          </CardContent>
+        </Card>
       </div>
+
+      {/* Inventory Status */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Package className="w-5 h-5" />
+            Current Inventory Status
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="space-y-4">
+            {inventory.map((item) => (
+              <div key={item.id} className="flex items-center justify-between p-4 border rounded-lg">
+                <div className="flex items-center gap-4">
+                  <div className="w-3 h-3 rounded-full bg-gradient-to-r from-red-400 to-green-400"></div>
+                  <div>
+                    <h3 className="font-semibold">{item.flavorName}</h3>
+                    <p className="text-sm text-muted-foreground">{item.category}</p>
+                  </div>
+                </div>
+                
+                <div className="flex items-center gap-6">
+                  <div className="text-center">
+                    <p className="text-sm text-muted-foreground">Available</p>
+                    <p className={`text-lg font-bold ${
+                      item.isLowStock ? "text-orange-500" : "text-green-600"
+                    }`}>
+                      {item.quantity} {item.unit}
+                    </p>
+                  </div>
+                  
+                  <div className="text-center">
+                    <p className="text-sm text-muted-foreground">Price</p>
+                    <p className="text-lg font-bold">${item.pricePerUnit}</p>
+                  </div>
+                  
+                  <div className="flex items-center gap-2">
+                    <Badge variant={
+                      item.isAvailable ? "default" : "secondary"
+                    }>
+                      <CheckCircle className="w-3 h-3 mr-1" />
+                      {item.isAvailable ? "In Stock" : "Out of Stock"}
+                    </Badge>
+                    {item.isLowStock && (
+                      <Badge variant="destructive">
+                        <AlertTriangle className="w-3 h-3 mr-1" />
+                        Low Stock
+                      </Badge>
+                    )}
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </CardContent>
+      </Card>
     </div>
   );
 }

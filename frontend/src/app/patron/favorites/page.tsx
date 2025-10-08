@@ -1,11 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+
 import {
   Search,
   Heart,
@@ -20,6 +16,12 @@ import {
   Award,
   Sparkles,
 } from "lucide-react";
+
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
 
 // Custom styles for animations
 const customStyles = `
@@ -219,19 +221,19 @@ export default function PatronFavoritesPage() {
   const [search, setSearch] = useState("");
 
   const filteredFlavors = favoriteFlavors.filter((flavor) =>
-    flavor.name.toLowerCase().includes(search.toLowerCase())
+    flavor.name.toLowerCase().includes(search.toLowerCase()),
   );
 
   const filteredStores = favoriteStores.filter((store) =>
-    store.name.toLowerCase().includes(search.toLowerCase())
+    store.name.toLowerCase().includes(search.toLowerCase()),
   );
 
   const filteredOrders = favoriteOrders.filter(
     (order) =>
       order.store.toLowerCase().includes(search.toLowerCase()) ||
       order.items.some((item) =>
-        item.name.toLowerCase().includes(search.toLowerCase())
-      )
+        item.name.toLowerCase().includes(search.toLowerCase()),
+      ),
   );
 
   const removeFavorite = (type: string, id: number) => {
@@ -619,8 +621,8 @@ export default function PatronFavoritesPage() {
                 {activeTab === "flavors"
                   ? "🍦"
                   : activeTab === "stores"
-                  ? "🏪"
-                  : "📦"}
+                    ? "🏪"
+                    : "📦"}
               </div>
               <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">
                 No favorites found
@@ -629,16 +631,16 @@ export default function PatronFavoritesPage() {
                 {activeTab === "flavors"
                   ? "Start adding flavors to your favorites!"
                   : activeTab === "stores"
-                  ? "Save your favorite stores for quick access!"
-                  : "Your favorite orders will appear here!"}
+                    ? "Save your favorite stores for quick access!"
+                    : "Your favorite orders will appear here!"}
               </p>
               <Button className="bg-gradient-to-r from-orange-400 to-pink-500 hover:from-orange-500 hover:to-pink-600 text-white">
                 Browse{" "}
                 {activeTab === "flavors"
                   ? "Flavors"
                   : activeTab === "stores"
-                  ? "Stores"
-                  : "Orders"}
+                    ? "Stores"
+                    : "Orders"}
               </Button>
             </div>
           )}

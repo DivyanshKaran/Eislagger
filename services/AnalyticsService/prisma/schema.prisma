@@ -1,0 +1,71 @@
+// Analytics Service Database Schema
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// KPI Metrics
+model KPI {
+  id          String   @id @default(uuid())
+  name        String
+  value       Float
+  target      Float?
+  unit        String?
+  category    String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@map("kpis")
+}
+
+// Sales Analytics
+model SalesAnalytics {
+  id          String   @id @default(uuid())
+  date        DateTime
+  revenue     Float
+  orders      Int
+  avgOrderValue Float
+  createdAt   DateTime @default(now())
+
+  @@map("sales_analytics")
+}
+
+// Inventory Analytics
+model InventoryAnalytics {
+  id          String   @id @default(uuid())
+  date        DateTime
+  totalStock  Int
+  lowStockItems Int
+  expiredItems Int
+  createdAt   DateTime @default(now())
+
+  @@map("inventory_analytics")
+}
+
+// Location Analytics
+model LocationAnalytics {
+  id          String   @id @default(uuid())
+  locationId  String
+  date        DateTime
+  sales       Float
+  customers   Int
+  efficiency  Float
+  createdAt   DateTime @default(now())
+
+  @@map("location_analytics")
+}
+
+// User Activity
+model UserActivity {
+  id          String   @id @default(uuid())
+  userId      String
+  action      String
+  timestamp   DateTime @default(now())
+  metadata    Json?
+
+  @@map("user_activity")
+}
