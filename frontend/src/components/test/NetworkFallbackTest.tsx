@@ -43,7 +43,7 @@ export default function NetworkFallbackTest() {
       // Check results - if we have data, fallback worked
       const results: Record<string, 'success' | 'error'> = {};
       
-      if (flavors && flavors.length > 0) {
+      if (flavors && flavors.data && flavors.data.length > 0) {
         results.flavors = 'success';
       } else {
         results.flavors = 'error';
@@ -55,7 +55,7 @@ export default function NetworkFallbackTest() {
         results.store = 'error';
       }
 
-      if (orders && orders.length > 0) {
+      if (orders && orders.data && orders.data.length > 0) {
         results.orders = 'success';
       } else {
         results.orders = 'error';
@@ -147,13 +147,13 @@ export default function NetworkFallbackTest() {
                 <div className="space-y-2">
                   {getStatusBadge(testResults.flavors)}
                   <div className="text-sm text-gray-600">
-                    {flavorsLoading ? 'Loading...' : 
-                     flavors ? `${flavors.length} flavors loaded` : 
+                    {flavorsLoading ? 'Loading...' :
+                     flavors ? `${flavors.data?.length || 0} flavors loaded` :
                      'No data'}
                   </div>
-                  {flavors && flavors.length > 0 && (
+                  {flavors && flavors.data && flavors.data.length > 0 && (
                     <div className="text-xs text-gray-500">
-                      Sample: {flavors[0]?.name}
+                      Sample: {flavors.data[0]?.name}
                     </div>
                   )}
                 </div>
@@ -197,13 +197,13 @@ export default function NetworkFallbackTest() {
                 <div className="space-y-2">
                   {getStatusBadge(testResults.orders)}
                   <div className="text-sm text-gray-600">
-                    {ordersLoading ? 'Loading...' : 
-                     orders ? `${orders.length} orders loaded` : 
+                    {ordersLoading ? 'Loading...' :
+                     orders ? `${orders.data?.length || 0} orders loaded` :
                      'No data'}
                   </div>
-                  {orders && orders.length > 0 && (
+                  {orders && orders.data && orders.data.length > 0 && (
                     <div className="text-xs text-gray-500">
-                      Total: ${orders[0]?.total}
+                      Total: ${orders.data[0]?.total}
                     </div>
                   )}
                 </div>
@@ -214,7 +214,7 @@ export default function NetworkFallbackTest() {
           <div className="mt-4 p-4 bg-blue-50 rounded-lg">
             <h4 className="font-semibold text-blue-900 mb-2">How it works:</h4>
             <ul className="text-sm text-blue-800 space-y-1">
-              <li>• Click "Test Fallback" to simulate network failure</li>
+              <li>• Click &quot;Test Fallback&quot; to simulate network failure</li>
               <li>• The system will attempt to connect to invalid endpoints</li>
               <li>• When network errors are detected, mock data is served instead</li>
               <li>• The UI continues to work seamlessly with realistic mock data</li>

@@ -8,7 +8,7 @@ import type {
   GetChartDataRequest,
   GetDashboardDataRequest,
   DashboardData
-} from '@/types/api';
+} from '@/types/api/index';
 import type {
   KPIData,
   ChartData
@@ -51,7 +51,7 @@ export function useKPIs(params?: GetKPIsRequest) {
 // Get chart data
 export function useChartData(params: GetChartDataRequest) {
   return useQuery({
-    queryKey: analyticsKeys.charts(params.chartType, params),
+    queryKey: analyticsKeys.charts(params),
     queryFn: async () => {
       const response = await dataService.analytics.getChartData(params);
       if (!response.success) {
@@ -66,7 +66,7 @@ export function useChartData(params: GetChartDataRequest) {
 // Get dashboard data
 export function useDashboardData(params: GetDashboardDataRequest) {
   return useQuery({
-    queryKey: analyticsKeys.dashboard(params.role),
+    queryKey: analyticsKeys.dashboard(params),
     queryFn: async () => {
       const response = await dataService.analytics.getDashboardData(params);
       if (!response.success) {

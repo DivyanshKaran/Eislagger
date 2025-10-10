@@ -97,12 +97,12 @@ export function Sidebar({
     switch (role) {
       case "clerk":
         return {
-          background: "bg-gradient-to-br from-pink-50/90 to-purple-50/90 dark:from-pink-900/20 dark:to-purple-900/20",
-          border: "border-pink-200/60 dark:border-pink-800/40",
-          headerBorder: "border-pink-200/60 dark:border-pink-800/40",
-          footerBorder: "border-pink-200/60 dark:border-pink-800/40",
-          backdrop: "backdrop-blur-xl",
-          shadow: "shadow-xl"
+          background: "bg-gradient-to-br from-pink-50/90 to-purple-50/90 dark:bg-gradient-to-br dark:from-slate-900 dark:to-gray-800",
+          border: "border-pink-200/60 dark:border-slate-700/50",
+          headerBorder: "border-pink-200/60 dark:border-slate-700/50",
+          footerBorder: "border-pink-200/60 dark:border-slate-700/50",
+          backdrop: "backdrop-blur-xl dark:backdrop-blur-sm",
+          shadow: "shadow-xl dark:shadow-2xl"
         };
       case "executive":
         return {
@@ -152,22 +152,47 @@ export function Sidebar({
       }`}
     >
       {/* Header */}
-      <div className={`p-4 border-b ${roleStyling.headerBorder}`}>
+      <div className={`p-4 border-b ${roleStyling.headerBorder} ${role === "clerk" ? "dark:bg-gradient-to-r dark:from-slate-800/50 dark:to-gray-800/50" : ""}`}>
         <div className="flex items-center justify-between">
           {!collapsed && (
             <div className="flex items-center gap-3">
               <div
-                className={`w-10 h-10 bg-gradient-to-br ${config.gradient} rounded-xl flex items-center justify-center shadow-lg`}
+                className={`w-10 h-10 bg-gradient-to-br ${config.gradient} rounded-xl flex items-center justify-center shadow-lg ${
+                  role === "clerk" ? "dark:shadow-pink-500/20" : ""
+                }`}
               >
-                <span className="text-xl">{config.icon}</span>
+                <img 
+                  src={`/icons/${role}-icon.svg`} 
+                  alt={`${role} icon`}
+                  className="w-6 h-6"
+                />
               </div>
               <div>
-                <h2 className="font-bold text-lg text-gray-900 dark:text-gray-100">
+                <h2 className={`font-bold text-lg text-gray-900 dark:text-gray-100 ${
+                  role === "clerk" ? "dark:text-pink-100" : ""
+                }`}>
                   EisLagger
                 </h2>
-                <p className="text-xs text-gray-500 dark:text-gray-400">
+                <p className={`text-xs text-gray-500 dark:text-gray-400 ${
+                  role === "clerk" ? "dark:text-pink-300" : ""
+                }`}>
                   {config.title}
                 </p>
+              </div>
+            </div>
+          )}
+          {collapsed && (
+            <div className="flex justify-center mb-4">
+              <div
+                className={`w-8 h-8 bg-gradient-to-br ${config.gradient} rounded-lg flex items-center justify-center shadow-lg ${
+                  role === "clerk" ? "dark:shadow-pink-500/20" : ""
+                }`}
+              >
+                <img 
+                  src={`/icons/${role}-icon.svg`} 
+                  alt={`${role} icon`}
+                  className="w-5 h-5"
+                />
               </div>
             </div>
           )}
@@ -175,7 +200,11 @@ export function Sidebar({
             variant="ghost"
             size="icon"
             onClick={handleToggleCollapse}
-            className="h-8 w-8"
+            className={`h-8 w-8 ${
+              role === "clerk" 
+                ? "dark:hover:bg-pink-500/20 dark:text-pink-300" 
+                : ""
+            }`}
           >
             {collapsed ? (
               <ChevronRight className="w-4 h-4" />
@@ -187,7 +216,7 @@ export function Sidebar({
       </div>
 
       {/* Navigation */}
-      <nav className="flex-1 p-4 space-y-2">
+      <nav className={`flex-1 p-4 space-y-2 ${role === "clerk" ? "dark:bg-gradient-to-b dark:from-slate-800/30 dark:to-transparent" : ""}`}>
         {config.navigationItems.map((item) => {
           const isActive = pathname === item.href;
 
@@ -200,11 +229,13 @@ export function Sidebar({
                 } ${
                   isActive
                     ? role === "clerk" 
-                      ? "bg-pink-600 text-white hover:bg-pink-700"
+                      ? "bg-gradient-to-r from-pink-600 to-purple-600 text-white hover:from-pink-700 hover:to-purple-700 dark:shadow-lg dark:shadow-pink-500/20"
                       : role === "executive"
                       ? "bg-purple-600 text-white hover:bg-purple-700"
                       : "bg-blue-600 text-white hover:bg-blue-700"
-                    : "text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800"
+                    : role === "clerk"
+                      ? "text-gray-700 dark:text-pink-200 hover:bg-pink-50 dark:hover:bg-pink-500/10 dark:hover:text-pink-100"
+                      : "text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800"
                 }`}
                 disabled={item.disabled}
               >
@@ -226,13 +257,17 @@ export function Sidebar({
       </nav>
 
       {/* Footer */}
-      <div className={`p-4 border-t ${roleStyling.footerBorder} space-y-2`}>
+      <div className={`p-4 border-t ${roleStyling.footerBorder} space-y-2 ${role === "clerk" ? "dark:bg-gradient-to-r dark:from-slate-800/50 dark:to-gray-800/50" : ""}`}>
         {onThemeToggle && (
           <Button
             variant="ghost"
             size="icon"
             onClick={onThemeToggle}
-            className="w-full h-10"
+            className={`w-full h-10 ${
+              role === "clerk" 
+                ? "dark:hover:bg-pink-500/20 dark:text-pink-300" 
+                : ""
+            }`}
           >
             <div className="flex items-center gap-3">
               {getThemeIcon()}
@@ -247,7 +282,11 @@ export function Sidebar({
 
         <Button
           variant="ghost"
-          className="w-full h-10 text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20"
+          className={`w-full h-10 text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 ${
+            role === "clerk" 
+              ? "dark:text-red-400 dark:hover:bg-red-500/10" 
+              : ""
+          }`}
           onClick={async () => {
             await logout();
             router.push("/auth/login");

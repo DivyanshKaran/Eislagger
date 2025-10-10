@@ -34,11 +34,12 @@ export default function ClerkDashboard() {
   // Use the new hooks for data fetching
   const { data: shop, isLoading: shopLoading, error: shopError } = useStore(currentShopId);
   const { data: inventory = [], isLoading: inventoryLoading } = useStoreInventory(currentShopId);
-  const { data: recentOrders = [], isLoading: ordersLoading } = useOrders({ 
+  const { data: recentOrdersResponse, isLoading: ordersLoading } = useOrders({ 
     page: 1,
     limit: 10,
     // Add shop filter when backend supports it
   });
+  const recentOrders = recentOrdersResponse?.data || [];
 
   const isLoading = shopLoading || inventoryLoading || ordersLoading;
   const error = shopError;
@@ -128,7 +129,7 @@ export default function ClerkDashboard() {
             {shop.name} Dashboard
           </h1>
           <p className="text-muted-foreground">
-            Welcome back, {user?.name}! Here's your shop overview for today.
+            Welcome back, {user?.name}! Here&apos;s your shop overview for today.
           </p>
         </div>
         <div className="flex gap-2">

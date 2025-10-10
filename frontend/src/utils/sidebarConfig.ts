@@ -39,11 +39,6 @@ export const getSidebarConfig = (role: string): SidebarConfig => {
             label: "Budget",
           },
           {
-            href: "/executive/chat",
-            iconName: "MessageSquare",
-            label: "Chat",
-          },
-          {
             href: "/executive/email",
             iconName: "Mail",
             label: "Email",
@@ -84,11 +79,6 @@ export const getSidebarConfig = (role: string): SidebarConfig => {
             label: "Register Stock",
           },
           {
-            href: "/manufacturer/chat",
-            iconName: "MessageSquare",
-            label: "Chat",
-          },
-          {
             href: "/manufacturer/email",
             iconName: "Mail",
             label: "Email",
@@ -117,11 +107,6 @@ export const getSidebarConfig = (role: string): SidebarConfig => {
             href: "/clerk/stock",
             iconName: "Package",
             label: "Stock",
-          },
-          {
-            href: "/clerk/chat",
-            iconName: "MessageSquare",
-            label: "Chat",
           },
           {
             href: "/clerk/email",
@@ -172,6 +157,11 @@ export const getSidebarConfig = (role: string): SidebarConfig => {
             href: "/patron/stores",
             iconName: "MapPin",
             label: "Map",
+          },
+          {
+            href: "/patron/email",
+            iconName: "Mail",
+            label: "Email",
           },
         ],
       };

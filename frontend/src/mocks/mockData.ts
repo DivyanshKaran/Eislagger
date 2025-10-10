@@ -11,7 +11,7 @@ import type {
   ChartData,
   AnalyticsData,
 } from '@/types/models';
-import type { DashboardData } from '@/types/api';
+import type { DashboardData } from '@/types/api/index';
 
 // ============================================================================
 // MOCK USERS

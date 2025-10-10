@@ -6,7 +6,7 @@ import type {
   GetOrdersRequest, 
   CreateOrderRequest, 
   UpdateOrderStatusRequest
-} from '@/types/api';
+} from '@/types/api/index';
 import type { Order } from '@/types/models';
 
 // ============================================================================
@@ -352,8 +352,8 @@ export function useRecentOrders(limit: number = 10) {
         limit: limit,
         // Add sorting by date desc and limit
       });
-      // GetOrdersResponse extends PaginatedResponse<Order>, so it has data directly
-      return response.data.slice(0, limit);
+      // GetOrdersResponse extends PaginatedResponse<Order>, so it has data.data
+      return response.data.data.slice(0, limit);
     },
     staleTime: 1 * 60 * 1000, // 1 minute
   });

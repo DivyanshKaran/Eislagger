@@ -11,6 +11,7 @@ import {
   TrendingDown,
   TrendingUp,
   Users,
+  Loader2,
 } from "lucide-react";
 import {
   LineChart,
@@ -29,6 +30,8 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
+import { useManufacturerDashboard, useInventoryStats, useLowStockItems } from "@/hooks";
+import { useAuth } from "@/lib/auth-context";
 
 // Professional pastel blue theme styles
 const customStyles = `
@@ -82,6 +85,37 @@ const customStyles = `
 `;
 
 export default function ManufacturerDashboardPage() {
+  const { user } = useAuth();
+  
+  // Fetch dashboard data from backend
+  const { data: dashboardData, isLoading: dashboardLoading, error: dashboardError } = useManufacturerDashboard();
+  const { data: inventoryStats, isLoading: statsLoading } = useInventoryStats();
+  const { data: lowStockData, isLoading: lowStockLoading } = useLowStockItems();
+
+  // Show loading state
+  if (dashboardLoading || statsLoading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="flex items-center gap-2">
+          <Loader2 className="w-6 h-6 animate-spin" />
+          <span>Loading dashboard...</span>
+        </div>
+      </div>
+    );
+  }
+
+  // Show error state
+  if (dashboardError) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="text-center">
+          <h2 className="text-xl font-semibold text-red-600 mb-2">Error Loading Dashboard</h2>
+          <p className="text-gray-600">{dashboardError.message}</p>
+        </div>
+      </div>
+    );
+  }
+
   // Production KPIs
   const kpis = [
     {

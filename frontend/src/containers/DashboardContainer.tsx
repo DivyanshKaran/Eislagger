@@ -31,7 +31,7 @@ export function DashboardContainer({
   layout = "grid",
   className = "",
 }: DashboardContainerProps) {
-  const { data, loading, error, refreshData } = useDashboardData(role);
+  const { data, isLoading: loading, error, refetch: refreshData } = useDashboardData(role);
   const [expandedKPIs, setExpandedKPIs] = useState<Set<string>>(new Set());
   const [isRefreshing, setIsRefreshing] = useState(false);
 
@@ -105,7 +105,7 @@ export function DashboardContainer({
                 Failed to load dashboard
               </h3>
               <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
-                {error}
+                {error?.message || 'An error occurred'}
               </p>
               <Button onClick={handleRefresh} disabled={isRefreshing}>
                 <RefreshCw

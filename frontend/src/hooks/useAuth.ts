@@ -4,7 +4,7 @@ import { useRouter } from 'next/navigation';
 import { dataService } from '@/services/DataService';
 import { authKeys } from '@/services/queryKeys';
 import { setAuthTokenOnAllClients } from '@/services/DataService';
-import type { LoginRequest, RegisterRequest } from '@/types/api';
+import type { LoginRequest, RegisterRequest } from '@/types/api/index';
 import type { User } from '@/types/models';
 
 // ============================================================================

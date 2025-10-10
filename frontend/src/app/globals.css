@@ -171,22 +171,155 @@ body {
     "calt" 1;
 }
 
-/* Custom Scrollbar */
+/* Custom Scrollbar - Base Styles */
 ::-webkit-scrollbar {
-  width: 8px;
-  height: 8px;
+  width: 10px;
+  height: 10px;
 }
 
 ::-webkit-scrollbar-track {
-  @apply bg-muted/20;
+  background: rgba(0, 0, 0, 0.05);
+  border-radius: 10px;
 }
 
 ::-webkit-scrollbar-thumb {
-  @apply bg-muted rounded-full;
+  background: linear-gradient(135deg, #f97316, #3b82f6);
+  border-radius: 10px;
+  border: 2px solid transparent;
+  background-clip: content-box;
+  transition: all 0.3s ease;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  @apply bg-muted/80;
+  background: linear-gradient(135deg, #ea580c, #2563eb);
+  background-clip: content-box;
+}
+
+::-webkit-scrollbar-corner {
+  background: transparent;
+}
+
+/* Clerk Route Scrollbar - Pink Theme */
+[data-route="clerk"] ::-webkit-scrollbar-track {
+  background: rgba(236, 72, 153, 0.1);
+}
+
+[data-route="clerk"] ::-webkit-scrollbar-thumb {
+  background: linear-gradient(135deg, #ec4899, #8b5cf6);
+  background-clip: content-box;
+}
+
+[data-route="clerk"] ::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(135deg, #db2777, #7c3aed);
+  background-clip: content-box;
+}
+
+/* Executive Route Scrollbar - Purple Theme */
+[data-route="executive"] ::-webkit-scrollbar-track {
+  background: rgba(139, 92, 246, 0.1);
+}
+
+[data-route="executive"] ::-webkit-scrollbar-thumb {
+  background: linear-gradient(135deg, #8b5cf6, #6366f1);
+  background-clip: content-box;
+}
+
+[data-route="executive"] ::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(135deg, #7c3aed, #4f46e5);
+  background-clip: content-box;
+}
+
+/* Manufacturer Route Scrollbar - Blue Theme */
+[data-route="manufacturer"] ::-webkit-scrollbar-track {
+  background: rgba(59, 130, 246, 0.1);
+}
+
+[data-route="manufacturer"] ::-webkit-scrollbar-thumb {
+  background: linear-gradient(135deg, #3b82f6, #06b6d4);
+  background-clip: content-box;
+}
+
+[data-route="manufacturer"] ::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(135deg, #2563eb, #0891b2);
+  background-clip: content-box;
+}
+
+/* Patron Route Scrollbar - Orange Theme */
+[data-route="patron"] ::-webkit-scrollbar-track {
+  background: rgba(249, 115, 22, 0.1);
+}
+
+[data-route="patron"] ::-webkit-scrollbar-thumb {
+  background: linear-gradient(135deg, #f97316, #eab308);
+  background-clip: content-box;
+}
+
+[data-route="patron"] ::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(135deg, #ea580c, #ca8a04);
+  background-clip: content-box;
+}
+
+/* Dark Mode Scrollbar Adjustments */
+.dark ::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.dark [data-route="clerk"] ::-webkit-scrollbar-track {
+  background: rgba(236, 72, 153, 0.2);
+}
+
+.dark [data-route="executive"] ::-webkit-scrollbar-track {
+  background: rgba(139, 92, 246, 0.2);
+}
+
+.dark [data-route="manufacturer"] ::-webkit-scrollbar-track {
+  background: rgba(59, 130, 246, 0.2);
+}
+
+.dark [data-route="patron"] ::-webkit-scrollbar-track {
+  background: rgba(249, 115, 22, 0.2);
+}
+
+/* Firefox Scrollbar Support */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: #f97316 #3b82f6;
+}
+
+[data-route="clerk"] * {
+  scrollbar-color: #ec4899 #8b5cf6;
+}
+
+[data-route="executive"] * {
+  scrollbar-color: #8b5cf6 #6366f1;
+}
+
+[data-route="manufacturer"] * {
+  scrollbar-color: #3b82f6 #06b6d4;
+}
+
+[data-route="patron"] * {
+  scrollbar-color: #f97316 #eab308;
+}
+
+.dark * {
+  scrollbar-color: #f97316 #3b82f6;
+}
+
+.dark [data-route="clerk"] * {
+  scrollbar-color: #ec4899 #8b5cf6;
+}
+
+.dark [data-route="executive"] * {
+  scrollbar-color: #8b5cf6 #6366f1;
+}
+
+.dark [data-route="manufacturer"] * {
+  scrollbar-color: #3b82f6 #06b6d4;
+}
+
+.dark [data-route="patron"] * {
+  scrollbar-color: #f97316 #eab308;
 }
 
 /* Focus Styles */

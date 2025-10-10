@@ -6,7 +6,7 @@ import type {
   GetFlavorsRequest, 
   CreateFlavorRequest, 
   UpdateFlavorRequest
-} from '@/types/api';
+} from '@/types/api/index';
 import type { Flavor } from '@/types/models';
 
 // ============================================================================
@@ -15,10 +15,11 @@ import type { Flavor } from '@/types/models';
 
 // Get all flavors with filters
 export function useFlavors(params?: GetFlavorsRequest) {
+  const defaultParams: GetFlavorsRequest = { page: 1, limit: 20, ...(params || {}) };
   return useQuery({
-    queryKey: flavorKeys.list(params || {}),
+    queryKey: flavorKeys.list(defaultParams),
     queryFn: async () => {
-      const response = await dataService.flavor.getFlavors(params);
+      const response = await dataService.flavor.getFlavors(defaultParams);
       // GetFlavorsResponse extends PaginatedResponse<Flavor>, so it has data directly
       return response.data;
     },

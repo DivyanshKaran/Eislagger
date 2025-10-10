@@ -1,5 +1,5 @@
 // Enhanced HTTP client with strong typing and error handling
-import type { ApiResponse, ApiErrorResponse } from "@/types/api";
+import type { ApiResponse } from "@/types/common";
 import { 
   getMockUser, 
   getMockUsers, 

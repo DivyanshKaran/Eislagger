@@ -1,4 +1,4 @@
-import { DashboardData } from "../hooks/useDashboardData";
+import type { DashboardData } from "@/types/api/index";
 import type { UserRole } from "@/types";
 
 export interface ApiResponse<T> {
@@ -214,13 +214,11 @@ class DashboardService {
               lastUpdated: new Date().toISOString(),
             },
           ],
-          chartData: baseChartData,
-          summary: {
-            totalOrders: 1234,
-            totalRevenue: 45678,
-            totalCustomers: 1,
-            growthRate: 12.5,
-          },
+          charts: [
+            { labels: baseChartData.map(d => d.name), datasets: [ { label: 'Value', data: baseChartData.map(d => d.value) } ] },
+          ],
+          recentActivity: [],
+          alerts: [],
         };
 
       case "manufacturer":
@@ -246,13 +244,11 @@ class DashboardService {
               lastUpdated: new Date().toISOString(),
             },
           ],
-          chartData: baseChartData,
-          summary: {
-            totalOrders: 1234,
-            totalRevenue: 45678,
-            totalCustomers: 150,
-            growthRate: 15.3,
-          },
+          charts: [
+            { labels: baseChartData.map(d => d.name), datasets: [ { label: 'Value', data: baseChartData.map(d => d.value) } ] },
+          ],
+          recentActivity: [],
+          alerts: [],
         };
 
       case "executive":
@@ -278,13 +274,11 @@ class DashboardService {
               lastUpdated: new Date().toISOString(),
             },
           ],
-          chartData: baseChartData,
-          summary: {
-            totalOrders: 1234,
-            totalRevenue: 45678,
-            totalCustomers: 500,
-            growthRate: 8.2,
-          },
+          charts: [
+            { labels: baseChartData.map(d => d.name), datasets: [ { label: 'Value', data: baseChartData.map(d => d.value) } ] },
+          ],
+          recentActivity: [],
+          alerts: [],
         };
 
       case "clerk":
@@ -310,25 +304,21 @@ class DashboardService {
               lastUpdated: new Date().toISOString(),
             },
           ],
-          chartData: baseChartData,
-          summary: {
-            totalOrders: 89,
-            totalRevenue: 4567,
-            totalCustomers: 45,
-            growthRate: 5.2,
-          },
+          charts: [
+            { labels: baseChartData.map(d => d.name), datasets: [ { label: 'Value', data: baseChartData.map(d => d.value) } ] },
+          ],
+          recentActivity: [],
+          alerts: [],
         };
 
       default:
         return {
           kpis: baseKPIs,
-          chartData: baseChartData,
-          summary: {
-            totalOrders: 1234,
-            totalRevenue: 45678,
-            totalCustomers: 100,
-            growthRate: 10,
-          },
+          charts: [
+            { labels: baseChartData.map(d => d.name), datasets: [ { label: 'Value', data: baseChartData.map(d => d.value) } ] },
+          ],
+          recentActivity: [],
+          alerts: [],
         };
     }
   }

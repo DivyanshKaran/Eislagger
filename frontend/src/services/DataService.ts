@@ -1,5 +1,6 @@
 // Domain-specific DataService with typed methods for all entities
 import HttpClient from './httpClient';
+import type { ApiResponse, PaginatedResponse } from '@/types/common';
 import type {
   // Auth API types
   LoginRequest,
@@ -75,7 +76,7 @@ import type {
   // File upload API types
   UploadFileRequest,
   UploadFileResponse,
-} from '@/types/api';
+} from '@/types/api/index';
 
 import type {
   User,
@@ -88,7 +89,7 @@ import type {
   KPIData,
   ChartData,
 } from '@/types/models';
-import type { DashboardData, SearchResult } from '@/types/api';
+import type { DashboardData, SearchResult } from '@/types/api/index';
 
 // API Configuration
 const API_BASE_URLS = {
@@ -163,7 +164,7 @@ export const authService = {
 // ============================================================================
 export const userService = {
   // Get all users (admin only)
-  getUsers: (params?: GetUsersRequest): Promise<GetUsersResponse> => {
+  getUsers: (params?: GetUsersRequest): Promise<ApiResponse<PaginatedResponse<User>>> => {
     const queryParams = new URLSearchParams();
     if (params?.role) queryParams.append('role', params.role);
     if (params?.status) queryParams.append('status', params.status);
@@ -173,15 +174,15 @@ export const userService = {
     
     const queryString = queryParams.toString();
     const endpoint = queryString ? `/users?${queryString}` : '/users';
-    return adminClient.get<User[]>(endpoint);
+    return adminClient.get<PaginatedResponse<User>>(endpoint);
   },
     
   // Get user by ID
-  getUser: (id: string): Promise<AuthResponse> =>
+  getUser: (id: string): Promise<ApiResponse<User>> =>
     adminClient.get<User>(`/users/${id}`),
     
   // Create user (admin only)
-  createUser: (data: RegisterRequest): Promise<AuthResponse> =>
+  createUser: (data: RegisterRequest): Promise<ApiResponse<User>> =>
     adminClient.post<RegisterRequest, User>('/users', data),
     
   // Update user
@@ -198,12 +199,12 @@ export const userService = {
 // ============================================================================
 export const messageService = {
   // Get messages
-  getMessages: (params?: GetMessagesRequest): Promise<GetMessagesResponse> =>
-    communicationsClient.get<Message[]>('/chat/conversations'),
+  getMessages: (params?: GetMessagesRequest): Promise<ApiResponse<PaginatedResponse<Message>>> =>
+    communicationsClient.get<PaginatedResponse<Message>>('/chat/conversations'),
     
   // Get conversation messages
-  getConversationMessages: (conversationId: string): Promise<GetMessagesResponse> =>
-    communicationsClient.get<Message[]>(`/chat/conversations/${conversationId}/messages`),
+  getConversationMessages: (conversationId: string): Promise<ApiResponse<PaginatedResponse<Message>>> =>
+    communicationsClient.get<PaginatedResponse<Message>>(`/chat/conversations/${conversationId}/messages`),
     
   // Send message
   sendMessage: (conversationId: string, data: SendMessageRequest): Promise<SendMessageResponse> =>
@@ -214,7 +215,7 @@ export const messageService = {
     communicationsClient.post(`/chat/messages/${messageId}/read`),
     
   // Get online users
-  getOnlineUsers: (): Promise<AuthResponse> =>
+  getOnlineUsers: (): Promise<ApiResponse<User[]>> =>
     communicationsClient.get<User[]>('/chat/online-users'),
 };
 
@@ -223,12 +224,11 @@ export const messageService = {
 // ============================================================================
 export const emailService = {
   // Get emails
-  getEmails: (params?: GetEmailsRequest): Promise<GetEmailsResponse> =>
-    communicationsClient.get<Email[]>('/emails', {
-    }),
+  getEmails: (params?: GetEmailsRequest): Promise<ApiResponse<PaginatedResponse<Email>>> =>
+    communicationsClient.get<PaginatedResponse<Email>>('/emails'),
     
   // Get email by ID
-  getEmail: (id: string): Promise<AuthResponse> =>
+  getEmail: (id: string): Promise<ApiResponse<Email>> =>
     communicationsClient.get<Email>(`/emails/${id}`),
     
   // Send email
@@ -257,12 +257,11 @@ export const emailService = {
 // ============================================================================
 export const notificationService = {
   // Get notifications
-  getNotifications: (params?: GetNotificationsRequest): Promise<GetNotificationsResponse> =>
-    communicationsClient.get<Notification[]>('/notifications', {
-    }),
+  getNotifications: (params?: GetNotificationsRequest): Promise<ApiResponse<PaginatedResponse<Notification>>> =>
+    communicationsClient.get<PaginatedResponse<Notification>>('/notifications'),
     
   // Create notification
-  createNotification: (data: Partial<Notification>): Promise<AuthResponse> =>
+  createNotification: (data: Partial<Notification>): Promise<ApiResponse<Notification>> =>
     communicationsClient.post<Partial<Notification>, Notification>('/notifications', data),
     
   // Mark notification as read
@@ -283,12 +282,11 @@ export const notificationService = {
 // ============================================================================
 export const flavorService = {
   // Get all flavors
-  getFlavors: (params?: GetFlavorsRequest): Promise<GetFlavorsResponse> =>
-    inventoryClient.get<Flavor[]>('/flavors', {
-    }),
+  getFlavors: (params?: GetFlavorsRequest): Promise<ApiResponse<PaginatedResponse<Flavor>>> =>
+    inventoryClient.get<PaginatedResponse<Flavor>>('/flavors'),
     
   // Get flavor by ID
-  getFlavor: (id: string): Promise<GetFlavorResponse> =>
+  getFlavor: (id: string): Promise<ApiResponse<Flavor>> =>
     inventoryClient.get<Flavor>(`/flavors/${id}`),
     
   // Create flavor (manufacturer/admin only)
@@ -309,12 +307,11 @@ export const flavorService = {
 // ============================================================================
 export const orderService = {
   // Get orders
-  getOrders: (params?: GetOrdersRequest): Promise<GetOrdersResponse> =>
-    salesClient.get<Order[]>('/orders', {
-    }),
+  getOrders: (params?: GetOrdersRequest): Promise<ApiResponse<PaginatedResponse<Order>>> =>
+    salesClient.get<PaginatedResponse<Order>>('/orders'),
     
   // Get order by ID
-  getOrder: (id: string): Promise<AuthResponse> =>
+  getOrder: (id: string): Promise<ApiResponse<Order>> =>
     salesClient.get<Order>(`/orders/${id}`),
     
   // Create order
@@ -335,12 +332,11 @@ export const orderService = {
 // ============================================================================
 export const storeService = {
   // Get all stores
-  getStores: (params?: GetStoresRequest): Promise<GetStoresResponse> =>
-    salesClient.get<Store[]>('/shops', {
-    }),
+  getStores: (params?: GetStoresRequest): Promise<ApiResponse<PaginatedResponse<Store>>> =>
+    salesClient.get<PaginatedResponse<Store>>('/shops'),
     
   // Get store by ID
-  getStore: (id: string): Promise<GetStoreResponse> =>
+  getStore: (id: string): Promise<ApiResponse<Store>> =>
     salesClient.get<Store>(`/shops/${id}`),
     
   // Create store (executive only)

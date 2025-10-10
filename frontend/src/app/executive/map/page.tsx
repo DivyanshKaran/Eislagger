@@ -324,8 +324,7 @@ export default function ExecutiveMapPage() {
                   display: flex;
                   align-items: center;
                   justify-content: center;
-                  box-shadow: <｜tool▁call▁begin｜>
-0 8px 25px rgba(236,72,153,0.4);
+                  box-shadow: 0 8px 25px rgba(236,72,153,0.4);
                   animation: pulse-glow 1s ease-in-out infinite;
                 ">
                   🍧
@@ -514,10 +513,10 @@ export default function ExecutiveMapPage() {
   };
 
   return (
-    <div className="h-screen w-full bg-gradient-to-br from-purple-50 via-pink-50 to-rose-50 dark:from-slate-900 dark:via-purple-900/20 dark:to-pink-900/20 relative">
+    <div className="fixed inset-0 bg-gradient-to-br from-purple-50 via-pink-50 to-rose-50 dark:from-slate-900 dark:via-purple-900/20 dark:to-pink-900/20">
       <style dangerouslySetInnerHTML={{ __html: customStyles }} />
       
-      {/* Map Container */}
+      {/* Map Container - Full Content Area */}
       <div className="absolute inset-0 z-0">
         <div ref={mapRef} className="h-full w-full"></div>
         
@@ -536,80 +535,82 @@ export default function ExecutiveMapPage() {
         )}
       </div>
       
-      {/* Top Ice Cream Control Bar */}
-      <div className="absolute top-4 left-4 right-4 z-20">
-        <div className="bg-gradient-to-r from-purple-200/95 via-pink-200/95 to-rose-200/95 dark:from-purple-900/95 dark:via-pink-900/95 dark:to-slate-900/95 backdrop-blur-xl rounded-2xl p-4 shadow-xl border border-purple-300/50 dark:border-purple-800/50">
-          <div className="flex items-center justify-between">
-            {/* Left - Sweet Branding */}
-            <div className="flex items-center gap-3">
-              <div className="w-12 h-12 bg-gradient-to-br from-purple-600 via-pink-600 to-rose-600 rounded-2xl flex items-center justify-center animate-pulse-glow">
-                <ShoppingBag className="w-6 h-6 text-white" />
-              </div>
-              <div>
-                <h1 className="text-xl font-bold text-purple-900 dark:text-white flex items-center gap-2">
-                  🍦 Ice Cream Store Locator
-                </h1>
-                <p className="text-sm text-purple-600 dark:text-purple-400">Find your favorite frozen treats!</p>
-              </div>
-            </div>
-
-            {/* Center - Search & Location */}
-            <div className="flex items-center gap-3 flex-1 max-w-md mx-4">
-              <div className="relative flex-1">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-purple-600" />
-                <Input
-                  type="text"
-                  placeholder="Search ice cream stores..."
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  className="pl-10 bg-white/90 dark:bg-slate-800/90 border-purple-300 dark:border-purple-700 rounded-xl text-purple-900 dark:text-white"
-                />
-              </div>
-              <Button
-                onClick={getMyIceCreamLocation}
-                disabled={locationPermission === "getting"}
-                className={`rounded-xl transition-all ${
-                  locationPermission === "granted" 
-                    ? "bg-emerald-600 hover:bg-emerald-700 text-white animate-pulse-glow" 
-                    : locationPermission === "denied"
-                    ? "bg-red-600 hover:bg-red-700 text-white"
-                    : "bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white"
-                }`}
-              >
-                {locationPermission === "getting" ? (
-                  <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                ) : (
-                  <Locate className="w-4 h-4" />
-                )}
-              </Button>
-            </div>
-
-            {/* Right - Actions */}
-            <div className="flex items-center gap-2">
-              <Button
-                onClick={() => setShowFilters(!showFilters)}
-                className="bg-white/90 hover:bg-purple-100 dark:bg-slate-800/90 dark:hover:bg-purple-900/90 text-purple-900 dark:text-purple-200 border-purple-300 dark:border-purple-700 rounded-xl transition-all"
-              >
-                <Filter className="w-4 h-4 mr-2" />
-                Store Types
-              </Button>
-              <Button
-                onClick={() => window.location.reload()}
-                className="bg-white/90 hover:bg-purple-100 dark:bg-slate-800/90 dark:hover:bg-purple-900/90 text-purple-900 dark:text-purple-200 border-purple-300 dark:border-purple-700 rounded-xl transition-all"
-              >
-                <RefreshCw className="w-4 h-4" />
-              </Button>
-            </div>
+      {/* Minimal Top Controls */}
+      <div className="absolute top-4 left-4 z-20">
+        <div className="flex items-center gap-3">
+          <div className="w-12 h-12 bg-gradient-to-br from-purple-600 via-pink-600 to-rose-600 rounded-2xl flex items-center justify-center animate-pulse-glow">
+            <ShoppingBag className="w-6 h-6 text-white" />
+          </div>
+          <div>
+            <h1 className="text-xl font-bold text-purple-900 dark:text-white flex items-center gap-2">
+              🍦 Store Locator
+            </h1>
+            <p className="text-sm text-purple-600 dark:text-purple-400">Find your favorite stores!</p>
           </div>
         </div>
       </div>
 
-      {/* Store Type Filter Panel */}
+      {/* Search Bar */}
+      <div className="absolute top-4 left-64 z-20">
+        <div className="relative">
+          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-purple-600" />
+          <Input
+            type="text"
+            placeholder="Search stores..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="pl-10 w-80 bg-white/90 dark:bg-slate-800/90 border-purple-300 dark:border-purple-700 rounded-xl text-purple-900 dark:text-white backdrop-blur-sm"
+          />
+        </div>
+      </div>
+
+      {/* Location Button */}
+      <div className="absolute top-4 right-4 z-20">
+        <Button
+          onClick={getMyIceCreamLocation}
+          disabled={locationPermission === "getting"}
+          className={`rounded-xl transition-all ${
+            locationPermission === "granted" 
+              ? "bg-emerald-600 hover:bg-emerald-700 text-white animate-pulse-glow" 
+              : locationPermission === "denied"
+              ? "bg-red-600 hover:bg-red-700 text-white"
+              : "bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white"
+          }`}
+        >
+          {locationPermission === "getting" ? (
+            <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+          ) : (
+            <Locate className="w-4 h-4" />
+          )}
+        </Button>
+      </div>
+
+      {/* Filter Toggle Button */}
+      <div className="absolute top-16 right-4 z-20">
+        <Button
+          onClick={() => setShowFilters(!showFilters)}
+          className="bg-white/90 hover:bg-purple-100 dark:bg-slate-800/90 dark:hover:bg-purple-900/90 text-purple-900 dark:text-purple-200 border-purple-300 dark:border-purple-700 rounded-xl transition-all backdrop-blur-sm"
+        >
+          <Filter className="w-4 h-4 mr-2" />
+          Filters
+        </Button>
+      </div>
+
+      {/* Store Type Filter Panel - Bottom Right */}
       {showFilters && (
-        <div className="absolute top-24 left-4 z-20 w-80 bg-gradient-to-br from-purple-100/95 via-pink-100/95 to-rose-100/95 dark:from-purple-900/95 dark:via-pink-900/95 dark:to-slate-900/95 backdrop-blur-xl rounded-2xl shadow-xl border border-purple-300/50 dark:border-purple-800/50 p-4 animate-slide-in-up">
-          <h3 className="text-lg font-bold text-purple-900 dark:text-white mb-4 flex items-center gap-2">
-            🏪 Store Types
-          </h3>
+        <div className="absolute bottom-4 right-4 z-20 w-80 bg-gradient-to-br from-purple-100/95 via-pink-100/95 to-rose-100/95 dark:from-purple-900/95 dark:via-pink-900/95 dark:to-slate-900/95 backdrop-blur-xl rounded-2xl shadow-xl border border-purple-300/50 dark:border-purple-800/50 p-4 animate-slide-in-up">
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="text-lg font-bold text-purple-900 dark:text-white flex items-center gap-2">
+              🏪 Store Types
+            </h3>
+            <Button
+              onClick={() => setShowFilters(false)}
+              size="sm"
+              className="bg-white/80 hover:bg-purple-100 dark:bg-slate-800/80 dark:hover:bg-purple-900/80 text-purple-900 dark:text-purple-200 border-purple-300 dark:border-purple-700"
+            >
+              ×
+            </Button>
+          </div>
           <div className="space-y-3">
             {["flagship", "branch", "outlet", "seasonal", "coming-soon"].map((type) => {
               const Icon = getStoreIcon(type);
@@ -645,7 +646,7 @@ export default function ExecutiveMapPage() {
 
       {/* Store Details Panel */}
       {selectedStore && (
-        <div className="absolute bottom-4 right-4 z-20 w-96 bg-gradient-to-br from-purple-100/95 via-pink-100/95 to-rose-100/95 dark:from-purple-900/95 dark:via-pink-900/95 dark:to-slate-900/95 backdrop-blur-xl rounded-2xl shadow-xl border border-purple-300/50 dark:border-purple-800/50 p-6 animate-slide-in-up">
+        <div className={`absolute z-20 w-96 bg-gradient-to-br from-purple-100/95 via-pink-100/95 to-rose-100/95 dark:from-purple-900/95 dark:via-pink-900/95 dark:to-slate-900/95 backdrop-blur-xl rounded-2xl shadow-xl border border-purple-300/50 dark:border-purple-800/50 p-6 animate-slide-in-up ${showFilters ? 'bottom-4 right-96' : 'bottom-4 right-4'}`}>
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-3">
               <div className="w-14 h-14 bg-gradient-to-br from-purple-600 via-pink-600 to-rose-600 rounded-2xl flex items-center justify-center animate-pulse-glow">

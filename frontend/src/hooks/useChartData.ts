@@ -1,6 +1,6 @@
 import { useState, useCallback, useMemo } from "react";
 
-import { ChartData } from "./useDashboardData";
+import { ChartDataPoint } from "@/types/utils";
 
 export interface ChartConfig {
   type: "line" | "bar" | "area" | "pie" | "radar" | "scatter";
@@ -12,7 +12,7 @@ export interface ChartConfig {
 }
 
 export interface UseChartDataProps {
-  data: ChartData[];
+  data: ChartDataPoint[];
   config: ChartConfig;
   timeRange?: "7d" | "30d" | "90d" | "1y";
 }
@@ -48,10 +48,8 @@ export function useChartData({
     }
 
     return data.filter((item) => {
-      if (item.date && typeof item.date === "string") {
-        return new Date(item.date) >= filterDate;
-      }
-      return true; // If no date field, return all data
+      // ChartData doesn't have a date field, so return all data
+      return true;
     });
   }, [data, timeRange]);
 

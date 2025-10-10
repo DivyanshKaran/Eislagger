@@ -18,6 +18,7 @@ import {
   Star,
   CheckCircle,
   AlertTriangle,
+  Loader2,
 } from "lucide-react";
 import {
   LineChart,
@@ -36,6 +37,8 @@ import {
 } from "recharts";
 
 import { Button } from "@/components/ui/button";
+import { useExecutiveDashboard, useKPIData, useSalesTrendsData, useUserActivity } from "@/hooks";
+import { useAuth } from "@/lib/auth-context";
 
 // Add custom animations
 const customStyles = `
@@ -113,6 +116,13 @@ const recentDecisions = [
 
 export default function ExecutiveDashboard() {
   const [selectedPeriod, setSelectedPeriod] = useState("6M");
+  const { user } = useAuth();
+  
+  // Fetch dashboard data from backend
+  const { data: dashboardData, isLoading: dashboardLoading, error: dashboardError } = useExecutiveDashboard();
+  const { data: kpisData, isLoading: kpisLoading } = useKPIData({ period: selectedPeriod });
+  const { data: salesTrendsData, isLoading: trendsLoading } = useSalesTrendsData(selectedPeriod);
+  const { data: userActivityData, isLoading: activityLoading } = useUserActivity(selectedPeriod);
 
   useEffect(() => {
     if (typeof window !== "undefined" && !document.head.querySelector("#executive-dashboard-styles")) {
@@ -122,6 +132,30 @@ export default function ExecutiveDashboard() {
       document.head.appendChild(style);
     }
   }, []);
+
+  // Show loading state
+  if (dashboardLoading || kpisLoading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="flex items-center gap-2">
+          <Loader2 className="w-6 h-6 animate-spin" />
+          <span>Loading executive dashboard...</span>
+        </div>
+      </div>
+    );
+  }
+
+  // Show error state
+  if (dashboardError) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="text-center">
+          <h2 className="text-xl font-semibold text-red-600 mb-2">Error Loading Dashboard</h2>
+          <p className="text-gray-600">{dashboardError.message}</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="relative">

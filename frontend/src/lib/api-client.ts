@@ -1,6 +1,6 @@
 // Centralized API client for microservices
 import type { ApiResponse } from "@/types/common";
-import type { ApiErrorResponse } from "@/types/api";
+import type { ApiErrorResponse } from "@/types/api/index";
 
 // API Configuration
 const API_BASE_URLS = {

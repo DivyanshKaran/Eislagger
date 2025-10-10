@@ -158,7 +158,7 @@ export default function FlavorDetailPage({
         <div className="text-center space-y-4">
           <div className="text-6xl">🍦</div>
           <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Flavor Not Found</h2>
-          <p className="text-gray-600 dark:text-gray-400">The flavor you're looking for doesn't exist or has been removed.</p>
+          <p className="text-gray-600 dark:text-gray-400">The flavor you&apos;re looking for doesn&apos;t exist or has been removed.</p>
           <Link href="/patron/browse">
             <Button className="bg-gradient-to-r from-orange-400 to-pink-500 text-white hover:from-orange-500 hover:to-pink-600">
               Back to Browse

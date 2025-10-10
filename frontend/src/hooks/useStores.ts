@@ -5,7 +5,7 @@ import { storeKeys } from '@/services/queryKeys';
 import type { 
   GetStoresRequest, 
   CreateStoreRequest
-} from '@/types/api';
+} from '@/types/api/index';
 import type { Store } from '@/types/models';
 
 // ============================================================================
@@ -281,9 +281,9 @@ export function useStoreStats() {
     queryKey: [...storeKeys.all, 'stats'],
     queryFn: async () => {
       const response = await dataService.store.getStores({ page: 1, limit: 20 });
-      // GetStoresResponse extends PaginatedResponse<Store>, so it has data directly
+      // GetStoresResponse extends PaginatedResponse<Store>, so it has data.data
       
-      const stores = response.data;
+      const stores = response.data.data;
       return {
         total: stores.length,
         active: stores.filter(store => store.isActive).length,

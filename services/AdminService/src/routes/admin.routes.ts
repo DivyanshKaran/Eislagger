@@ -15,6 +15,8 @@ import {
   getSystemConfig,
   updateSystemConfig,
   getAvailableThemes,
+  createTheme,
+  updateTheme,
   scheduleMaintenance,
   createBroadcast,
   getBroadcasts,

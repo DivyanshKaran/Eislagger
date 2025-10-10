@@ -1,0 +1,60 @@
+<svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="executiveGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#8b5cf6" />
+      <stop offset="100%" stop-color="#a855f7" />
+    </linearGradient>
+  </defs>
+  
+  <!-- Briefcase body -->
+  <rect
+    x="4"
+    y="8"
+    width="16"
+    height="12"
+    rx="2"
+    stroke="url(#executiveGradient)"
+    stroke-width="1.5"
+    fill="none"
+  />
+  
+  <!-- Briefcase handle -->
+  <path
+    d="M8 8V6a2 2 0 012-2h4a2 2 0 012 2v2"
+    stroke="url(#executiveGradient)"
+    stroke-width="1.5"
+    stroke-linecap="round"
+    fill="none"
+  />
+  
+  <!-- Crown -->
+  <path
+    d="M6 6h12l-2 2 2 2-2 2 2 2H6l2-2-2-2 2-2z"
+    stroke="url(#executiveGradient)"
+    stroke-width="1.2"
+    stroke-linecap="round"
+    stroke-linejoin="round"
+    fill="url(#executiveGradient)"
+    opacity="0.3"
+  />
+  
+  <!-- Chart bars -->
+  <rect x="7" y="14" width="1.5" height="4" fill="url(#executiveGradient)" opacity="0.6" />
+  <rect x="9.5" y="12" width="1.5" height="6" fill="url(#executiveGradient)" opacity="0.6" />
+  <rect x="12" y="10" width="1.5" height="8" fill="url(#executiveGradient)" opacity="0.6" />
+  <rect x="14.5" y="13" width="1.5" height="5" fill="url(#executiveGradient)" opacity="0.6" />
+  
+  <!-- Chart line -->
+  <path
+    d="M7 16l2-1 2 2 2-3 2 1"
+    stroke="url(#executiveGradient)"
+    stroke-width="1"
+    stroke-linecap="round"
+    stroke-linejoin="round"
+    fill="none"
+  />
+  
+  <!-- Briefcase clasp -->
+  <circle cx="12" cy="11" r="1" fill="url(#executiveGradient)" />
+</svg>
+

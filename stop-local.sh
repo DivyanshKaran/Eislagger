@@ -1,7 +1,7 @@
 #!/bin/bash
-
-# EisLager Stop Script
-# Simple script to stop all EisLager services
+# EisLager Local Stop Script
+# Quick script to stop all EisLager services
+# Version: 1.0.0
 
 set -e
 
@@ -10,7 +10,23 @@ RED='\033[0;31m'
 GREEN='\033[0;32m'
 YELLOW='\033[1;33m'
 BLUE='\033[0;34m'
+PURPLE='\033[0;35m'
+BOLD='\033[1m'
 NC='\033[0m' # No Color
+
+# Configuration
+PROJECT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+PID_FILE="$PROJECT_DIR/.service_pids"
+
+# Print functions
+print_header() {
+    echo -e "${PURPLE}${BOLD}"
+    echo "╔══════════════════════════════════════════════════════════════╗"
+    echo "║                    🛑 EisLager Stop                        ║"
+    echo "║                   Stopping All Services                     ║"
+    echo "╚══════════════════════════════════════════════════════════════╝"
+    echo -e "${NC}"
+}
 
 print_status() {
     echo -e "${BLUE}[INFO]${NC} $1"
@@ -28,140 +44,119 @@ print_error() {
     echo -e "${RED}[ERROR]${NC} $1"
 }
 
-print_header() {
-    echo -e "${BLUE}================================${NC}"
-    echo -e "${BLUE}🛑 Stopping EisLager Services${NC}"
-    echo -e "${BLUE}================================${NC}"
-}
-
-# Function to stop Docker services
-stop_docker_services() {
-    print_status "Stopping Docker services..."
+# Stop all services
+stop_services() {
+    print_status "Stopping all EisLager services..."
     
-    # Stop main compose
-    if [ -f "docker-compose.yml" ]; then
+    # Stop Docker services if running
+    if [ -f "docker-compose.yml" ] && docker-compose ps -q | grep -q .; then
+        print_status "Stopping Docker services..."
         docker-compose down
-        print_success "Stopped main Docker services"
+        print_success "Docker services stopped"
     fi
     
-    # Stop infrastructure compose
-    if [ -f "docker-compose.infrastructure.yml" ]; then
+    # Stop infrastructure services
+    if [ -f "docker-compose.infrastructure.yml" ] && docker-compose -f docker-compose.infrastructure.yml ps -q | grep -q .; then
+        print_status "Stopping infrastructure services..."
         docker-compose -f docker-compose.infrastructure.yml down
-        print_success "Stopped infrastructure Docker services"
-    fi
-}
-
-# Function to stop manual services
-stop_manual_services() {
-    print_status "Stopping manual services..."
-    
-    # Kill npm processes
-    if pgrep -f "npm run dev" > /dev/null; then
-        pkill -f "npm run dev"
-        print_success "Stopped npm development processes"
-    else
-        print_warning "No npm development processes found"
+        print_success "Infrastructure services stopped"
     fi
     
-    # Kill ts-node processes
-    if pgrep -f "ts-node" > /dev/null; then
-        pkill -f "ts-node"
-        print_success "Stopped ts-node processes"
-    else
-        print_warning "No ts-node processes found"
-    fi
-    
-    # Kill next processes
-    if pgrep -f "next dev" > /dev/null; then
-        pkill -f "next dev"
-        print_success "Stopped Next.js development processes"
-    else
-        print_warning "No Next.js development processes found"
-    fi
-    
-    # Clean up PID file
-    if [ -f ".service_pids" ]; then
-        rm .service_pids
-        print_success "Cleaned up PID file"
-    fi
-}
-
-# Function to show running processes
-show_running_processes() {
-    print_status "Checking for running EisLager processes..."
-    
-    # Check for Docker containers
-    if command -v docker >/dev/null 2>&1; then
-        RUNNING_CONTAINERS=$(docker ps --filter "name=eislagger" --format "table {{.Names}}\t{{.Status}}" 2>/dev/null || true)
-        if [ -n "$RUNNING_CONTAINERS" ]; then
-            print_warning "Running Docker containers:"
-            echo "$RUNNING_CONTAINERS"
+    # Stop manually started services
+    if [ -f "$PID_FILE" ]; then
+        print_status "Stopping manually started services..."
+        local stopped_count=0
+        while IFS=':' read -r pid service_name port; do
+            if kill -0 "$pid" 2>/dev/null; then
+                print_status "Stopping $service_name (PID: $pid)..."
+                kill "$pid"
+                stopped_count=$((stopped_count + 1))
+            fi
+        done < "$PID_FILE"
+        
+        if [ $stopped_count -gt 0 ]; then
+            print_success "$stopped_count service(s) stopped"
         else
-            print_success "No EisLager Docker containers running"
+            print_status "No running services found"
         fi
+        
+        rm -f "$PID_FILE"
+    else
+        print_status "No PID file found - no manually started services to stop"
     fi
     
-    # Check for Node.js processes
-    NODE_PROCESSES=$(pgrep -f "eislagger\|AuthService\|SalesService\|InventoryService\|AdminService\|CommunicationsService\|AnalyticsService" 2>/dev/null || true)
-    if [ -n "$NODE_PROCESSES" ]; then
-        print_warning "Running Node.js processes:"
-        ps -p $NODE_PROCESSES -o pid,ppid,cmd 2>/dev/null || true
-    else
-        print_success "No EisLager Node.js processes running"
-    fi
+    print_success "All services stopped!"
 }
 
-# Main script logic
+# Show help
+show_help() {
+    echo -e "${PURPLE}${BOLD}EisLager Stop Script${NC}"
+    echo ""
+    echo "Usage: $0 [OPTIONS]"
+    echo ""
+    echo -e "${CYAN}Options:${NC}"
+    echo "  -h, --help       Show this help message"
+    echo "  -f, --force      Force stop all services (kill -9)"
+    echo ""
+    echo -e "${CYAN}Examples:${NC}"
+    echo "  $0               # Stop all services gracefully"
+    echo "  $0 --force       # Force stop all services"
+    echo ""
+}
+
+# Force stop all services
+force_stop_services() {
+    print_warning "Force stopping all services..."
+    
+    # Force stop Docker services
+    if [ -f "docker-compose.yml" ] && docker-compose ps -q | grep -q .; then
+        print_status "Force stopping Docker services..."
+        docker-compose kill
+        docker-compose down
+    fi
+    
+    # Force stop infrastructure services
+    if [ -f "docker-compose.infrastructure.yml" ] && docker-compose -f docker-compose.infrastructure.yml ps -q | grep -q .; then
+        print_status "Force stopping infrastructure services..."
+        docker-compose -f docker-compose.infrastructure.yml kill
+        docker-compose -f docker-compose.infrastructure.yml down
+    fi
+    
+    # Force stop manually started services
+    if [ -f "$PID_FILE" ]; then
+        print_status "Force stopping manually started services..."
+        while IFS=':' read -r pid service_name port; do
+            if kill -0 "$pid" 2>/dev/null; then
+                print_status "Force stopping $service_name (PID: $pid)..."
+                kill -9 "$pid" 2>/dev/null || true
+            fi
+        done < "$PID_FILE"
+        rm -f "$PID_FILE"
+    fi
+    
+    print_success "All services force stopped!"
+}
+
+# Main function
 main() {
     print_header
     
-    # Parse command line arguments
-    case "${1:-all}" in
-        "docker"|"d")
-            stop_docker_services
+    case "${1:-}" in
+        "-h"|"--help")
+            show_help
             ;;
-        "manual"|"m")
-            stop_manual_services
+        "-f"|"--force")
+            force_stop_services
             ;;
-        "all"|"a")
-            stop_docker_services
-            stop_manual_services
-            ;;
-        "status"|"s")
-            show_running_processes
-            exit 0
-            ;;
-        "help"|"h"|"-h"|"--help")
-            echo "Usage: $0 [OPTION]"
-            echo ""
-            echo "Options:"
-            echo "  docker, d     Stop Docker services only"
-            echo "  manual, m     Stop manual services only"
-            echo "  all, a        Stop all services (default)"
-            echo "  status, s     Show running processes"
-            echo "  help, h       Show this help message"
-            echo ""
-            echo "Examples:"
-            echo "  $0            # Stop all services"
-            echo "  $0 docker     # Stop Docker services only"
-            echo "  $0 manual     # Stop manual services only"
-            echo "  $0 status     # Show running processes"
-            echo ""
-            exit 0
+        "")
+            stop_services
             ;;
         *)
             print_error "Unknown option: $1"
-            echo "Use '$0 help' for usage information"
+            show_help
             exit 1
             ;;
     esac
-    
-    print_success "EisLager services stopped!"
-    
-    # Show final status
-    echo ""
-    print_status "Final status check:"
-    show_running_processes
 }
 
 # Run main function

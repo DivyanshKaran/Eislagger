@@ -19,7 +19,7 @@ export default function ManufacturerLayout({
       enableSystem
       disableTransitionOnChange
     >
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-sky-50 to-indigo-50 dark:from-blue-950/30 dark:via-sky-950/30 dark:to-indigo-950/30">
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-sky-50 to-indigo-50 dark:from-blue-950/30 dark:via-sky-950/30 dark:to-indigo-950/30" data-route="manufacturer">
         {/* Animated Background Elements */}
         <div className="fixed inset-0 overflow-hidden pointer-events-none">
           <div className="absolute -top-40 -right-40 w-80 h-80 bg-gradient-to-br from-blue-300/30 to-sky-300/30 dark:from-blue-300/20 dark:to-sky-300/20 rounded-full blur-3xl animate-pulse"></div>

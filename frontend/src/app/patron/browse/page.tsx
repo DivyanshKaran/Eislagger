@@ -47,12 +47,14 @@ export default function PatronBrowsePage() {
   const [menuOpen, setMenuOpen] = useState(false);
 
   // Use the new hooks for data fetching
-  const { data: flavors = [], isLoading: loading, error } = useFlavors({ 
+  const { data: flavorsResponse, isLoading: loading, error } = useFlavors({ 
     available: true,
     page: 1,
     limit: 100
   });
-  const { data: searchResults = [] } = useSearchFlavors(search);
+  const flavors = flavorsResponse?.data || [];
+  const { data: searchResultsResponse } = useSearchFlavors(search);
+  const searchResults = searchResultsResponse?.data || [];
 
   // Use search results if there's a search term, otherwise use all flavors
   const displayFlavors = search ? searchResults : flavors;

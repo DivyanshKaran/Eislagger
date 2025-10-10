@@ -21,6 +21,7 @@ import {
   Download,
   RefreshCw,
   Eye,
+  Loader2,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -40,6 +41,8 @@ import {
   Tooltip,
   Legend,
 } from "recharts";
+import { usePatronDashboard, useRecentOrders, useUserOrders, useSalesTrendsData } from "@/hooks";
+import { useAuth } from "@/lib/auth-context";
 
 // Custom styles for animations
 const customStyles = `
@@ -151,6 +154,12 @@ const recentOrders = [
 
 export default function PatronDashboardPage() {
   const [timeRange, setTimeRange] = useState("30d");
+  const { user } = useAuth();
+  
+  // Fetch dashboard data from backend
+  const { data: dashboardData, isLoading: dashboardLoading, error: dashboardError } = usePatronDashboard();
+  const { data: recentOrdersData, isLoading: ordersLoading } = useRecentOrders(5);
+  const { data: salesTrendsData, isLoading: trendsLoading } = useSalesTrendsData(timeRange);
 
   useEffect(() => {
     if (typeof window !== "undefined" && !document.head.querySelector("#patron-dashboard-styles")) {
@@ -160,6 +169,30 @@ export default function PatronDashboardPage() {
       document.head.appendChild(style);
     }
   }, []);
+
+  // Show loading state
+  if (dashboardLoading || ordersLoading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="flex items-center gap-2">
+          <Loader2 className="w-6 h-6 animate-spin" />
+          <span>Loading dashboard...</span>
+        </div>
+      </div>
+    );
+  }
+
+  // Show error state
+  if (dashboardError) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="text-center">
+          <h2 className="text-xl font-semibold text-red-600 mb-2">Error Loading Dashboard</h2>
+          <p className="text-gray-600">{dashboardError.message}</p>
+        </div>
+      </div>
+    );
+  }
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -181,7 +214,7 @@ export default function PatronDashboardPage() {
           <div className="flex items-center justify-between mb-4">
             <div>
               <h1 className="text-4xl font-bold text-slate-800 dark:text-white mb-2">
-                Welcome Back, Ice Cream Lover! 🍦
+                Welcome Back, {user?.name || 'Ice Cream Lover'}! 🍦
               </h1>
               <p className="text-lg text-slate-600 dark:text-slate-300">
                 Discover your sweet journey and favorite flavors
@@ -230,7 +263,9 @@ export default function PatronDashboardPage() {
               </div>
             </div>
             <div>
-              <h3 className="text-2xl font-bold text-slate-800 dark:text-white mb-1">47</h3>
+              <h3 className="text-2xl font-bold text-slate-800 dark:text-white mb-1">
+                {recentOrdersData?.length || 0}
+              </h3>
               <p className="text-slate-600 dark:text-slate-400 text-sm">Total Orders</p>
               <p className="text-xs text-slate-500 dark:text-slate-500 mt-1">This {timeRange}</p>
             </div>
@@ -264,7 +299,9 @@ export default function PatronDashboardPage() {
               </div>
             </div>
             <div>
-              <h3 className="text-2xl font-bold text-slate-800 dark:text-white mb-1">₹2,847</h3>
+              <h3 className="text-2xl font-bold text-slate-800 dark:text-white mb-1">
+                ₹{Array.isArray(salesTrendsData) ? salesTrendsData.reduce((sum, trend) => sum + trend.revenue, 0) : 0}
+              </h3>
               <p className="text-slate-600 dark:text-slate-400 text-sm">Total Spent</p>
               <p className="text-xs text-slate-500 dark:text-slate-500 mt-1">This {timeRange}</p>
             </div>
@@ -306,9 +343,9 @@ export default function PatronDashboardPage() {
             </div>
             <div className="h-64">
               <ResponsiveContainer width="100%" height="100%">
-                <LineChart data={orderTrends}>
+                <LineChart data={Array.isArray(salesTrendsData) ? salesTrendsData : orderTrends}>
                   <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
-                  <XAxis dataKey="name" stroke="#64748b" />
+                  <XAxis dataKey="date" stroke="#64748b" />
                   <YAxis stroke="#64748b" />
                   <Tooltip 
                     contentStyle={{
@@ -329,7 +366,7 @@ export default function PatronDashboardPage() {
                   />
                   <Line 
                     type="monotone" 
-                    dataKey="amount" 
+                    dataKey="revenue" 
                     stroke="#ec4899" 
                     strokeWidth={3}
                     dot={{ fill: '#ec4899', strokeWidth: 2, r: 4 }}
@@ -410,22 +447,28 @@ export default function PatronDashboardPage() {
           <div className="bg-white/80 dark:bg-slate-800/80 backdrop-blur-xl rounded-2xl p-6 shadow-lg border border-purple-200/50 dark:border-purple-800/40">
             <h3 className="text-xl font-semibold text-slate-800 dark:text-white mb-6">Recent Orders</h3>
             <div className="space-y-4">
-              {recentOrders.map((order) => (
+              {(recentOrdersData || recentOrders).map((order: any) => (
                 <div key={order.id} className="flex items-center justify-between p-3 bg-purple-50/50 dark:bg-slate-700/50 rounded-lg">
                   <div className="flex items-center gap-3">
                     <div className="w-10 h-10 bg-gradient-to-br from-pink-500 to-rose-600 rounded-lg flex items-center justify-center">
                       <Gift className="w-5 h-5 text-white" />
                     </div>
                     <div>
-                      <h4 className="font-medium text-slate-800 dark:text-white">{order.flavor}</h4>
-                      <p className="text-sm text-slate-600 dark:text-slate-400">{order.store}</p>
+                      <h4 className="font-medium text-slate-800 dark:text-white">
+                        {order.flavor || order.items?.[0]?.name || 'Ice Cream Order'}
+                      </h4>
+                      <p className="text-sm text-slate-600 dark:text-slate-400">
+                        {order.store || order.storeName || 'Store'}
+                      </p>
                     </div>
                   </div>
                   <div className="flex items-center gap-2">
                     <Badge className={getStatusColor(order.status)}>
                       {order.status.toUpperCase()}
                     </Badge>
-                    <span className="text-sm font-medium text-slate-800 dark:text-white">{order.amount}</span>
+                    <span className="text-sm font-medium text-slate-800 dark:text-white">
+                      ₹{order.amount || order.totalAmount || 0}
+                    </span>
                     {order.rating > 0 && (
                       <div className="flex items-center gap-1">
                         <StarIcon className="w-4 h-4 text-yellow-400 fill-current" />

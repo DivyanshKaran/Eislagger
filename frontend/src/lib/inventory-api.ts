@@ -171,7 +171,7 @@ export const inventoryService = {
     expiryDate: string;
     qualityGrade?: "A" | "B" | "C" | "F";
     notes?: string;
-  }) => stockItem: StockItem } =>
+  }) =>
     inventoryApi.post(`/inventory/factories/${factoryId}/stock-items`, data),
 
   getFactoryStockItems: (factoryId: string, params?: {
@@ -179,7 +179,7 @@ export const inventoryService = {
     qualityGrade?: string;
     limit?: number;
     offset?: number;
-  }) => stockItems: StockItem[]; pagination?: any } =>
+  }) =>
     inventoryApi.get(`/inventory/factories/${factoryId}/stock-items`),
 
   updateStockItem: (itemId: string, data: {
@@ -189,10 +189,10 @@ export const inventoryService = {
     approvalStatus?: "Pending" | "Approved" | "Rejected" | "Hold";
     status?: "Produced" | "QualityControl" | "Approved" | "Shipped" | "Delivered" | "Rejected" | "Expired";
     notes?: string;
-  }) => stockItem: StockItem } =>
+  }) =>
     inventoryApi.put(`/inventory/stock-items/${itemId}`, data),
 
-  deleteStockItem: (itemId: string) =>any>> =>
+  deleteStockItem: (itemId: string) =>
     inventoryApi.delete(`/inventory/stock-items/${itemId}`),
 
   updateStockItemExpiry: (itemId: string, data: {
@@ -201,7 +201,7 @@ export const inventoryService = {
       enabled?: boolean;
       daysBeforeExpiry?: number;
     };
-  }) => stockItem: StockItem } =>
+  }) =>
     inventoryApi.post(`/inventory/stock-items/${itemId}/expiry`, data),
 
   // Flavor Catalog
@@ -211,7 +211,7 @@ export const inventoryService = {
     manufacturerId?: string;
     limit?: number;
     offset?: number;
-  }) => flavors: Flavor[]; pagination?: any } =>
+  }) =>
     inventoryApi.get("/inventory/flavors"),
 
   createFlavor: (data: {
@@ -227,16 +227,16 @@ export const inventoryService = {
     basePrice: number;
     productionCost: number;
     imageUrl?: string;
-  }) => flavor: Flavor } =>
+  }) =>
     inventoryApi.post("/inventory/flavors", data),
 
-  getFlavor: (flavorId: string) => flavor: Flavor } =>
+  getFlavor: (flavorId: string) =>
     inventoryApi.get(`/inventory/flavors/${flavorId}`),
 
-  updateFlavor: (flavorId: string, data: Partial<Flavor>) => flavor: Flavor } =>
+  updateFlavor: (flavorId: string, data: Partial<Flavor>) =>
     inventoryApi.put(`/inventory/flavors/${flavorId}`, data),
 
-  deleteFlavor: (flavorId: string) => flavor: Flavor } =>
+  deleteFlavor: (flavorId: string) =>
     inventoryApi.delete(`/inventory/flavors/${flavorId}`),
 
   // Invoice Management
@@ -249,13 +249,13 @@ export const inventoryService = {
     }>;
     dueDate?: string;
     notes?: string;
-  }) => invoice: Invoice } =>
+  }) =>
     inventoryApi.post("/inventory/invoices", data),
 
-  getInvoice: (invoiceId: string) => invoice: Invoice } =>
+  getInvoice: (invoiceId: string) =>
     inventoryApi.get(`/inventory/invoices/${invoiceId}`),
 
-  updateInvoiceStatus: (invoiceId: string, status: string) => invoice: Invoice } =>
+  updateInvoiceStatus: (invoiceId: string, status: string) =>
     inventoryApi.put(`/inventory/invoices/${invoiceId}/status`, { status }),
 
   getAllInvoices: (params?: {
@@ -264,7 +264,7 @@ export const inventoryService = {
     shopId?: string;
     limit?: number;
     offset?: number;
-  }) => invoices: Invoice[]; pagination?: any } =>
+  }) =>
     inventoryApi.get("/inventory/invoices"),
 
   // Supplier Management
@@ -273,7 +273,7 @@ export const inventoryService = {
     isActive?: boolean;
     limit?: number;
     offset?: number;
-  }) => suppliers: Supplier[]; pagination?: any } =>
+  }) =>
     inventoryApi.get("/inventory/suppliers"),
 
   createSupplier: (data: {
@@ -287,14 +287,14 @@ export const inventoryService = {
     rating?: number;
     taxId?: string;
     paymentTerms?: string;
-  }) => supplier: Supplier } =>
+  }) =>
     inventoryApi.post("/inventory/suppliers", data),
 
-  updateSupplier: (supplierId: string, data: Partial<Supplier>) => supplier: Supplier } =>
+  updateSupplier: (supplierId: string, data: Partial<Supplier>) =>
     inventoryApi.put(`/inventory/suppliers/${supplierId}`, data),
 
   // Health Check
-  healthCheck: () =>any>> =>
+  healthCheck: () =>
     inventoryApi.get("/inventory/health"),
 };
 

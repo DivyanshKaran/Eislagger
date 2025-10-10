@@ -23,7 +23,7 @@ import { ChartCard } from "@/components/presentational/ChartCard";
 import { LoadingSpinner } from "@/components/presentational/LoadingSpinner";
 import { Button } from "@/components/ui/button";
 // Removed unused imports
-import { useChartData, ChartConfig } from "@/hooks/useChartData";
+import { ChartConfig } from "@/hooks/useChartData";
 import { analyticsService, ChartDataPoint } from "@/services/analyticsService";
 
 export interface ChartContainerProps {
@@ -55,38 +55,43 @@ export function ChartContainer({
     color,
   };
 
-  const {
-    filteredData,
-    chartConfig,
-    isLoading,
-    error: chartError,
-    handleRefresh,
-    handleExport,
-    // Removed unused destructuring
-  } = useChartData({ data, config, timeRange });
+  const [filteredData, setFilteredData] = useState<ChartDataPoint[]>([]);
+  const [chartConfig, setChartConfig] = useState<ChartConfig | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
+  const [chartError, setChartError] = useState<Error | null>(null);
 
   const fetchData = useCallback(async () => {
     try {
-      setLoading(true);
-      setError(null);
+      setIsLoading(true);
+      setChartError(null);
       const chartData = await analyticsService.getChartData(
         chartType,
         role,
         timeRange,
       );
-      setData(chartData);
+      setFilteredData(chartData);
+      setChartConfig(config);
     } catch (err) {
-      setError(
-        err instanceof Error ? err.message : "Failed to fetch chart data",
+      setChartError(
+        err instanceof Error ? err : new Error("Failed to fetch chart data"),
       );
     } finally {
-      setLoading(false);
+      setIsLoading(false);
     }
-  }, [chartType, role, timeRange]);
+  }, [chartType, role, timeRange, config]);
 
   React.useEffect(() => {
     fetchData();
   }, [fetchData]);
+
+  const handleRefresh = useCallback(() => {
+    fetchData();
+  }, [fetchData]);
+
+  const handleExport = useCallback((format: "json" | "csv") => {
+    // Export functionality can be implemented here
+    console.log('Export chart data', format);
+  }, []);
 
   const handleRefreshData = useCallback(async () => {
     await handleRefresh();
@@ -112,7 +117,7 @@ export function ChartContainer({
             <AlertCircle className="h-12 w-12 mx-auto mb-4" />
             <div className="text-lg font-medium">Error loading chart</div>
             <div className="text-sm text-gray-500 mt-1">
-              {error || chartError}
+              {error || chartError?.message || 'An error occurred'}
             </div>
             <Button
               onClick={handleRefreshData}
@@ -143,7 +148,7 @@ export function ChartContainer({
 
     const commonProps = {
       data: filteredData,
-      margin: chartConfig.margin,
+      margin: { top: 20, right: 30, left: 20, bottom: 5 },
     };
 
     switch (chartType) {
@@ -253,7 +258,7 @@ export function ChartContainer({
       type={chartType}
       color={color}
       isLoading={loading || isLoading}
-      error={error || chartError}
+      error={error || chartError?.message || null}
       onRefresh={handleRefreshData}
       onExport={handleExportData}
       className={className}

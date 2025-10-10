@@ -40,10 +40,6 @@ const OriginalPatronReviewsPage = lazy(
   () => import("@/app/patron/reviews/page"),
 );
 const OriginalClerkPosPage = lazy(() => import("@/app/clerk/pos/page"));
-const OriginalClerkChatPage = lazy(() => import("@/app/clerk/chat/page"));
-const OriginalExecutiveChatPage = lazy(
-  () => import("@/app/executive/chat/page"),
-);
 const OriginalClerkEmailPage = lazy(() => import("@/app/clerk/email/page"));
 const OriginalClerkStockPage = lazy(() => import("@/app/clerk/stock/page"));
 const OriginalClerkDashboardPage = lazy(
@@ -58,11 +54,11 @@ const OriginalExecutiveBudgetPage = lazy(
 const OriginalManufacturerEmailPage = lazy(
   () => import("@/app/manufacturer/email/page"),
 );
+const OriginalPatronEmailPage = lazy(
+  () => import("@/app/patron/email/page"),
+);
 const OriginalManufacturerRegisterStockPage = lazy(
   () => import("@/app/manufacturer/register-stock/page"),
-);
-const OriginalManufacturerChatPage = lazy(
-  () => import("@/app/manufacturer/chat/page"),
 );
 const OriginalClerkAnalyticsPage = lazy(
   () => import("@/app/clerk/analytics/page"),
@@ -117,10 +113,6 @@ export function LazyPageWrapper({
         return <OriginalPatronReviewsPage />;
       case "clerk-pos":
         return <OriginalClerkPosPage />;
-      case "clerk-chat":
-        return <OriginalClerkChatPage />;
-      case "executive-chat":
-        return <OriginalExecutiveChatPage />;
       case "clerk-email":
         return <OriginalClerkEmailPage />;
       case "clerk-stock":
@@ -135,10 +127,10 @@ export function LazyPageWrapper({
         return <OriginalManufacturerEmailPage />;
       case "manufacturer-register-stock":
         return <OriginalManufacturerRegisterStockPage />;
-      case "manufacturer-chat":
-        return <OriginalManufacturerChatPage />;
       case "clerk-analytics":
         return <OriginalClerkAnalyticsPage />;
+      case "patron-email":
+        return <OriginalPatronEmailPage />;
       default:
         return <div>Page not found</div>;
     }

@@ -143,8 +143,18 @@ export const salesService = {
     managerId?: string;
     limit?: number;
     offset?: number;
-  }): Promise<ApiResponse<{ shops: Shop[]; pagination: any }>> =>
-    salesApi.get("/sales/shops", { params }),
+  }): Promise<ApiResponse<{ shops: Shop[]; pagination: any }>> => {
+    const queryParams = new URLSearchParams();
+    if (params) {
+      Object.entries(params).forEach(([key, value]) => {
+        if (value !== undefined) {
+          queryParams.append(key, value.toString());
+        }
+      });
+    }
+    const queryString = queryParams.toString();
+    return salesApi.get(`/sales/shops${queryString ? `?${queryString}` : ''}`);
+  },
 
   getShop: (shopId: string): Promise<ApiResponse<{ shop: Shop }>> =>
     salesApi.get(`/sales/shops/${shopId}`),
@@ -199,8 +209,18 @@ export const salesService = {
     offset?: number;
     dateFrom?: string;
     dateTo?: string;
-  }): Promise<ApiResponse<{ transactions: Transaction[]; pagination?: any }>> =>
-    salesApi.get(`/sales/shops/${shopId}/transactions`, { params }),
+  }): Promise<ApiResponse<{ transactions: Transaction[]; pagination?: any }>> => {
+    const queryParams = new URLSearchParams();
+    if (params) {
+      Object.entries(params).forEach(([key, value]) => {
+        if (value !== undefined) {
+          queryParams.append(key, value.toString());
+        }
+      });
+    }
+    const queryString = queryParams.toString();
+    return salesApi.get(`/sales/shops/${shopId}/transactions${queryString ? `?${queryString}` : ''}`);
+  },
 
   // Purchase Orders
   createPurchaseOrder: (shopId: string, data: {
@@ -220,8 +240,18 @@ export const salesService = {
     status?: string;
     limit?: number;
     offset?: number;
-  }): Promise<ApiResponse<{ orders: PurchaseOrder[]; pagination?: any }>> =>
-    salesApi.get(`/sales/shops/${shopId}/orders`, { params }),
+  }): Promise<ApiResponse<{ orders: PurchaseOrder[]; pagination?: any }>> => {
+    const queryParams = new URLSearchParams();
+    if (params) {
+      Object.entries(params).forEach(([key, value]) => {
+        if (value !== undefined) {
+          queryParams.append(key, value.toString());
+        }
+      });
+    }
+    const queryString = queryParams.toString();
+    return salesApi.get(`/sales/shops/${shopId}/orders${queryString ? `?${queryString}` : ''}`);
+  },
 
   // Reviews
   createReview: (data: {
@@ -248,8 +278,18 @@ export const salesService = {
     averageRating: number;
     totalReviews: number;
     pagination?: any;
-  }>> =>
-    salesApi.get(`/sales/shops/${shopId}/reviews`, { params }),
+  }>> => {
+    const queryParams = new URLSearchParams();
+    if (params) {
+      Object.entries(params).forEach(([key, value]) => {
+        if (value !== undefined) {
+          queryParams.append(key, value.toString());
+        }
+      });
+    }
+    const queryString = queryParams.toString();
+    return salesApi.get(`/sales/shops/${shopId}/reviews${queryString ? `?${queryString}` : ''}`);
+  },
 
   // Health Check
   healthCheck: (): Promise<ApiResponse<any>> =>
